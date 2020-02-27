@@ -1,0 +1,63 @@
+version: '3.6'
+services:
+    pr1-symfony4:
+        container_name: pr1-symfony4
+        build:
+            context: ./symfony4
+            dockerfile: Dockerfile
+        restart: unless-stopped
+        depends_on:
+            - pr1-pma            
+        environment:            
+            VIRTUAL_HOST: api.pr1.local
+        volumes:
+            - './symfony4:/var/www:rw'
+        networks:
+            pr1-net:
+                ipv4_address: 172.70.2.11
+    pr1-mysql:
+        container_name: pr1-mysql
+        image: 'mariadb:10.3.22-bionic'
+        restart: unless-stopped
+        ports:
+            - '3306:3306'
+        volumes:
+            - type: bind
+              source: ./db/mysql
+              target: /var/lib/mysql
+            - type: bind
+              source: ./db/docker-entrypoint-initdb.d
+              target: /docker-entrypoint-initdb.d
+        environment:
+            TZ: Europe/Riga
+            LANG: en_US.UTF-8
+            MYSQL_ROOT_PASSWORD: $MYSQL_PASSWORD
+            MYSQL_USER: pr1-user
+            MYSQL_PASSWORD: $MYSQL_PASSWORD
+            INIT_TOKUDB: 1
+            INIT_ROCKSDB: 0
+        networks:
+            pr1-net:
+                ipv4_address: 172.70.2.13
+        command: '--sql-mode= --server-id=1 --log-bin=mysql-bin --expire_logs_days=3'
+    pr1-pma:
+        container_name: pr1-pma
+        image: 'phpmyadmin/phpmyadmin'
+        restart: always
+        depends_on:
+        - pr1-mysql
+        environment:
+            MYSQL_ROOT_PASSWORD: $MYSQL_PASSWORD
+            MYSQL_USER: pr1-user
+            MYSQL_PASSWORD: $MYSQL_PASSWORD
+            PMA_HOST: pr1-mysql  
+            PMA_PORT: 3306
+        networks:
+            pr1-net:
+                ipv4_address: 172.70.2.14
+networks:
+    pr1-net:
+        ipam:
+            driver: default
+            config:
+                - subnet: 172.70.0.0/16

@@ -1,0 +1,4 @@
+.env
+db/mysql/*
+!db/mysql/.gitkeep
+/symfony4/nbproject/*
