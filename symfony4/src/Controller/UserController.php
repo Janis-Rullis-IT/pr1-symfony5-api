@@ -49,7 +49,6 @@ class UserController extends AbstractController
      */
     public function getUsers(IUserRepo $repo): JsonResponse
     {
-      die('UserController::getUsers');
         $users =  $repo->getAll();
         return $this->json($users, Response::HTTP_OK);
     }
