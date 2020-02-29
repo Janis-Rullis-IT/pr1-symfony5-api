@@ -16,6 +16,18 @@ function init(){
 	IFS=$''
 	DIR=$PWD;
 	ROOT_DIR="$(dirname "${DIR}")";
+  ENV_FILE=".env";
+}
+
+function checkRequirements(){    
+  echo "Checking if the '.env' file exists ...";
+
+  # #17 https://github.com/janis-rullis/shell-scripts/blob/master/learn-basics/if-conditions.sh#L124
+  if [[ ! -r $ENV_FILE ]]; then
+    echo "'.env' file is missing!";
+    echo -e "* Copy the .env.example to .env.\n* Open .env and fill values in FILL_THIS." ;
+    exit;
+  fi  
 }
 
 function stopDocker(){
@@ -36,8 +48,8 @@ function initDb(){
 
 function readEnvVariables(){
 	echo "Reading .env variables...";
-	FILE=`cat .env`
-	DB_PW=`echo $FILE | grep MYSQL_PASSWORD= | cut -d '=' -f2`;
+	ENV_VARS=`cat ${ENV_FILE}`
+	DB_PW=`echo ${ENV_VARS} | grep MYSQL_PASSWORD= | cut -d '=' -f2`;  
 
   # https://superuser.com/questions/1225134/why-does-the-base64-of-a-string-contain-n/1225139
   SECRET=`openssl rand -hex 32  | tr -d \\n`
@@ -73,6 +85,7 @@ function setSymfEnv(){
 }
 
 init
+checkRequirements
 initDb
 stopDocker
 readEnvVariables
