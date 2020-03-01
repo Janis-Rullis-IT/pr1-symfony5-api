@@ -25,6 +25,11 @@
 172.70.2.14     pma.pr1.local
 ```
 
+## Container related scripts
+
+* `start.sh` - Start containers once the setup has been done.
+* `test.sh` - Execute PHPUnit tests.
+
 ## Endpoint documentation
 
 * http://api.pr1.local/doc
