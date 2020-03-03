@@ -11,11 +11,42 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Swagger\Annotations as SWG;
 
 class ProductController extends AbstractController
 {
     /**
-     * @Route("/users/{id_user}/products", name="createProduct", methods={"POST"})
+     * Create a new product for user.
+     * 
+     * - "type" : valid product types are "t-shirt" and "mug". They can be written in upper or lowercase e.g. "T-Shirt" is valid.
+     * - "title" : can consist of upper and lowercase letters, digits, dash (-) and space ( ). It is stored as a string later on.
+     * - "sku" : (stock keeping unit) must be unique among products user has submitted. It is stored as a string later on.
+     * - "cost" : must be an integer representing cents
+     * 
+     * @Route("/users/{id_user}/products", name="createProduct", methods={"POST"})   
+     * @SWG\Tag(name="product")
+     * @SWG\Parameter(
+	 *   name="body",
+	 *   in="body",
+	 *   required=true,
+	 *   @SWG\Schema(
+	 *    required={"type", "title", "sku", "cost"},
+	 *    @SWG\Property(property="type", type="string", example="t-shirt"),
+	 *    @SWG\Property(property="title", type="string", example="just do it"),
+   *    @SWG\Property(property="sku", type="string", example="100-abc-999"),
+   *    @SWG\Property(property="cost", type="integer", example=1000),
+	 *   )
+	 * )
+	 * @SWG\Response(
+	 *   response=200, description="",
+	 *   @SWG\Schema(
+	 *    @SWG\Property(property="id", type="integer", example="1"),
+   *    @SWG\Property(property="ownerId", type="integer", example="1"),
+	 *    @SWG\Property(property="title", type="string", example="just do it"),
+   *    @SWG\Property(property="sku", type="string", example="100-abc-999"),
+   *    @SWG\Property(property="cost", type="integer", example=1000),
+	 *   )
+	 * )       
      * @param ProductCreator $createProductService
      * @param int $id_user
      * @return JsonResponse|Response
@@ -35,7 +66,20 @@ class ProductController extends AbstractController
     }
 
     /**
+     * View user's product.
+     * 
      * @Route("/users/{id_user}/products/{id}", name="getProduct", methods={"GET"})
+     * @SWG\Tag(name="product")
+     * @SWG\Response(
+	 *   response=200, description="",
+	 *   @SWG\Schema(
+	 *    @SWG\Property(property="id", type="integer", example="1"),
+   *    @SWG\Property(property="ownerId", type="integer", example="1"),
+	 *    @SWG\Property(property="title", type="string", example="just do it"),
+   *    @SWG\Property(property="sku", type="string", example="100-abc-999"),
+   *    @SWG\Property(property="cost", type="integer", example=1000),
+	 *   )
+	 * )      
      * @param IProductRepo $repo
      * @param int $id_user
      * @param int $id
@@ -51,7 +95,30 @@ class ProductController extends AbstractController
     }
 
     /**
+     * View user's all products.
+     
      * @Route("/users/{id_user}/products", name="getProducts", methods={"GET"})
+     * @SWG\Tag(name="product")
+     *
+     * @SWG\Response(
+	 *   response=200, description="",
+	 *     @SWG\Schema(
+	 *       type="array",
+	 *       @SWG\Items(
+	 *         type="object",
+	 *         example = {
+	 *           {"id": "1", "ownerId": 1, "type": "t-shirt", "title":  "just do it", "sku": "100-abc-999", "cost": 1000},
+	 *           {"id": "2", "ownerId": 1, "type": "t-shirt", "title":  "lui v", "sku": "100-abc-100", "cost": 1000},
+	 *         },
+	 *         @SWG\Property(property="id", type="integer", example="1"),
+   *         @SWG\Property(property="ownerId", type="integer", example="1"),
+	 *         @SWG\Property(property="title", type="string", example="just do it"),
+   *         @SWG\Property(property="sku", type="string", example="100-abc-999"),
+   *         @SWG\Property(property="cost", type="integer", example=1000),
+	 *       )
+	 *    )
+	 * )   
+	 * 
      * @param IProductRepo $repo
      * @param int $id_user
      * @return JsonResponse|Response
