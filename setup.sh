@@ -32,7 +32,7 @@ function checkRequirements(){
 
 function stopDocker(){
 	echo "Stop any running container from this project";
-	docker-compose down
+	docker-compose down --remove-orphans 
 
 	if [[ $ONLY_PROJECT = true ]]; then
 		echo "Remove any dangling part."
@@ -81,7 +81,7 @@ function setSymfEnv(){
 
   echo "Initialize a clean API container first ...";
   docker-compose build --no-cache pr1-symfony5
-  docker-compose down
+  docker-compose down --remove-orphans 
 }
 
 init
