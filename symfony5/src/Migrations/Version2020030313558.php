@@ -26,7 +26,7 @@ final class Version2020030313558 extends AbstractMigration
 	public function down(Schema $schema): void
 	{
 		$this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
-		$this->addSql("ALTER TABLE`order`
+		$this->addSql("ALTER TABLE `order`
       DROP INDEX `owner_id`;
     "); 
 	}

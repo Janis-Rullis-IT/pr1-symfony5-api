@@ -18,7 +18,7 @@ final class Version2020030313553 extends AbstractMigration
 	{
     $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
     // #22 Combined  `INDEX` https://github.com/janis-rullis/sql/blob/364c6b5d76e1dd3a5ad958828eb73c9d77080fee/mysql/String/Unique-texts.md
-    $this->addSql("ALTER TABLE`relation`
+    $this->addSql("ALTER TABLE `relation`
       ADD INDEX `owner_order` (`owner_id`, `order_id`);
     "); 
 	}
@@ -26,7 +26,7 @@ final class Version2020030313553 extends AbstractMigration
 	public function down(Schema $schema): void
 	{
 		$this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
-		$this->addSql("ALTER TABLE`relation`
+		$this->addSql("ALTER TABLE `relation`
       DROP INDEX `owner_order`;
     "); 
 	}
