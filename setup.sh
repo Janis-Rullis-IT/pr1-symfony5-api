@@ -32,7 +32,7 @@ function checkRequirements(){
 
 function stopDocker(){
 	echo "Stop any running container from this project";
-	docker-compose down
+	docker-compose down --remove-orphans 
 
 	if [[ $ONLY_PROJECT = true ]]; then
 		echo "Remove any dangling part."
@@ -55,11 +55,11 @@ function readEnvVariables(){
   SECRET=`openssl rand -hex 32  | tr -d \\n`
 }
 
-# #5 Dockerize the pr1-symfony4.
+# #5 Dockerize the pr1-symfony5.
 function setSymfEnv(){
-	echo "Setting up the 'pr1-symfony4' container."
-	echo "Go into 'symfony4' direcotry...";
-	cd symfony4
+	echo "Setting up the 'pr1-symfony5' container."
+	echo "Go into 'symfony5' direcotry...";
+	cd symfony5
 	echo "Copying '.env.example' to '.env'...";
 	cp .env.example .env
 
@@ -80,8 +80,8 @@ function setSymfEnv(){
 	echo "'.env' is ready.";
 
   echo "Initialize a clean API container first ...";
-  docker-compose build --no-cache pr1-symfony4
-  docker-compose down
+  docker-compose build --no-cache pr1-symfony5
+  docker-compose down --remove-orphans 
 }
 
 init

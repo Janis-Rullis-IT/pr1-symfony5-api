@@ -1,5 +1,5 @@
 #!/bin/sh
-# #5 Dockerize the pr1-symfony4.
+# #5 Dockerize the pr1-symfony5.
 
 set -e
 service php7.3-fpm start

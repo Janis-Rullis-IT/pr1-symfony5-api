@@ -1,4 +1,4 @@
 #!/bin/bash
-#7 Connect to the `pr1-symfony4` container.
+#7 Connect to the `pr1-symfony5` container.
 
-docker exec -it pr1-symfony4 bash
+docker exec -it pr1-symfony5 bash

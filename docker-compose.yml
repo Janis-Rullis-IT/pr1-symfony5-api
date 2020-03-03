@@ -1,9 +1,9 @@
 version: '3.6'
 services:
-    pr1-symfony4:
-        container_name: pr1-symfony4
+    pr1-symfony5:
+        container_name: pr1-symfony5
         build:
-            context: ./symfony4
+            context: ./symfony5
             dockerfile: Dockerfile
         restart: unless-stopped
         depends_on:
@@ -11,7 +11,7 @@ services:
         environment:            
             VIRTUAL_HOST: api.pr1.local
         volumes:
-            - './symfony4:/var/www:rw'
+            - './symfony5:/var/www:rw'
         networks:
             pr1-net:
                 ipv4_address: 172.70.2.11
