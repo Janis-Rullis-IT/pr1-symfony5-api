@@ -30,7 +30,7 @@ class OrderProductUnitTest extends KernelTestCase
 
 		// Using database in tests https://stackoverflow.com/a/52014145 https://symfony.com/doc/master/testing/database.html#functional-testing-of-a-doctrine-repository
 		$this->entityManager = $container->get('doctrine')->getManager();
-		
+
 		// TODO: Truncate specific tables before each run.
 	}
 
@@ -41,9 +41,11 @@ class OrderProductUnitTest extends KernelTestCase
 	{
 		$users = $this->insertUsersAndProds();
 
+		$this->assertEquals($this->orderProductCreator->handle([]), ['status' => false, 'data' => null, 'errors' => [
+				"customer_id" => "'customer_id' field is missing.", "product_id" => "'product_id' field is missing."]]);
+
 		// T-shirt / US / Standard / First.
-		$Qa = $this->orderProductCreator->handle([]);
-		dd($Qa);
+		dd('ok');
 
 		// `SELECT `order_id`, `customer_id`, `seller_id`, `seller_title`, `product_id`, `product_title`, `product_cost`, `product_type` FROM `v2_order_product` WHERE 1`.
 		// `SELECT `order_id`, `customer_id`, `seller_id`, `product_id` FROM `v2_order_product` WHERE 1`.

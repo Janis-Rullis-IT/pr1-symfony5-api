@@ -1,16 +1,19 @@
 <?php
 namespace App\v2;
 
-use App\RequestBody\JsonToArray;
+use \App\Interfaces\IProductRepo;
+use \App\Interfaces\IUserRepo;
 
 class OrderProductCreator
 {
 
-	private $converter;
+	private $userRepo;
+	private $productRepo;
 
-	public function __construct(JsonToArray $converter)
+	public function __construct(IProductRepo $productRepo, IUserRepo $userRepo)
 	{
-		$this->converter = $converter;
+		$this->userRepo = $userRepo;
+		$this->productRepo = $productRepo;
 	}
 
 	/**
@@ -21,46 +24,61 @@ class OrderProductCreator
 	 */
 	public function handle(array $data)
 	{
-		// TODO: To Validator: Check if all required fields are passed and they exist in the database.
-		// TODO: To Validator: Check if the customer can afford this product.
-		// TODO: First the order, user, seller and product must exist.
-		$isValid = false;
-		$return = [];
-		$requireds = ['customer_id', 'product_id'];
+		$return = ['errors' => [], 'status' => false, 'data' => null];
 
-		if ($isValid) {
-			$item = $this->prepare($requireds);
-			if (!empty($item)) {
+		// #38 Validate and prepare the item.
+		$item = $this->prepare($data);
 
-				// #38 Write data to db only after it's validated and prepare.
-				$this->entityManager->persist($item);
-				$this->entityManager->flush();
-				$return = $item;
-			}
+		// #38 Write data to db only after it's validated and prepare.
+		if (empty($item['errors'])) {
+			$this->entityManager->persist($item['data']);
+			$this->entityManager->flush();
+
+			// #38 TODO: Check and set into `$return` DB errors here.
+			$return = $item;
+		} else {
+			$return = $item;
 		}
 		return $return;
 	}
 
 	/**
-	 * #38 Prepare the item.
-	 * @return \App\v2\OrderProduct
+	 * #38 Validate and prepare the item.
+	 * 
+	 * @param array $datas
+	 * @return type
 	 */
-	public function prepare(array $datas)
+	public function prepare(array $data)
 	{
-		// TODO: To `prepareItem()` Collect seller's and product's information.
-		// TODO: To `prepareItem()` Prepare the data for writing in the database.
+		$return = ['errors' => [], 'status' => false, 'data' => null];
+		$validator = new \App\v2\OrderProductValidator;
 
-		$item = new OrderProduct();
-		$item->setOrderId(1);
-		$item->setCustomerId(1);
-		$item->setSellerId(1);
-		$item->setSellerTitle('US');
-		$item->setProductId(1);
-		$item->setProductTitle('T-shirt / US / Standard / First');
-		$item->setProductCost(1);
-		$item->setProductType('t-shirt');
-		$item->setIsDomestic('y');
+		// #38 Check if all required fields are passed.
+		$status = $validator->hasRequiredKeys($data);
+		if ($status === true) {
 
-		return $item;
+			// #38 Check if they exist in the database.
+			$customer = $this->userRepo->getById($data['customer_id']);
+			dd($customer);
+
+
+
+			// TODO: To `prepareItem()` Collect seller's and product's information.
+			// TODO: To `prepareItem()` Prepare the data for writing in the database.
+
+			$item = new OrderProduct();
+			$item->setOrderId(1);
+			$item->setCustomerId(1);
+			$item->setSellerId(1);
+			$item->setSellerTitle('US');
+			$item->setProductId(1);
+			$item->setProductTitle('T-shirt / US / Standard / First');
+			$item->setProductCost(1);
+			$item->setProductType('t-shirt');
+			$item->setIsDomestic('y');
+		} else {
+			$return['errors'] = $status;
+		}
+		return $return;
 	}
 }

@@ -3,6 +3,7 @@
 namespace App\Entity\v2;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\v2\OrderProductRepository")
@@ -24,11 +25,15 @@ class OrderProduct
 
     /**
      * @ORM\Column(type="integer")
+	 * @Assert\NotBlank
+	 * @Assert\Type("integer")
      */
     private $customer_id;
 
     /**
      * @ORM\Column(type="integer")
+	 * @Assert\NotBlank
+	 * @Assert\Type("integer")
      */
     private $seller_id;
 
@@ -293,4 +298,6 @@ class OrderProduct
 
         return $this;
     }
+	
+	public static $requireds = ['customer_id', 'product_id'];
 }
