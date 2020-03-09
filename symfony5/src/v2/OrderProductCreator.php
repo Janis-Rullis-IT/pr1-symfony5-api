@@ -4,6 +4,7 @@ namespace App\v2;
 use \App\Interfaces\IProductRepo;
 use \App\Interfaces\IUserRepo;
 use \App\Interfaces\v2\IOrderRepo;
+use \App\Interfaces\v2\IOrderProductRepo;
 use \App\Entity\v2\OrderProduct;
 
 class OrderProductCreator
@@ -12,36 +13,31 @@ class OrderProductCreator
 	private $userRepo;
 	private $productRepo;
 	private $orderRepo;
+	private $orderProductRepo;
 
-	public function __construct(IProductRepo $productRepo, IUserRepo $userRepo, IOrderRepo $orderRepo)
+	public function __construct(IProductRepo $productRepo, IUserRepo $userRepo, IOrderRepo $orderRepo, IOrderProductRepo $orderProductRepo)
 	{
 		$this->userRepo = $userRepo;
 		$this->productRepo = $productRepo;
 		$this->orderRepo = $orderRepo;
+		$this->orderProductRepo = $orderProductRepo;
 	}
 
 	/**
 	 * #38 Validate, prepare and write to db.
 	 * 
 	 * @param array $data
-	 * @return type
+	 * @return array
 	 */
-	public function handle(array $data)
+	public function handle(array $data): array
 	{
-		$return = ['errors' => [], 'status' => false, 'data' => null];
-
 		// #38 Validate and prepare the item.
-		$item = $this->prepare($data);
+		$return = $this->prepare($data);
 
 		// #38 Write data to db only after it's validated and prepared.
-		if (empty($item['errors'])) {
-			$this->entityManager->persist($item['data']);
-			$this->entityManager->flush();
+		if (empty($return['errors']) && !empty($return['data'])) {
 
-			// #38 TODO: Check and set into `$return` DB errors here.
-			$return = $item;
-		} else {
-			$return = $item;
+			$return['data'] = $this->orderProductRepo->create($return['data']);
 		}
 		return $return;
 	}
@@ -49,10 +45,10 @@ class OrderProductCreator
 	/**
 	 * #38 Validate and prepare the item.
 	 * 
-	 * @param array $datas
-	 * @return type
+	 * @param array $data
+	 * @return array
 	 */
-	public function prepare(array $data)
+	public function prepare(array $data): array
 	{
 		$return = ['errors' => [], 'status' => false, 'data' => null];
 		$validator = new \App\v2\OrderProductValidator;
@@ -82,30 +78,17 @@ class OrderProductCreator
 			if (empty($seller)) {
 				$return['errors']['seller_id'] = ["Invalid 'seller_id'."];
 			}
-			
+
+			// #38 #36 Collect customer's current 'draft' or create a new one.
 			$draftOrder = $this->orderRepo->insertIfNotExist($customer->getId());
+			if (empty($draftOrder)) {
+				$return['errors']['order_id'] = ["Cannot create a draft order. Please, contact our support."];
+			}
 
-			// #38 TODO: Should this me moved to Repo - it works kinda with DB?
-			$item = new OrderProduct();
-			
-
-			
-			$item->setOrderId(1);
-
-			// #38 TODO: Should this be done better with SQL JOIN UPDATE?
-			$item->setCustomerId($customer->getId());
-			$item->setSellerId($seller->getId());
-			$item->setProductId($product->getId());
-			$item->setProductCost($product->getCost());
-			$item->setProductType($product->getType());
-			dd($item);
-
-			// TODO.
-			$item->setSellerTitle('US');
-			$item->setProductTitle('T-shirt / US / Standard / First');
-			$item->setIsDomestic('y');
-
-			// TODO: Pass to the Validator->validate() to check types.
+			$return['data'] = $this->orderProductRepo->prepare($customer, $product, $seller, $draftOrder);
+			if (!empty($return['data'])) {
+				$return['status'] = true;
+			}
 		}
 
 		return $return;

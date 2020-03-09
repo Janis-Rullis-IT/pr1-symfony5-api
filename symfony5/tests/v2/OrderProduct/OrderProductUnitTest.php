@@ -10,6 +10,7 @@ use \App\Interfaces\v2\IOrderRepo;
 
 /**
  * #38 Test that the order product data is stored in the database correctly.
+ * Test v2 functionality: `vendor/bin/phpunit tests/v2/`
  */
 class OrderProductUnitTest extends KernelTestCase
 {
@@ -68,46 +69,31 @@ class OrderProductUnitTest extends KernelTestCase
 
 		// #38 #36 Create and get customer's draft order.
 		// TODO: This probably should be moved to a separate test file.
-		$this->assertNull($this->orderRepo->getCurrentDraft($users[0]->getId()), '#36 #38 New customer shouldnt have a draft order.');
-		$draftOrder = $this->orderRepo->insertIfNotExist($users[0]->getId());
+		$this->assertNull($this->orderRepo->getCurrentDraft($users[2]->getId()), '#36 #38 New customer shouldnt have a draft order.');
+		$draftOrder = $this->orderRepo->insertIfNotExist($users[2]->getId());
 		$this->assertNotNull($draftOrder, '#36 #38 A draft order should be created if it doesnt exist.');
-		$this->assertEquals($this->orderRepo->getCurrentDraft($users[0]->getId())->getId(), $draftOrder->getId(), '#36 #38 Should find an existing one.');
-		$this->assertEquals($this->orderRepo->getCurrentDraft($users[0]->getId())->getId(), $this->orderRepo->insertIfNotExist($users[0]->getId())->getId(), "#36 #38 A new draft order shouldnt be created if there is already one.");
+		$this->assertEquals($this->orderRepo->getCurrentDraft($users[2]->getId())->getId(), $draftOrder->getId(), '#36 #38 Should find an existing one.');
+		$this->assertEquals($this->orderRepo->getCurrentDraft($users[2]->getId())->getId(), $this->orderRepo->insertIfNotExist($users[2]->getId())->getId(), "#36 #38 A new draft order shouldnt be created if there is already one.");
 
 		$customerId = $users[2]->getId();
 		$productId = $users[1]->products[0]->getId();
 		$validProduct = $this->orderProductCreator->handle(['customer_id' => $customerId, "product_id" => $productId]);
-		dd($validProduct);
-
-
-
-
-		$expected = ['status' => false, 'data' => null, 'errors' => ["product_id" => ["Invalid 'product_id'."]]];
-		$this->assertEquals($invalidProduct, $expected);
-
-
-		// `SELECT `order_id`, `customer_id`, `seller_id`, `seller_title`, `product_id`, `product_title`, `product_cost`, `product_type` FROM `v2_order_product` WHERE 1`.
-		// `SELECT `order_id`, `customer_id`, `seller_id`, `product_id` FROM `v2_order_product` WHERE 1`.
-		$v2_order_product = array(
-			array('customer_id' => $users[0], 'product_id' => $users[0]->products[0]),
-			array('customer_id' => $users[0], 'product_id' => $users[0]->products[0]),
-			array('customer_id' => $users[0], 'product_id' => $users[0]->products[0]),
-			array('customer_id' => $users[0], 'product_id' => $users[0]->products[0]),
-			array('customer_id' => $users[1], 'seller_id' => $users[0], 'product_id' => $users[1]->products[0]),
-			array('customer_id' => $users[1], 'seller_id' => $users[0], 'product_id' => $users[1]->products[0]),
-			array('customer_id' => $users[1], 'seller_id' => $users[0], 'product_id' => $users[1]->products[0]),
-			array('customer_id' => $users[1], 'seller_id' => $users[0], 'product_id' => $users[1]->products[0]),
-			array('customer_id' => $users[2], 'seller_id' => $users[1], 'product_id' => $users[2]->products[0]),
-			array('customer_id' => $users[2], 'seller_id' => $users[1], 'product_id' => $users[2]->products[0]),
-			array('customer_id' => $users[2], 'seller_id' => $users[1], 'product_id' => $users[2]->products[0]),
-			array('customer_id' => $users[2], 'seller_id' => $users[1], 'product_id' => $users[2]->products[0])
-		);
-
-		$product2 = $this->entityManager
-			->getRepository(OrderProduct::class)
-			->findOneBy(array(), array('id' => 'DESC'), 0, 1);
-		$this->assertEquals($product->getId(), $product2->getId());
-		$this->assertEquals($product2->getIsDomestic(), 'y');
+		$this->assertEquals($validProduct['errors'], []);
+		$this->assertEquals($validProduct['status'], true);
+		$this->assertEquals($validProduct['data']->getCustomerId(), $customerId);
+		$this->assertEquals($validProduct['data']->getSellerId(), $users[1]->getId());
+		$this->assertEquals($validProduct['data']->getSellerTitle(), $users[1]->getName() . ' ' . $users[1]->getSurname());
+		$this->assertEquals($validProduct['data']->getProductId(), $productId);
+		$this->assertEquals($validProduct['data']->getProductTitle(), $users[1]->products[0]->getTitle());
+		$this->assertEquals($validProduct['data']->getProductCost(), $users[1]->products[0]->getCost());
+		$this->assertEquals($validProduct['data']->getProductType(), $users[1]->products[0]->getType());
+		$this->assertTrue($validProduct['data']->getId() > 0);
+		$this->assertTrue($validProduct['data']->getOrderId() > 0);
+		
+		// #38 #36 TODO: Add more use cases when work on the #39.
+		// #38 #36 TODO: Decide what to do with the existing tests that doesn't use DB. 
+		// On one hand they are currently broken and on the other hand they should be updated
+		// to use DB.
 	}
 
 	protected function tearDown(): void

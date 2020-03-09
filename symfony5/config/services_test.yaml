@@ -62,3 +62,8 @@ services:
     test.App\Interfaces\v2\IOrderRepo:
         alias: App\Interfaces\v2\IOrderRepo
         public: true
+        
+    # #36 #38
+    test.App\Interfaces\v2\IOrderProductRepo:
+        alias: App\Interfaces\v2\IOrderProductRepo
+        public: true
