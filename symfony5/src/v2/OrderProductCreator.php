@@ -3,6 +3,7 @@ namespace App\v2;
 
 use \App\Interfaces\IProductRepo;
 use \App\Interfaces\IUserRepo;
+use \App\Entity\v2\OrderProduct;
 
 class OrderProductCreator
 {
@@ -60,6 +61,7 @@ class OrderProductCreator
 			return $return;
 		}
 
+		// TODO: Should this be moved to the Validator?
 		// #38 Check if they exist in the database. Collect seller's and product's information.
 		$customer = $this->userRepo->find($data['customer_id']);
 		if (empty($customer)) {
@@ -72,19 +74,33 @@ class OrderProductCreator
 
 		// TODO: To `prepareItem()` Prepare the data for writing in the database.
 		if (empty($return['errors'])) {
-			
-			dd($return);
 
+			$seller = $this->userRepo->find($product->getOwnerId());
+			if (empty($seller)) {
+				$return['errors']['seller_id'] = ["Invalid 'seller_id'."];
+			}
+
+			// #38 TODO: Should this me moved to Repo - it works kinda with DB?
 			$item = new OrderProduct();
+
+			// #38 Collect customer's current 'draft' order where all the cart's items should be stored.
+			// Create if it doesn't exist yet.
 			$item->setOrderId(1);
-			$item->setCustomerId(1);
-			$item->setSellerId(1);
+
+			// #38 TODO: Should this be done better with SQL JOIN UPDATE?
+			$item->setCustomerId($customer->getId());
+			$item->setSellerId($seller->getId());
+			$item->setProductId($product->getId());
+			$item->setProductCost($product->getCost());
+			$item->setProductType($product->getType());
+			dd($item);
+
+			// TODO.
 			$item->setSellerTitle('US');
-			$item->setProductId(1);
 			$item->setProductTitle('T-shirt / US / Standard / First');
-			$item->setProductCost(1);
-			$item->setProductType('t-shirt');
 			$item->setIsDomestic('y');
+			
+			// TODO: Pass to the Validator->validate() to check types.
 		}
 
 		return $return;
