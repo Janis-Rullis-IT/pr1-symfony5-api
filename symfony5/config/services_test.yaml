@@ -22,12 +22,18 @@ services:
     App\Controller\:
         resource: '../src/Controller'
         tags: ['controller.service_arguments']
-
+        
     # mapping interface to testing repositories
     App\Interfaces\IUserRepo: '@UserTestRepo'
     App\Interfaces\IProductRepo: '@ProductTestRepo'
     App\Interfaces\IOrderRepo: '@OrderTestRepo'
     App\Interfaces\IRelationRepo: '@RelationTestRepo'
+    
+    # #38 Make v2 services accessible for tests via aliase). https://symfony.com/doc/current/service_container/alias_private.html#aliasing 
+    # #38 This creates a public alias: even though the original service is private. https://symfonycasts.com/screencast/phpunit/integration-tests
+    test.App\v2\OrderProductCreator:
+        alias: App\v2\OrderProductCreator
+        public: true
 
     # -------- repositories pointed to by interface --------
 

@@ -6,12 +6,17 @@
          backupGlobals="false"
          colors="true"
          bootstrap="config/bootstrap.php"
->
+        stopOnFailure="true">
     <php>
         <ini name="error_reporting" value="-1" />
         <server name="APP_ENV" value="test" force="true" />
         <server name="SHELL_VERBOSITY" value="-1" />
     </php>
+
+    <!-- Add this for PHPUnit 7.5 or higher -->
+    <extensions>
+        <extension class="DAMA\DoctrineTestBundle\PHPUnit\PHPUnitExtension"/>
+    </extensions>
 
     <testsuites>
         <testsuite name="Project Test Suite">
