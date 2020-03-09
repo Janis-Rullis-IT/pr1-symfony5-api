@@ -72,7 +72,7 @@ class OrderProductCreator
 			$return['errors']['product_id'] = ["Invalid 'product_id'."];
 		}
 
-		// TODO: To `prepareItem()` Prepare the data for writing in the database.
+		// #38 Prepare the data for writing in the database.
 		if (empty($return['errors'])) {
 
 			$seller = $this->userRepo->find($product->getOwnerId());
