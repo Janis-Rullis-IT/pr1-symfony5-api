@@ -21,7 +21,7 @@ class OrderProductValidator
 
 		foreach (OrderProduct::$requireds as $requiredKey) {
 			if (!isset($data[$requiredKey])) {
-				$errors[$requiredKey] = "'$requiredKey'" . ' field is missing.';
+				$errors[$requiredKey] = ["'$requiredKey'" . ' field is missing.'];
 			}
 		}
 

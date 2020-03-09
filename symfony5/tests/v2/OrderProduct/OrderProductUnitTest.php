@@ -42,26 +42,45 @@ class OrderProductUnitTest extends KernelTestCase
 		$users = $this->insertUsersAndProds();
 
 		$this->assertEquals($this->orderProductCreator->handle([]), ['status' => false, 'data' => null, 'errors' => [
-				"customer_id" => "'customer_id' field is missing.", "product_id" => "'product_id' field is missing."]]);
+				"customer_id" => ["'customer_id' field is missing."], "product_id" => ["'product_id' field is missing."]]]);
 
 		// T-shirt / US / Standard / First.
+		$customerId = $users[2]->getId() + 1000000;
+		$productId = $users[1]->products[0]->getId() + 100000;
+		$invalidCustomerAndProduct = $this->orderProductCreator->handle(['customer_id' => $customerId, "product_id" => $productId]);
+		$expected = ['status' => false, 'data' => null, 'errors' => ["customer_id" => ["Invalid 'customer_id'."], "product_id" => ["Invalid 'product_id'."]]];
+		$this->assertEquals($invalidCustomerAndProduct, $expected);
+		
+		$customerId = $users[2]->getId() + 1000000;
+		$productId = $users[1]->products[0]->getId();
+		$invalidCustomer = $this->orderProductCreator->handle(['customer_id' => $customerId, "product_id" => $productId]);
+		$expected = ['status' => false, 'data' => null, 'errors' => ["customer_id" => ["Invalid 'customer_id'."]]];
+		$this->assertEquals($invalidCustomer, $expected);
+		
+		$customerId = $users[2]->getId();
+		$productId = $users[1]->products[0]->getId() + 1000000;
+		$invalidProduct = $this->orderProductCreator->handle(['customer_id' => $customerId, "product_id" => $productId]);
+		$expected = ['status' => false, 'data' => null, 'errors' => ["product_id" => ["Invalid 'product_id'."]]];
+		$this->assertEquals($invalidProduct, $expected);
+
+
 		dd('ok');
 
 		// `SELECT `order_id`, `customer_id`, `seller_id`, `seller_title`, `product_id`, `product_title`, `product_cost`, `product_type` FROM `v2_order_product` WHERE 1`.
 		// `SELECT `order_id`, `customer_id`, `seller_id`, `product_id` FROM `v2_order_product` WHERE 1`.
 		$v2_order_product = array(
-			array('order_id' => '1', 'customer_id' => $users[0], 'seller_id' => $users[2], 'product_id' => $users[0]->products[0]),
-			array('order_id' => '1', 'customer_id' => $users[0], 'seller_id' => $users[2], 'product_id' => $users[0]->products[0]),
-			array('order_id' => '1', 'customer_id' => $users[0], 'seller_id' => $users[2], 'product_id' => $users[0]->products[0]),
-			array('order_id' => '1', 'customer_id' => $users[0], 'seller_id' => $users[2], 'product_id' => $users[0]->products[0]),
-			array('order_id' => '2', 'customer_id' => $users[1], 'seller_id' => $users[0], 'product_id' => $users[1]->products[0]),
-			array('order_id' => '2', 'customer_id' => $users[1], 'seller_id' => $users[0], 'product_id' => $users[1]->products[0]),
-			array('order_id' => '2', 'customer_id' => $users[1], 'seller_id' => $users[0], 'product_id' => $users[1]->products[0]),
-			array('order_id' => '2', 'customer_id' => $users[1], 'seller_id' => $users[0], 'product_id' => $users[1]->products[0]),
-			array('order_id' => '3', 'customer_id' => $users[2], 'seller_id' => $users[1], 'product_id' => $users[2]->products[0]),
-			array('order_id' => '3', 'customer_id' => $users[2], 'seller_id' => $users[1], 'product_id' => $users[2]->products[0]),
-			array('order_id' => '3', 'customer_id' => $users[2], 'seller_id' => $users[1], 'product_id' => $users[2]->products[0]),
-			array('order_id' => '3', 'customer_id' => $users[2], 'seller_id' => $users[1], 'product_id' => $users[2]->products[0])
+			array('customer_id' => $users[0], 'product_id' => $users[0]->products[0]),
+			array('customer_id' => $users[0], 'product_id' => $users[0]->products[0]),
+			array('customer_id' => $users[0], 'product_id' => $users[0]->products[0]),
+			array('customer_id' => $users[0], 'product_id' => $users[0]->products[0]),
+			array('customer_id' => $users[1], 'seller_id' => $users[0], 'product_id' => $users[1]->products[0]),
+			array('customer_id' => $users[1], 'seller_id' => $users[0], 'product_id' => $users[1]->products[0]),
+			array('customer_id' => $users[1], 'seller_id' => $users[0], 'product_id' => $users[1]->products[0]),
+			array('customer_id' => $users[1], 'seller_id' => $users[0], 'product_id' => $users[1]->products[0]),
+			array('customer_id' => $users[2], 'seller_id' => $users[1], 'product_id' => $users[2]->products[0]),
+			array('customer_id' => $users[2], 'seller_id' => $users[1], 'product_id' => $users[2]->products[0]),
+			array('customer_id' => $users[2], 'seller_id' => $users[1], 'product_id' => $users[2]->products[0]),
+			array('customer_id' => $users[2], 'seller_id' => $users[1], 'product_id' => $users[2]->products[0])
 		);
 
 		$product2 = $this->entityManager

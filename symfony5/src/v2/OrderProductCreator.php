@@ -29,7 +29,7 @@ class OrderProductCreator
 		// #38 Validate and prepare the item.
 		$item = $this->prepare($data);
 
-		// #38 Write data to db only after it's validated and prepare.
+		// #38 Write data to db only after it's validated and prepared.
 		if (empty($item['errors'])) {
 			$this->entityManager->persist($item['data']);
 			$this->entityManager->flush();
@@ -55,16 +55,25 @@ class OrderProductCreator
 
 		// #38 Check if all required fields are passed.
 		$status = $validator->hasRequiredKeys($data);
-		if ($status === true) {
+		if ($status !== true) {
+			$return['errors'] = $status;
+			return $return;
+		}
 
-			// #38 Check if they exist in the database.
-			$customer = $this->userRepo->getById($data['customer_id']);
-			dd($customer);
+		// #38 Check if they exist in the database. Collect seller's and product's information.
+		$customer = $this->userRepo->find($data['customer_id']);
+		if (empty($customer)) {
+			$return['errors']['customer_id'] = ["Invalid 'customer_id'."];
+		}
+		$product = $this->productRepo->find($data['product_id']);
+		if (empty($product)) {
+			$return['errors']['product_id'] = ["Invalid 'product_id'."];
+		}
 
-
-
-			// TODO: To `prepareItem()` Collect seller's and product's information.
-			// TODO: To `prepareItem()` Prepare the data for writing in the database.
+		// TODO: To `prepareItem()` Prepare the data for writing in the database.
+		if (empty($return['errors'])) {
+			
+			dd($return);
 
 			$item = new OrderProduct();
 			$item->setOrderId(1);
@@ -76,9 +85,8 @@ class OrderProductCreator
 			$item->setProductCost(1);
 			$item->setProductType('t-shirt');
 			$item->setIsDomestic('y');
-		} else {
-			$return['errors'] = $status;
 		}
+
 		return $return;
 	}
 }
