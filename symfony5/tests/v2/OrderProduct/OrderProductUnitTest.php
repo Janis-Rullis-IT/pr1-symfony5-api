@@ -62,9 +62,14 @@ class OrderProductUnitTest extends KernelTestCase
 		$invalidProduct = $this->orderProductCreator->handle(['customer_id' => $customerId, "product_id" => $productId]);
 		$expected = ['status' => false, 'data' => null, 'errors' => ["product_id" => ["Invalid 'product_id'."]]];
 		$this->assertEquals($invalidProduct, $expected);
+		
+		$customerId = $users[2]->getId();
+		$productId = $users[1]->products[0]->getId();
+		$validProduct = $this->orderProductCreator->handle(['customer_id' => $customerId, "product_id" => $productId]);
+		dd($validProduct);
+		$expected = ['status' => false, 'data' => null, 'errors' => ["product_id" => ["Invalid 'product_id'."]]];
+		$this->assertEquals($invalidProduct, $expected);
 
-
-		dd('ok');
 
 		// `SELECT `order_id`, `customer_id`, `seller_id`, `seller_title`, `product_id`, `product_title`, `product_cost`, `product_type` FROM `v2_order_product` WHERE 1`.
 		// `SELECT `order_id`, `customer_id`, `seller_id`, `product_id` FROM `v2_order_product` WHERE 1`.
