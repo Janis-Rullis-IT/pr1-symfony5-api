@@ -3,6 +3,7 @@ namespace App\v2;
 
 use \App\Interfaces\IProductRepo;
 use \App\Interfaces\IUserRepo;
+use \App\Interfaces\v2\IOrderRepo;
 use \App\Entity\v2\OrderProduct;
 
 class OrderProductCreator
@@ -10,11 +11,13 @@ class OrderProductCreator
 
 	private $userRepo;
 	private $productRepo;
+	private $orderRepo;
 
-	public function __construct(IProductRepo $productRepo, IUserRepo $userRepo)
+	public function __construct(IProductRepo $productRepo, IUserRepo $userRepo, IOrderRepo $orderRepo)
 	{
 		$this->userRepo = $userRepo;
 		$this->productRepo = $productRepo;
+		$this->orderRepo = $orderRepo;
 	}
 
 	/**
@@ -79,12 +82,14 @@ class OrderProductCreator
 			if (empty($seller)) {
 				$return['errors']['seller_id'] = ["Invalid 'seller_id'."];
 			}
+			
+			$draftOrder = $this->orderRepo->insertIfNotExist($customer->getId());
 
 			// #38 TODO: Should this me moved to Repo - it works kinda with DB?
 			$item = new OrderProduct();
+			
 
-			// #38 Collect customer's current 'draft' order where all the cart's items should be stored.
-			// Create if it doesn't exist yet.
+			
 			$item->setOrderId(1);
 
 			// #38 TODO: Should this be done better with SQL JOIN UPDATE?
@@ -99,7 +104,7 @@ class OrderProductCreator
 			$item->setSellerTitle('US');
 			$item->setProductTitle('T-shirt / US / Standard / First');
 			$item->setIsDomestic('y');
-			
+
 			// TODO: Pass to the Validator->validate() to check types.
 		}
 

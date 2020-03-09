@@ -282,7 +282,7 @@ class OrderProduct
 
     public function setDeletedAt(?\DateTimeInterface $deleted_at): self
     {
-        $this->deleted_at = $deleted_at;
+		 $this->deleted_at = $deleted_at;
 
         return $this;
     }

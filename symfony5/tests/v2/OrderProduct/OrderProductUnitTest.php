@@ -5,7 +5,8 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use \App\Entity\User;
 use \App\Entity\Product;
 use \App\Entity\v2\OrderProduct;
-use App\v2\OrderProductCreator;
+use \App\v2\OrderProductCreator;
+use \App\Interfaces\v2\IOrderRepo;
 
 /**
  * #38 Test that the order product data is stored in the database correctly.
@@ -26,7 +27,9 @@ class OrderProductUnitTest extends KernelTestCase
 		// alias it to access this service (via the alias)" `config/services.yaml` https://symfony.com/doc/current/service_container/alias_private.html#aliasing
 		$kernel = self::bootKernel();
 		$container = $kernel->getContainer();
+
 		$this->orderProductCreator = $container->get('test.' . OrderProductCreator::class);
+		$this->orderRepo = $container->get('test.' . IOrderRepo::class);
 
 		// Using database in tests https://stackoverflow.com/a/52014145 https://symfony.com/doc/master/testing/database.html#functional-testing-of-a-doctrine-repository
 		$this->entityManager = $container->get('doctrine')->getManager();
@@ -50,23 +53,35 @@ class OrderProductUnitTest extends KernelTestCase
 		$invalidCustomerAndProduct = $this->orderProductCreator->handle(['customer_id' => $customerId, "product_id" => $productId]);
 		$expected = ['status' => false, 'data' => null, 'errors' => ["customer_id" => ["Invalid 'customer_id'."], "product_id" => ["Invalid 'product_id'."]]];
 		$this->assertEquals($invalidCustomerAndProduct, $expected);
-		
+
 		$customerId = $users[2]->getId() + 1000000;
 		$productId = $users[1]->products[0]->getId();
 		$invalidCustomer = $this->orderProductCreator->handle(['customer_id' => $customerId, "product_id" => $productId]);
 		$expected = ['status' => false, 'data' => null, 'errors' => ["customer_id" => ["Invalid 'customer_id'."]]];
 		$this->assertEquals($invalidCustomer, $expected);
-		
+
 		$customerId = $users[2]->getId();
 		$productId = $users[1]->products[0]->getId() + 1000000;
 		$invalidProduct = $this->orderProductCreator->handle(['customer_id' => $customerId, "product_id" => $productId]);
 		$expected = ['status' => false, 'data' => null, 'errors' => ["product_id" => ["Invalid 'product_id'."]]];
 		$this->assertEquals($invalidProduct, $expected);
-		
+
+		// #38 #36 Create and get customer's draft order.
+		// TODO: This probably should be moved to a separate test file.
+		$this->assertNull($this->orderRepo->getCurrentDraft($users[0]->getId()), '#36 #38 New customer shouldnt have a draft order.');
+		$draftOrder = $this->orderRepo->insertIfNotExist($users[0]->getId());
+		$this->assertNotNull($draftOrder, '#36 #38 A draft order should be created if it doesnt exist.');
+		$this->assertEquals($this->orderRepo->getCurrentDraft($users[0]->getId())->getId(), $draftOrder->getId(), '#36 #38 Should find an existing one.');
+		$this->assertEquals($this->orderRepo->getCurrentDraft($users[0]->getId())->getId(), $this->orderRepo->insertIfNotExist($users[0]->getId())->getId(), "#36 #38 A new draft order shouldnt be created if there is already one.");
+
 		$customerId = $users[2]->getId();
 		$productId = $users[1]->products[0]->getId();
 		$validProduct = $this->orderProductCreator->handle(['customer_id' => $customerId, "product_id" => $productId]);
 		dd($validProduct);
+
+
+
+
 		$expected = ['status' => false, 'data' => null, 'errors' => ["product_id" => ["Invalid 'product_id'."]]];
 		$this->assertEquals($invalidProduct, $expected);
 
