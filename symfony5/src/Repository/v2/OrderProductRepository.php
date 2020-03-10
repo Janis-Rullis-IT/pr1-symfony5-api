@@ -153,10 +153,10 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
 			UPDATE `' . $tableName . '` a
 			JOIN v2_shipping_rate b
 			ON a.product_type = b.product_type
-			SET a.shipping_cost = b.cost
 			AND  a.is_domestic = b.is_domestic
 			AND  a.is_additional = b.is_additional
 			AND  a.is_express = b.is_express
+			SET a.shipping_cost = b.cost
 			WHERE a.order_id = :order_id
 			AND a.deleted_at IS NULL;';
 		$stmt = $conn->prepare($sql);

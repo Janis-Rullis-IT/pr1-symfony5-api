@@ -183,46 +183,93 @@ class OrderProductUnitTest extends KernelTestCase
 		$this->assertEquals($validProductUpdated2->getIsExpress(), NULL);
 		$this->assertEquals($validProductUpdated3->getIsExpress(), NULL);
 		
-		$this->assertEquals(false, $this->orderRepo->markExpressShipping($draftOrder, 'invalid'));
-		$this->assertEquals(true, $this->orderRepo->markExpressShipping($draftOrder, 'n'));
-		$this->assertEquals(false, $this->orderRepo->markExpressShipping($draftOrder, 'y'), 'Forbid setting `is_express` if is_domestic=y');
-		
-		$draftOrder->setIsDomestic('y');
-		$this->entityManager->flush();
-		$this->assertEquals(true, $this->orderProductRepo->markDomesticShipping($draftOrder));
-		$this->assertEquals(true, $this->orderRepo->markExpressShipping($draftOrder, 'n'));
-		$this->assertEquals(true, $this->orderRepo->markExpressShipping($draftOrder, 'y'));
-		$this->assertEquals(true, $this->orderProductRepo->markExpressShipping($draftOrder));
-		
-		// #39 #33 #34 Collect updated items. 
-		$validProductUpdated = $this->orderProductRepo->find($validProductUpdated->getId());
-		$validProductUpdated2 = $this->orderProductRepo->find($validProductUpdated2->getId());
-		$validProductUpdated3 = $this->orderProductRepo->find($validProductUpdated3->getId());
-		
-		$this->assertEquals('y', $draftOrder->getIsExpress());
-		$this->assertEquals($validProductUpdated->getIsDomestic(), 'y');
-		$this->assertEquals($validProductUpdated2->getIsDomestic(), 'y');
-		$this->assertEquals($validProductUpdated3->getIsDomestic(), 'y');
-
 		// #39 #33 #34 #37 Set order's product shipping costs based on the matching rates in the `v2_shipping_rates` table.
 		$this->assertEquals($validProductUpdated->getShippingCost(), NULL);
 		$this->assertEquals($validProductUpdated2->getShippingCost(), NULL);
 		$this->assertEquals($validProductUpdated3->getShippingCost(), NULL);
+
+		$this->assertEquals(false, $this->orderRepo->markExpressShipping($draftOrder, 'invalid'));
+		$this->assertEquals(true, $this->orderRepo->markExpressShipping($draftOrder, 'n'));
+		$this->assertEquals(false, $this->orderRepo->markExpressShipping($draftOrder, 'y'), 'Forbid setting `is_express` if is_domestic=y');
 		
-		$aa = $this->orderProductRepo->setShippingRates($draftOrder);
+		$this->assertEquals(true, $this->orderRepo->markExpressShipping($draftOrder, 'n'));
+		$this->assertEquals(true, $this->orderProductRepo->markExpressShipping($draftOrder));
+		$this->assertEquals(true, $this->orderProductRepo->setShippingRates($draftOrder));
 		
 		// #39 #33 #34 Collect updated items. 
 		$validProductUpdated = $this->orderProductRepo->find($validProductUpdated->getId());
 		$validProductUpdated2 = $this->orderProductRepo->find($validProductUpdated2->getId());
 		$validProductUpdated3 = $this->orderProductRepo->find($validProductUpdated3->getId());
 		
-		// #39 #33 #34 #37 Set order's product shipping costs based on the matching rates in the `v2_shipping_rates` table.
-		$this->assertNotNull($validProductUpdated->getShippingCost());
-		$this->assertNotNull($validProductUpdated2->getShippingCost());
-		$this->assertNotNull($validProductUpdated3->getShippingCost());	
-		
-		// #39 #33 #34 #37 Check that shipping prices are correct.
+		// #39 #33 #34 #37 T-shirt / International / Standard / First = 3$.
+		$this->assertEquals(300, $validProductUpdated->getShippingCost());
+		// #39 #33 #34 #37 T-shirt / International / Standard / Additional = 1.5$.
+		$this->assertEquals(150, $validProductUpdated2->getShippingCost());
+		// #39 #33 #34 #37 T-shirt / International / Standard / Additional = 1.5$.
+		$this->assertEquals(150, $validProductUpdated3->getShippingCost());
 
+		$draftOrder->setIsDomestic('y');
+		$this->entityManager->flush();
+		$this->assertEquals(true, $this->orderProductRepo->markDomesticShipping($draftOrder));
+		$this->assertEquals(true, $this->orderRepo->markExpressShipping($draftOrder, 'n'));
+		$this->assertEquals(true, $this->orderProductRepo->markExpressShipping($draftOrder));
+
+		// #39 #33 #34 Collect updated items. 
+		$validProductUpdated = $this->orderProductRepo->find($validProductUpdated->getId());
+		$validProductUpdated2 = $this->orderProductRepo->find($validProductUpdated2->getId());
+		$validProductUpdated3 = $this->orderProductRepo->find($validProductUpdated3->getId());
+
+		$this->assertEquals('n', $draftOrder->getIsExpress());
+		$this->assertEquals($validProductUpdated->getIsExpress(), 'n');
+		$this->assertEquals($validProductUpdated2->getIsExpress(), 'n');
+		$this->assertEquals($validProductUpdated3->getIsExpress(), 'n');
+		
+		$this->assertEquals(true, $this->orderProductRepo->setShippingRates($draftOrder));
+		
+		// #39 #33 #34 Collect updated items. 
+		$validProductUpdated = $this->orderProductRepo->find($validProductUpdated->getId());
+		$validProductUpdated2 = $this->orderProductRepo->find($validProductUpdated2->getId());
+		$validProductUpdated3 = $this->orderProductRepo->find($validProductUpdated3->getId());
+		
+		// #39 #33 #34 #37 T-shirt / US / Standard / First = 1$.
+		$this->assertEquals(100, $validProductUpdated->getShippingCost());
+		// #39 #33 #34 #37 T-shirt / US / Standard / Additional = 0.5$.
+		$this->assertEquals(50, $validProductUpdated2->getShippingCost());
+		// #39 #33 #34 #37 T-shirt / US / Standard / Additional = 0.5$.
+		$this->assertEquals(50, $validProductUpdated3->getShippingCost());
+
+		$this->assertEquals(true, $this->orderRepo->markExpressShipping($draftOrder, 'y'));
+		$this->assertEquals(true, $this->orderProductRepo->markExpressShipping($draftOrder));
+
+		// #39 #33 #34 Collect updated items. 
+		$validProductUpdated = $this->orderProductRepo->find($validProductUpdated->getId());
+		$validProductUpdated2 = $this->orderProductRepo->find($validProductUpdated2->getId());
+		$validProductUpdated3 = $this->orderProductRepo->find($validProductUpdated3->getId());
+
+		$this->assertEquals('y', $draftOrder->getIsExpress());
+		$this->assertEquals($validProductUpdated->getIsExpress(), 'y');
+		$this->assertEquals($validProductUpdated2->getIsExpress(), 'y');
+		$this->assertEquals($validProductUpdated3->getIsExpress(), 'y');
+
+		$this->assertEquals(true, $this->orderProductRepo->setShippingRates($draftOrder));
+
+		// #39 #33 #34 Collect updated items. 
+		$validProductUpdated = $this->orderProductRepo->find($validProductUpdated->getId());
+		$validProductUpdated2 = $this->orderProductRepo->find($validProductUpdated2->getId());
+		$validProductUpdated3 = $this->orderProductRepo->find($validProductUpdated3->getId());
+
+		// #39 #33 #34 #37 Set order's product shipping costs based on the matching rates in the `v2_shipping_rates` table.
+		// #39 #33 #34 #37 Check that shipping prices are correct.
+		// #39 #33 #34 #37 T-shirt / US / Express  / First = 10$.
+		$this->assertEquals(1000, $validProductUpdated->getShippingCost());
+		// #39 #33 #34 #37 T-shirt / US / Express Additional = 10$.
+		$this->assertEquals(1000, $validProductUpdated2->getShippingCost());
+		// #39 #33 #34 #37 T-shirt / US / Express Additional = 10$.
+		$this->assertEquals(1000, $validProductUpdated3->getShippingCost());
+
+
+		// #39 #33 #34 #37 TODO: Add `shipping_id` to `shipping_rates`.`id`.
+		;
 
 		// #38 #36 TODO: Add more use cases when work on the #39.
 		// #38 #36 TODO: Decide what to do with the existing tests that doesn't use DB. 
