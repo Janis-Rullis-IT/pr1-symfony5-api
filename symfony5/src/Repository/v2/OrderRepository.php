@@ -2,6 +2,7 @@
 namespace App\Repository\v2;
 
 use App\Entity\v2\Order;
+use App\Entity\v2\OrderProduct;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use \App\Interfaces\v2\IOrderRepo;
@@ -71,7 +72,7 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 	{
 		// #39 #33 #3 4TODO: Return more descriptive data.
 		// #39 #33 #34 Allow only y/n.
-		if (!in_array($isExpress, ['y', 'n'])){
+		if (!in_array($isExpress, ['y', 'n'])) {
 			return false;
 		}
 		// #39 #33 #34 Forbid setting `is_express` if is_domestic='y'.
@@ -83,5 +84,38 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 		$this->em->flush();
 
 		return true;
+	}
+
+	/**
+	 * #39 #33 #34 #37 Sum together costs from cart products and store in the order's costs.
+	 * https://github.com/janis-rullis/pr1/issues/33#issuecomment-595102860
+	 * 
+	 * @param Order $draftOrder
+	 * @return bool
+	 */
+	public function setOrderCostsFromCartItems(Order $draftOrder): bool
+	{
+		// #39 #33 #34 #37 TODO: Rewrite in a query builder format.
+		$orderProductTableName = $this->em->getClassMetadata(OrderProduct::class)->getTableName();
+		$orderTableName = $this->em->getClassMetadata(Order::class)->getTableName();
+
+		$conn = $this->em->getConnection();
+		$sql = '
+			UPDATE `' . $orderTableName . '` a
+			JOIN (
+				SELECT b.order_id, SUM(b.product_cost) as product_cost, SUM(b.shipping_cost) as shipping_cost, SUM(product_cost + shipping_cost) as  total_cost
+				FROM `' . $orderProductTableName . '` b
+				WHERE b.order_id = :order_id
+				GROUP BY b.order_id
+			) b
+			ON a.id = b.order_id
+			SET a.shipping_cost = b.shipping_cost, a.product_cost = b.product_cost, a.total_cost = b.total_cost;';
+		$stmt = $conn->prepare($sql);
+		$return = $stmt->execute(['order_id' => $draftOrder->getId()]);
+
+		$this->em->flush();
+		$this->em->clear();
+
+		return $return;
 	}
 }

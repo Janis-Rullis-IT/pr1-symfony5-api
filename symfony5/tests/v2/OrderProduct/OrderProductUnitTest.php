@@ -182,31 +182,46 @@ class OrderProductUnitTest extends KernelTestCase
 		$this->assertEquals($validProductUpdated->getIsExpress(), NULL);
 		$this->assertEquals($validProductUpdated2->getIsExpress(), NULL);
 		$this->assertEquals($validProductUpdated3->getIsExpress(), NULL);
-		
+
 		// #39 #33 #34 #37 Set order's product shipping costs based on the matching rates in the `v2_shipping_rates` table.
 		$this->assertEquals($validProductUpdated->getShippingCost(), NULL);
 		$this->assertEquals($validProductUpdated2->getShippingCost(), NULL);
 		$this->assertEquals($validProductUpdated3->getShippingCost(), NULL);
 
+		$this->assertEquals($draftOrder->getShippingCost(), NULL);
+		$this->assertEquals($draftOrder->getProductCost(), NULL);
+		$this->assertEquals($draftOrder->getTotalCost(), NULL);
+
 		$this->assertEquals(false, $this->orderRepo->markExpressShipping($draftOrder, 'invalid'));
 		$this->assertEquals(true, $this->orderRepo->markExpressShipping($draftOrder, 'n'));
 		$this->assertEquals(false, $this->orderRepo->markExpressShipping($draftOrder, 'y'), 'Forbid setting `is_express` if is_domestic=y');
-		
+
 		$this->assertEquals(true, $this->orderRepo->markExpressShipping($draftOrder, 'n'));
 		$this->assertEquals(true, $this->orderProductRepo->markExpressShipping($draftOrder));
 		$this->assertEquals(true, $this->orderProductRepo->setShippingRates($draftOrder));
 		
+		// #39 #33 #34 #37 Sum together costs from cart products and store in the order's costs.
+		$this->assertEquals(true, $this->orderRepo->setOrderCostsFromCartItems($draftOrder));
+
 		// #39 #33 #34 Collect updated items. 
+		$draftOrder = $this->orderRepo->find($draftOrder->getId());
 		$validProductUpdated = $this->orderProductRepo->find($validProductUpdated->getId());
 		$validProductUpdated2 = $this->orderProductRepo->find($validProductUpdated2->getId());
 		$validProductUpdated3 = $this->orderProductRepo->find($validProductUpdated3->getId());
-		
+
 		// #39 #33 #34 #37 T-shirt / International / Standard / First = 3$.
 		$this->assertEquals(300, $validProductUpdated->getShippingCost());
 		// #39 #33 #34 #37 T-shirt / International / Standard / Additional = 1.5$.
 		$this->assertEquals(150, $validProductUpdated2->getShippingCost());
 		// #39 #33 #34 #37 T-shirt / International / Standard / Additional = 1.5$.
 		$this->assertEquals(150, $validProductUpdated3->getShippingCost());
+
+		$shippingCostTotal = $validProductUpdated->getShippingCost() + $validProductUpdated2->getShippingCost() + $validProductUpdated3->getShippingCost();
+		$productCostTotal = $validProductUpdated->getProductCost() + $validProductUpdated2->getProductCost() + $validProductUpdated3->getProductCost();
+		$costTotal = $shippingCostTotal + $productCostTotal;
+		$this->assertEquals($draftOrder->getShippingCost(), $shippingCostTotal);
+		$this->assertEquals($draftOrder->getProductCost(), $productCostTotal);
+		$this->assertEquals($draftOrder->getTotalCost(), $costTotal);
 
 		$draftOrder->setIsDomestic('y');
 		$this->entityManager->flush();
@@ -223,20 +238,31 @@ class OrderProductUnitTest extends KernelTestCase
 		$this->assertEquals($validProductUpdated->getIsExpress(), 'n');
 		$this->assertEquals($validProductUpdated2->getIsExpress(), 'n');
 		$this->assertEquals($validProductUpdated3->getIsExpress(), 'n');
-		
+
 		$this->assertEquals(true, $this->orderProductRepo->setShippingRates($draftOrder));
 		
+		// #39 #33 #34 #37 Sum together costs from cart products and store in the order's costs.
+		$this->assertEquals(true, $this->orderRepo->setOrderCostsFromCartItems($draftOrder));
+
 		// #39 #33 #34 Collect updated items. 
+		$draftOrder = $this->orderRepo->find($draftOrder->getId());
 		$validProductUpdated = $this->orderProductRepo->find($validProductUpdated->getId());
 		$validProductUpdated2 = $this->orderProductRepo->find($validProductUpdated2->getId());
 		$validProductUpdated3 = $this->orderProductRepo->find($validProductUpdated3->getId());
-		
+
 		// #39 #33 #34 #37 T-shirt / US / Standard / First = 1$.
 		$this->assertEquals(100, $validProductUpdated->getShippingCost());
 		// #39 #33 #34 #37 T-shirt / US / Standard / Additional = 0.5$.
 		$this->assertEquals(50, $validProductUpdated2->getShippingCost());
 		// #39 #33 #34 #37 T-shirt / US / Standard / Additional = 0.5$.
 		$this->assertEquals(50, $validProductUpdated3->getShippingCost());
+		
+		$shippingCostTotal = $validProductUpdated->getShippingCost() + $validProductUpdated2->getShippingCost() + $validProductUpdated3->getShippingCost();
+		$productCostTotal = $validProductUpdated->getProductCost() + $validProductUpdated2->getProductCost() + $validProductUpdated3->getProductCost();
+		$costTotal = $shippingCostTotal + $productCostTotal;
+		$this->assertEquals($draftOrder->getShippingCost(), $shippingCostTotal);
+		$this->assertEquals($draftOrder->getProductCost(), $productCostTotal);
+		$this->assertEquals($draftOrder->getTotalCost(), $costTotal);		
 
 		$this->assertEquals(true, $this->orderRepo->markExpressShipping($draftOrder, 'y'));
 		$this->assertEquals(true, $this->orderProductRepo->markExpressShipping($draftOrder));
@@ -252,13 +278,16 @@ class OrderProductUnitTest extends KernelTestCase
 		$this->assertEquals($validProductUpdated3->getIsExpress(), 'y');
 
 		$this->assertEquals(true, $this->orderProductRepo->setShippingRates($draftOrder));
+		
+		// #39 #33 #34 #37 Sum together costs from cart products and store in the order's costs.
+		$this->assertEquals(true, $this->orderRepo->setOrderCostsFromCartItems($draftOrder));
 
 		// #39 #33 #34 Collect updated items. 
+		$draftOrder = $this->orderRepo->find($draftOrder->getId());
 		$validProductUpdated = $this->orderProductRepo->find($validProductUpdated->getId());
 		$validProductUpdated2 = $this->orderProductRepo->find($validProductUpdated2->getId());
 		$validProductUpdated3 = $this->orderProductRepo->find($validProductUpdated3->getId());
 
-		// #39 #33 #34 #37 Set order's product shipping costs based on the matching rates in the `v2_shipping_rates` table.
 		// #39 #33 #34 #37 Check that shipping prices are correct.
 		// #39 #33 #34 #37 T-shirt / US / Express  / First = 10$.
 		$this->assertEquals(1000, $validProductUpdated->getShippingCost());
@@ -266,7 +295,13 @@ class OrderProductUnitTest extends KernelTestCase
 		$this->assertEquals(1000, $validProductUpdated2->getShippingCost());
 		// #39 #33 #34 #37 T-shirt / US / Express Additional = 10$.
 		$this->assertEquals(1000, $validProductUpdated3->getShippingCost());
-
+		
+		$shippingCostTotal = $validProductUpdated->getShippingCost() + $validProductUpdated2->getShippingCost() + $validProductUpdated3->getShippingCost();
+		$productCostTotal = $validProductUpdated->getProductCost() + $validProductUpdated2->getProductCost() + $validProductUpdated3->getProductCost();
+		$costTotal = $shippingCostTotal + $productCostTotal;
+		$this->assertEquals($draftOrder->getShippingCost(), $shippingCostTotal);
+		$this->assertEquals($draftOrder->getProductCost(), $productCostTotal);
+		$this->assertEquals($draftOrder->getTotalCost(), $costTotal);
 
 		// #39 #33 #34 #37 TODO: Add `shipping_id` to `shipping_rates`.`id`.
 		;
