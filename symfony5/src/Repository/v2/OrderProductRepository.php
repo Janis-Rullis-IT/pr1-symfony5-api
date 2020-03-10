@@ -36,6 +36,7 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
 	 */
 	public function create(OrderProduct $item): OrderProduct
 	{
+		// persist() works as insert, without it works as update. https://www.doctrine-project.org/projects/doctrine-orm/en/2.7/tutorials/getting-started.html#updating-entities
 		$this->em->persist($item);
 		$this->em->flush();
 		return $item;
@@ -57,13 +58,13 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
 	public function makrCartsAdditionalProducts(Order $draftOrder): bool
 	{
 		// #39 #33 #34 Reset all cart's products as first. DQL because this is simple.
-		$qb = $this->createQueryBuilder('p');
-		$qb->update()
-			->where('p.order_id = :orderId')
-			->set('p.is_additional', ':isAdditional')
-			->setParameter('orderId', $draftOrder->getId())
-			->setParameter('isAdditional', 'n');
-		$qb->getQuery()->execute();
+		$this->createQueryBuilder('p')
+				->update()
+				->where('p.order_id = :orderId')
+				->set('p.is_additional', ':isAdditional')
+				->setParameter('orderId', $draftOrder->getId())
+				->setParameter('isAdditional', 'n')
+				->getQuery()->execute();
 
 		// #39 #33 #34 Raw becayse this is more complex.
 		$tableName = $this->em->getClassMetadata(OrderProduct::class)->getTableName();
@@ -84,6 +85,29 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
 		// https://www.doctrine-project.org/projects/doctrine-orm/en/2.7/reference/working-with-objects.html#detaching-entities
 		// https://www.doctrine-project.org/api/orm/latest/Doctrine/ORM/EntityManager.html#method_clear
 		// https://www.doctrine-project.org/projects/doctrine-orm/en/2.7/reference/batch-processing.html#iterating-results
+		$this->em->flush();
+		$this->em->clear();
+
+		return $return;
+	}
+
+	/**
+	 * #39 #33 #34 Mark cart's products as domestic or international (from the order).
+	 * The purpose of this field `is_domestic` is to be used for matching a row in the `shipping_rates` table.
+	 * 
+	 * @param Order $draftOrder
+	 * @return bool
+	 */
+	public function markDomesticShiping(Order $draftOrder): bool
+	{
+		$return = $this->createQueryBuilder('p')
+				->update()
+				->where('p.order_id = :orderId')
+				->set('p.is_domestic', ':isDomestic')
+				->setParameter('orderId', $draftOrder->getId())
+				->setParameter('isDomestic', $draftOrder->getIsDomestic())
+				->getQuery()->execute() >= 0;
+		
 		$this->em->flush();
 		$this->em->clear();
 

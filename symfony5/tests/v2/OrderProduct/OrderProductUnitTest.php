@@ -139,6 +139,46 @@ class OrderProductUnitTest extends KernelTestCase
 		$this->assertEquals($validProductUpdated2->getIsAdditional(), 'y');
 		$this->assertEquals($validProductUpdated3->getIsAdditional(), 'y');
 
+		// #39 #33 #34 Mark the order as domestic or international.
+		$this->assertEquals($validProductUpdated->getIsDomestic(), NULL);
+		$this->assertEquals($validProductUpdated2->getIsDomestic(), NULL);
+		$this->assertEquals($validProductUpdated3->getIsDomestic(), NULL);
+
+		$this->assertEquals(NULL, $draftOrder->getIsDomestic());
+		$draftOrder->setIsDomestic('y');
+		$this->entityManager->flush();
+
+		$this->assertEquals(true, $this->orderProductRepo->markDomesticShiping($draftOrder));
+		$this->assertEquals($validProductUpdated->getOrderId(), $draftOrder->getId());
+		
+		// #39 #33 #34 Collect updated items. 
+		$validProductUpdated = $this->orderProductRepo->find($validProductUpdated->getId());
+		$validProductUpdated2 = $this->orderProductRepo->find($validProductUpdated2->getId());
+		$validProductUpdated3 = $this->orderProductRepo->find($validProductUpdated3->getId());
+
+		// #39 #33 #34 Make sure they are marked correctly
+		// TODO: Move all assertEquals() values to left side - that's the comparison side.
+		$this->assertEquals($validProductUpdated->getIsDomestic(), 'y');
+		$this->assertEquals($validProductUpdated2->getIsDomestic(), 'y');
+		$this->assertEquals($validProductUpdated3->getIsDomestic(), 'y');
+
+		$draftOrder->setIsDomestic('n');
+		$this->entityManager->flush();
+
+		$this->assertEquals(true, $this->orderProductRepo->markDomesticShiping($draftOrder));
+
+		// #39 #33 #34 Collect updated items. 
+		$validProductUpdated = $this->orderProductRepo->find($validProduct['data']->getId());
+		$validProductUpdated2 = $this->orderProductRepo->find($validProduct2['data']->getId());
+		$validProductUpdated3 = $this->orderProductRepo->find($validProduct3['data']->getId());
+
+		// #39 #33 #34 Make sure they are marked correctly
+		// TODO: Move all assertEquals() values to left side - that's the comparison side.
+		$this->assertEquals($validProductUpdated->getIsDomestic(), 'n');
+		$this->assertEquals($validProductUpdated2->getIsDomestic(), 'n');
+		$this->assertEquals($validProductUpdated3->getIsDomestic(), 'n');
+
+
 
 		// #38 #36 TODO: Add more use cases when work on the #39.
 		// #38 #36 TODO: Decide what to do with the existing tests that doesn't use DB. 
