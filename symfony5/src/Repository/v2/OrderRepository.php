@@ -58,4 +58,30 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 				"status" => 'draft'
 		]);
 	}
+
+	/**
+	 * #39 #33 #34 Mark order's shipping as express or standard.
+	 * The purpose of this field `is_express` is to be used for matching a row in the `shipping_rates` table.
+	 * 
+	 * @param Order $draftOrder
+	 * @param string $isExpress
+	 * @return bool
+	 */
+	public function markExpressShipping(Order $draftOrder, string $isExpress): bool
+	{
+		// #39 #33 #3 4TODO: Return more descriptive data.
+		// #39 #33 #34 Allow only y/n.
+		if (!in_array($isExpress, ['y', 'n'])){
+			return false;
+		}
+		// #39 #33 #34 Forbid setting `is_express` if is_domestic='y'.
+		if ($isExpress === 'y' && $draftOrder->getIsDomestic() === 'n') {
+			return false;
+		}
+
+		$draftOrder->setIsExpress($isExpress);
+		$this->em->flush();
+
+		return true;
+	}
 }

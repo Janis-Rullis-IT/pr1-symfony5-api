@@ -144,20 +144,20 @@ class OrderProductUnitTest extends KernelTestCase
 		$this->assertEquals($validProductUpdated2->getIsDomestic(), NULL);
 		$this->assertEquals($validProductUpdated3->getIsDomestic(), NULL);
 
+		// #39 #33 #34 TODO: Add here the value collection from the address parser.
 		$this->assertEquals(NULL, $draftOrder->getIsDomestic());
 		$draftOrder->setIsDomestic('y');
 		$this->entityManager->flush();
 
-		$this->assertEquals(true, $this->orderProductRepo->markDomesticShiping($draftOrder));
+		$this->assertEquals(true, $this->orderProductRepo->markDomesticShipping($draftOrder));
 		$this->assertEquals($validProductUpdated->getOrderId(), $draftOrder->getId());
-		
+
 		// #39 #33 #34 Collect updated items. 
 		$validProductUpdated = $this->orderProductRepo->find($validProductUpdated->getId());
 		$validProductUpdated2 = $this->orderProductRepo->find($validProductUpdated2->getId());
 		$validProductUpdated3 = $this->orderProductRepo->find($validProductUpdated3->getId());
 
 		// #39 #33 #34 Make sure they are marked correctly
-		// TODO: Move all assertEquals() values to left side - that's the comparison side.
 		$this->assertEquals($validProductUpdated->getIsDomestic(), 'y');
 		$this->assertEquals($validProductUpdated2->getIsDomestic(), 'y');
 		$this->assertEquals($validProductUpdated3->getIsDomestic(), 'y');
@@ -165,19 +165,63 @@ class OrderProductUnitTest extends KernelTestCase
 		$draftOrder->setIsDomestic('n');
 		$this->entityManager->flush();
 
-		$this->assertEquals(true, $this->orderProductRepo->markDomesticShiping($draftOrder));
+		$this->assertEquals(true, $this->orderProductRepo->markDomesticShipping($draftOrder));
 
 		// #39 #33 #34 Collect updated items. 
-		$validProductUpdated = $this->orderProductRepo->find($validProduct['data']->getId());
-		$validProductUpdated2 = $this->orderProductRepo->find($validProduct2['data']->getId());
-		$validProductUpdated3 = $this->orderProductRepo->find($validProduct3['data']->getId());
+		$validProductUpdated = $this->orderProductRepo->find($validProductUpdated->getId());
+		$validProductUpdated2 = $this->orderProductRepo->find($validProductUpdated2->getId());
+		$validProductUpdated3 = $this->orderProductRepo->find($validProductUpdated3->getId());
 
 		// #39 #33 #34 Make sure they are marked correctly
-		// TODO: Move all assertEquals() values to left side - that's the comparison side.
 		$this->assertEquals($validProductUpdated->getIsDomestic(), 'n');
 		$this->assertEquals($validProductUpdated2->getIsDomestic(), 'n');
 		$this->assertEquals($validProductUpdated3->getIsDomestic(), 'n');
 
+		// #39 #33 #34 Mark order's shipping as express or standard.
+		$this->assertEquals(NULL, $draftOrder->getIsExpress());
+		$this->assertEquals($validProductUpdated->getIsExpress(), NULL);
+		$this->assertEquals($validProductUpdated2->getIsExpress(), NULL);
+		$this->assertEquals($validProductUpdated3->getIsExpress(), NULL);
+		
+		$this->assertEquals(false, $this->orderRepo->markExpressShipping($draftOrder, 'invalid'));
+		$this->assertEquals(true, $this->orderRepo->markExpressShipping($draftOrder, 'n'));
+		$this->assertEquals(false, $this->orderRepo->markExpressShipping($draftOrder, 'y'), 'Forbid setting `is_express` if is_domestic=y');
+		
+		$draftOrder->setIsDomestic('y');
+		$this->entityManager->flush();
+		$this->assertEquals(true, $this->orderProductRepo->markDomesticShipping($draftOrder));
+		$this->assertEquals(true, $this->orderRepo->markExpressShipping($draftOrder, 'n'));
+		$this->assertEquals(true, $this->orderRepo->markExpressShipping($draftOrder, 'y'));
+		$this->assertEquals(true, $this->orderProductRepo->markExpressShipping($draftOrder));
+		
+		// #39 #33 #34 Collect updated items. 
+		$validProductUpdated = $this->orderProductRepo->find($validProductUpdated->getId());
+		$validProductUpdated2 = $this->orderProductRepo->find($validProductUpdated2->getId());
+		$validProductUpdated3 = $this->orderProductRepo->find($validProductUpdated3->getId());
+		
+		$this->assertEquals('y', $draftOrder->getIsExpress());
+		$this->assertEquals($validProductUpdated->getIsDomestic(), 'y');
+		$this->assertEquals($validProductUpdated2->getIsDomestic(), 'y');
+		$this->assertEquals($validProductUpdated3->getIsDomestic(), 'y');
+
+		// #39 #33 #34 #37 Set order's product shipping costs based on the matching rates in the `v2_shipping_rates` table.
+		$this->assertEquals($validProductUpdated->getShippingCost(), NULL);
+		$this->assertEquals($validProductUpdated2->getShippingCost(), NULL);
+		$this->assertEquals($validProductUpdated3->getShippingCost(), NULL);
+		
+		$aa = $this->orderProductRepo->setShippingRates($draftOrder);
+		
+		// #39 #33 #34 Collect updated items. 
+		$validProductUpdated = $this->orderProductRepo->find($validProductUpdated->getId());
+		$validProductUpdated2 = $this->orderProductRepo->find($validProductUpdated2->getId());
+		$validProductUpdated3 = $this->orderProductRepo->find($validProductUpdated3->getId());
+		
+		// #39 #33 #34 #37 Set order's product shipping costs based on the matching rates in the `v2_shipping_rates` table.
+		$this->assertNotNull($validProductUpdated->getShippingCost());
+		$this->assertNotNull($validProductUpdated2->getShippingCost());
+		$this->assertNotNull($validProductUpdated3->getShippingCost());	
+		
+		// #39 #33 #34 #37 Check that shipping prices are correct.
 
 
 		// #38 #36 TODO: Add more use cases when work on the #39.

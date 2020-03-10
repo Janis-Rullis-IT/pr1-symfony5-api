@@ -59,14 +59,14 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
 	{
 		// #39 #33 #34 Reset all cart's products as first. DQL because this is simple.
 		$this->createQueryBuilder('p')
-				->update()
-				->where('p.order_id = :orderId')
-				->set('p.is_additional', ':isAdditional')
-				->setParameter('orderId', $draftOrder->getId())
-				->setParameter('isAdditional', 'n')
-				->getQuery()->execute();
+			->update()
+			->where('p.order_id = :orderId')
+			->set('p.is_additional', ':isAdditional')
+			->setParameter('orderId', $draftOrder->getId())
+			->setParameter('isAdditional', 'n')
+			->getQuery()->execute();
 
-		// #39 #33 #34 Raw becayse this is more complex.
+		// #39 #33 #34 Raw because this is more complex.
 		$tableName = $this->em->getClassMetadata(OrderProduct::class)->getTableName();
 		$conn = $this->em->getConnection();
 		$sql = '
@@ -98,7 +98,7 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
 	 * @param Order $draftOrder
 	 * @return bool
 	 */
-	public function markDomesticShiping(Order $draftOrder): bool
+	public function markDomesticShipping(Order $draftOrder): bool
 	{
 		$return = $this->createQueryBuilder('p')
 				->update()
@@ -107,7 +107,61 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
 				->setParameter('orderId', $draftOrder->getId())
 				->setParameter('isDomestic', $draftOrder->getIsDomestic())
 				->getQuery()->execute() >= 0;
-		
+
+		$this->em->flush();
+		$this->em->clear();
+
+		return $return;
+	}
+
+	/**
+	 * #39 #33 #34 Mark cart's product shipping as express or standard. 
+	 * The purpose of this field `is_express` is to be used for matching a row in the `shipping_rates` table.
+	 * 
+	 * @param Order $draftOrder
+	 * @return bool
+	 */
+	public function markExpressShipping(Order $draftOrder): bool
+	{
+		$return = $this->createQueryBuilder('p')
+				->update()
+				->where('p.order_id = :orderId')
+				->set('p.is_express', ':isExpress')
+				->setParameter('orderId', $draftOrder->getId())
+				->setParameter('isExpress', $draftOrder->getIsExpress())
+				->getQuery()->execute() >= 0;
+
+		$this->em->flush();
+		$this->em->clear();
+
+		return $return;
+	}
+
+	/**
+	 * #39 #33 #34 #37 Set order's product shipping costs based on the 
+	 * matching rates in the `v2_shipping_rates` table.
+	 * https://github.com/janis-rullis/pr1/issues/34#issuecomment-595221093
+	 * 
+	 * @param Order $draftOrder
+	 */
+	public function setShippingRates(Order $draftOrder): bool
+	{
+		// #39 #33 #34 #37 TODO: Rewrite in a query builder format.
+		$tableName = $this->em->getClassMetadata(OrderProduct::class)->getTableName();
+		$conn = $this->em->getConnection();
+		$sql = '
+			UPDATE `' . $tableName . '` a
+			JOIN v2_shipping_rate b
+			ON a.product_type = b.product_type
+			SET a.shipping_cost = b.cost
+			AND  a.is_domestic = b.is_domestic
+			AND  a.is_additional = b.is_additional
+			AND  a.is_express = b.is_express
+			WHERE a.order_id = :order_id
+			AND a.deleted_at IS NULL;';
+		$stmt = $conn->prepare($sql);
+		$return = $stmt->execute(['order_id' => $draftOrder->getId()]);
+
 		$this->em->flush();
 		$this->em->clear();
 
