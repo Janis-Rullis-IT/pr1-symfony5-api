@@ -4,9 +4,9 @@ namespace App\Tests\v2\OrderProduct;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use \App\Entity\User;
 use \App\Entity\Product;
-use \App\Entity\v2\OrderProduct;
 use \App\v2\OrderProductCreator;
 use \App\Interfaces\v2\IOrderRepo;
+use \App\Interfaces\v2\IOrderProductRepo;
 
 /**
  * #38 Test that the order product data is stored in the database correctly.
@@ -15,11 +15,11 @@ use \App\Interfaces\v2\IOrderRepo;
 class OrderProductUnitTest extends KernelTestCase
 {
 
-	/**
-	 * @var \Doctrine\ORM\EntityManager
-	 */
+	private $c;
 	private $entityManager;
 	private $orderProductCreator;
+	private $orderRepo;
+	private $orderProductRepo;
 
 	protected function setUp(): void
 	{
@@ -27,13 +27,14 @@ class OrderProductUnitTest extends KernelTestCase
 		// "However, if a service has been marked as private, you can still 
 		// alias it to access this service (via the alias)" `config/services.yaml` https://symfony.com/doc/current/service_container/alias_private.html#aliasing
 		$kernel = self::bootKernel();
-		$container = $kernel->getContainer();
+		$this->c = $kernel->getContainer();
 
-		$this->orderProductCreator = $container->get('test.' . OrderProductCreator::class);
-		$this->orderRepo = $container->get('test.' . IOrderRepo::class);
+		$this->orderProductCreator = $this->c->get('test.' . OrderProductCreator::class);
+		$this->orderRepo = $this->c->get('test.' . IOrderRepo::class);
+		$this->orderProductRepo = $this->c->get('test.' . IOrderProductRepo::class);
 
 		// Using database in tests https://stackoverflow.com/a/52014145 https://symfony.com/doc/master/testing/database.html#functional-testing-of-a-doctrine-repository
-		$this->entityManager = $container->get('doctrine')->getManager();
+		$this->entityManager = $this->c->get('doctrine')->getManager();
 
 		// TODO: Truncate specific tables before each run.
 	}
@@ -77,6 +78,8 @@ class OrderProductUnitTest extends KernelTestCase
 
 		$customerId = $users[2]->getId();
 		$productId = $users[1]->products[0]->getId();
+
+		// #39 #33 #34 TODO: MAybe this should be optimized.
 		$validProduct = $this->orderProductCreator->handle(['customer_id' => $customerId, "product_id" => $productId]);
 		$this->assertEquals($validProduct['errors'], []);
 		$this->assertEquals($validProduct['status'], true);
@@ -88,8 +91,55 @@ class OrderProductUnitTest extends KernelTestCase
 		$this->assertEquals($validProduct['data']->getProductCost(), $users[1]->products[0]->getCost());
 		$this->assertEquals($validProduct['data']->getProductType(), $users[1]->products[0]->getType());
 		$this->assertTrue($validProduct['data']->getId() > 0);
-		$this->assertTrue($validProduct['data']->getOrderId() > 0);
-		
+		$this->assertEquals($validProduct['data']->getOrderId(), $draftOrder->getId());
+		$this->assertEquals($validProduct['data']->getIsAdditional(), NULL);
+
+		// #39 #33 #34 Add additional products  (ex., 2 pieces of the same t-shirt, 2nd is additional).
+		$validProduct2 = $this->orderProductCreator->handle(['customer_id' => $customerId, "product_id" => $productId]);
+		$this->assertEquals($validProduct2['errors'], []);
+		$this->assertEquals($validProduct2['status'], true);
+		$this->assertEquals($validProduct2['data']->getCustomerId(), $customerId);
+		$this->assertEquals($validProduct2['data']->getSellerId(), $users[1]->getId());
+		$this->assertEquals($validProduct2['data']->getSellerTitle(), $users[1]->getName() . ' ' . $users[1]->getSurname());
+		$this->assertEquals($validProduct2['data']->getProductId(), $productId);
+		$this->assertEquals($validProduct2['data']->getProductTitle(), $users[1]->products[0]->getTitle());
+		$this->assertEquals($validProduct2['data']->getProductCost(), $users[1]->products[0]->getCost());
+		$this->assertEquals($validProduct2['data']->getProductType(), $users[1]->products[0]->getType());
+		$this->assertTrue($validProduct2['data']->getId() > 0);
+		$this->assertEquals($validProduct2['data']->getOrderId(), $draftOrder->getId());
+		$this->assertNotEquals($validProduct['data']->getId(), $validProduct2['data']->getId());
+		$this->assertEquals($validProduct2['data']->getIsAdditional(), NULL);
+
+		$validProduct3 = $this->orderProductCreator->handle(['customer_id' => $customerId, "product_id" => $productId]);
+		$this->assertEquals($validProduct3['errors'], []);
+		$this->assertEquals($validProduct3['status'], true);
+		$this->assertEquals($validProduct3['data']->getCustomerId(), $customerId);
+		$this->assertEquals($validProduct3['data']->getSellerId(), $users[1]->getId());
+		$this->assertEquals($validProduct3['data']->getSellerTitle(), $users[1]->getName() . ' ' . $users[1]->getSurname());
+		$this->assertEquals($validProduct3['data']->getProductId(), $productId);
+		$this->assertEquals($validProduct3['data']->getProductTitle(), $users[1]->products[0]->getTitle());
+		$this->assertEquals($validProduct3['data']->getProductCost(), $users[1]->products[0]->getCost());
+		$this->assertEquals($validProduct3['data']->getProductType(), $users[1]->products[0]->getType());
+		$this->assertTrue($validProduct3['data']->getId() > 0);
+		$this->assertEquals($validProduct3['data']->getOrderId(), $draftOrder->getId());
+		$this->assertNotEquals($validProduct2['data']->getId(), $validProduct3['data']->getId());
+		$this->assertEquals($validProduct3['data']->getIsAdditional(), NULL);
+
+		// #39 #33 #34 Mark additional products (ex., 2 pieces of the same t-shirt, 2nd is additional).
+		$this->assertTrue($this->orderProductRepo->makrCartsAdditionalProducts($draftOrder));
+
+		// #39 #33 #34 Collect updated items. 
+		$validProductUpdated = $this->orderProductRepo->find($validProduct['data']->getId());
+		$validProductUpdated2 = $this->orderProductRepo->find($validProduct2['data']->getId());
+		$validProductUpdated3 = $this->orderProductRepo->find($validProduct3['data']->getId());
+
+		// #39 #33 #34 Make sure they are marked correctly
+		// TODO: Move all assertEquals() values to left side - that's the comparison side.
+		$this->assertEquals($validProductUpdated->getIsAdditional(), 'n');
+		$this->assertEquals($validProductUpdated2->getIsAdditional(), 'y');
+		$this->assertEquals($validProductUpdated3->getIsAdditional(), 'y');
+
+
 		// #38 #36 TODO: Add more use cases when work on the #39.
 		// #38 #36 TODO: Decide what to do with the existing tests that doesn't use DB. 
 		// On one hand they are currently broken and on the other hand they should be updated
