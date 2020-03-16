@@ -208,4 +208,6 @@ class Order
 
         return $this;
     }
+	
+	public static $requireds = ['is_domestic', 'is_express'];
 }
