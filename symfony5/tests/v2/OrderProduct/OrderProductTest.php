@@ -18,20 +18,14 @@ class OrderProductTest extends WebTestCase
 	/**
 	 * #40 Invalid parameters.
 	 */
-	public function testInvalidReq()
+	public function testInvalidequest()
 	{
 		$client = static::createClient();
 
 		$customerId = $this->impossibleInt;
 		$productId = $this->impossibleInt;
-
-//		#40 Unusual case.,
-//		$uri = '/users/3147483648/v2/cart/3147483648';
-//		$uri2 = '​/users​/' . $customerId . '​/v2​/cart​/' . $productId;
-//		string(36) "/users/3147483648/v2/cart/3147483648"
-//		string(51) "​/users​/3147483648​/v2​/cart​/3147483648"
-
 		$uri = '/users/' . $customerId . '/v2/cart/' . $productId;
+		
 		$client->request('POST', $uri);
 		$this->assertEquals(Response::HTTP_NOT_FOUND, $client->getResponse()->getStatusCode());
 		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
@@ -48,8 +42,8 @@ class OrderProductTest extends WebTestCase
 
 		$customerId = $this->impossibleInt;
 		$productId = $user->products[0]->getId();
-
 		$uri = '/users/' . $customerId . '/v2/cart/' . $productId;
+		
 		$client->request('POST', $uri);
 		$this->assertEquals(Response::HTTP_NOT_FOUND, $client->getResponse()->getStatusCode());
 		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
@@ -66,8 +60,26 @@ class OrderProductTest extends WebTestCase
 
 		$customerId = $user->getId();
 		$productId = $this->impossibleInt;
-
 		$uri = '/users/' . $customerId . '/v2/cart/' . $productId;
+		
+		$client->request('POST', $uri);
+		$this->assertEquals(Response::HTTP_NOT_FOUND, $client->getResponse()->getStatusCode());
+		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
+		$this->assertEquals(['id' => 'Invalid product.'], $responseBody);
+	}
+	
+	/**
+	 * #40 Valid request.
+	 */
+	public function testValidRequest()
+	{
+		$client = static::createClient();
+		$user = $this->insertUsersAndProds($client)[0];
+
+		$customerId = $user->getId();
+		$productId = $user->products[0]->getId();
+		$uri = '/users/' . $customerId . '/v2/cart/' . $productId;
+		
 		$client->request('POST', $uri);
 		$this->assertEquals(Response::HTTP_NOT_FOUND, $client->getResponse()->getStatusCode());
 		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
@@ -138,74 +150,4 @@ class OrderProductTest extends WebTestCase
 		$this->entityManager->flush();
 		return $product;
 	}
-//
-//	/**
-//	 * #38 Create 3 users with 1 mug and 1 shirt.
-//	 * 
-//	 * TODO: Replace this approach with fixtures or creators that are designed not just for access from controllers.
-//	 * 
-//	 * @return User array
-//	 */
-//	private function insertUsersAndProds($client, int $count = 1)
-//	{
-//		// #38 Create 3 users.
-//		$users = [];
-//		for ($i = 0; $i < $count; $i++) {
-//
-//			$users[$i] = $user = $this->createUser($client, $i);
-//
-//			// #38 Create 1 mug and 1 shirt for each user.
-//			$use['products'] = [];
-//			$productTypes = ['t-shirt', 'mug'];
-//			foreach ($productTypes as $productType) {
-//				$use['products'][] = $this->createUserProduct($client, $user, $productType);
-//			}
-//		}
-//		return $users;
-//	}
-//
-//	/**
-//	 * #40 Create a user.
-//	 * 
-//	 * @param type $i
-//	 * @return array
-//	 */
-//	private function createUser($client, $i): array
-//	{
-//		$letters = str_split('adfhgjkunpel');
-//		$client->request(
-//			'POST',
-//			'/users',
-//			array(),
-//			array(),
-//			array('CONTENT_TYPE' => 'application/json'),
-//			'{"name":"John","surname":"Doe ' . $letters[$i] . '"}'
-//		);
-//		return json_decode($client->getResponse()->getContent(), TRUE);
-//	}
-//
-//	/**
-//	 * #40 Create a product.
-//	 * 
-//	 * @param array $user
-//	 * @param string $productType
-//	 * @return array
-//	 */
-//	private function createUserProduct($client, array $user, string $productType): array
-//	{
-//		$title = $user['id'] . ' ' . $user['name'] . ' ' . $user['surname'] . ' ' . $productType;
-//		$json = '{}';
-////			'{"type":"t-shirt","title":"' . $title . '", "sku":"' . $title . '", "cost":1000}';
-//		$client->request(
-//			'POST',
-//			'/users/1300/products',
-//			array(),
-//			array(),
-//			array('CONTENT_TYPE' => 'application/json'), $json
-//		);
-////		dd($client);
-//		dd($client->getResponse()->getStatusCode());
-//		dd(json_decode($client->getResponse()->getContent(), TRUE));
-//		return json_decode($client->getResponse()->getContent(), TRUE);
-//	}
 }
