@@ -24,8 +24,8 @@ class OrderProductTest extends WebTestCase
 
 		$customerId = $this->impossibleInt;
 		$productId = $this->impossibleInt;
-		$uri = '/users/' . $customerId . '/v2/cart/' . $productId;
-		
+		$uri = '/users/v2/' . $customerId . '/cart/' . $productId;
+
 		$client->request('POST', $uri);
 		$this->assertEquals(Response::HTTP_NOT_FOUND, $client->getResponse()->getStatusCode());
 		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
@@ -42,8 +42,8 @@ class OrderProductTest extends WebTestCase
 
 		$customerId = $this->impossibleInt;
 		$productId = $user->products[0]->getId();
-		$uri = '/users/' . $customerId . '/v2/cart/' . $productId;
-		
+		$uri = '/users/v2/' . $customerId . '/cart/' . $productId;
+
 		$client->request('POST', $uri);
 		$this->assertEquals(Response::HTTP_NOT_FOUND, $client->getResponse()->getStatusCode());
 		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
@@ -60,14 +60,14 @@ class OrderProductTest extends WebTestCase
 
 		$customerId = $user->getId();
 		$productId = $this->impossibleInt;
-		$uri = '/users/' . $customerId . '/v2/cart/' . $productId;
-		
+		$uri = '/users/v2/' . $customerId . '/cart/' . $productId;
+
 		$client->request('POST', $uri);
 		$this->assertEquals(Response::HTTP_NOT_FOUND, $client->getResponse()->getStatusCode());
 		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
 		$this->assertEquals(['id' => 'Invalid product.'], $responseBody);
 	}
-	
+
 	/**
 	 * #40 Valid request.
 	 */
@@ -78,12 +78,17 @@ class OrderProductTest extends WebTestCase
 
 		$customerId = $user->getId();
 		$productId = $user->products[0]->getId();
-		$uri = '/users/' . $customerId . '/v2/cart/' . $productId;
-		
+		$uri = '/users/v2/' . $customerId . '/cart/' . $productId;
+
 		$client->request('POST', $uri);
-		$this->assertEquals(Response::HTTP_NOT_FOUND, $client->getResponse()->getStatusCode());
+		$this->assertEquals(Response::HTTP_CREATED, $client->getResponse()->getStatusCode());
+
 		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
-		$this->assertEquals(['id' => 'Invalid product.'], $responseBody);
+		$this->assertNotEmpty($responseBody['id']);
+		$this->assertEquals($productId, $responseBody['productId']);
+		$this->assertEquals($customerId, $responseBody['customerId']);
+
+		// #40 More thorough tests regarding this are located in OrderProductUnitTest.
 	}
 
 	/**
