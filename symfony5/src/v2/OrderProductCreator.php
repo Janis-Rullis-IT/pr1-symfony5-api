@@ -26,8 +26,9 @@ class OrderProductCreator
 	/**
 	 * #40 #38 Add a product to customer's cart (draft order).
 	 * 
-	 * @param array $data
-	 * @return array
+	 * @param int $customerId
+	 * @param int $productId
+	 * @return OrderProduct
 	 */
 	public function handle(int $customerId, int $productId): OrderProduct
 	{

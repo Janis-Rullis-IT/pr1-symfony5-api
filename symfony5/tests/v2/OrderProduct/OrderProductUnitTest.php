@@ -170,7 +170,7 @@ class OrderProductUnitTest extends KernelTestCase
 	}
 
 	/**
-	 * #40 Test OrderProductCreator exceptions.
+	 * #40 Invalid params.
 	 */
 	public function testOrderProductCreatorExceptions()
 	{
@@ -513,7 +513,7 @@ class OrderProductUnitTest extends KernelTestCase
 	}
 
 	/**
-	 * #40
+	 * #40 Create a user.
 	 * 
 	 * @param type $i
 	 * @return User
@@ -530,7 +530,7 @@ class OrderProductUnitTest extends KernelTestCase
 	}
 
 	/**
-	 * #40
+	 * #40 Create a product.
 	 * 
 	 * @param User $user
 	 * @param string $productType
