@@ -23,6 +23,7 @@ class Product
     const NO_TITLE = "title key not set";
     const NO_SKU = "sku key not set";
     const NO_COST = "cost key not set";
+	const INVALID = "Invalid product.";
     const INVALID_TYPE = "Invalid type";
     const INVALID_TITLE = "Invalid title. It can only consist of letters, digits, dash(-) and space";
     const INVALID_SKU = "Invalid SKU. It must be unique and cannot be empty";

@@ -24,73 +24,31 @@ class OrderProductCreator
 	}
 
 	/**
-	 * #38 Validate, prepare and write to db.
+	 * #40 #38 Add a product to customer's cart (draft order).
 	 * 
 	 * @param array $data
 	 * @return array
 	 */
-	public function handle(array $data): array
+	public function handle(int $customerId, int $productId): OrderProduct
 	{
-		// #38 Validate and prepare the item.
-		$return = $this->prepare($data);
-
-		// #38 Write data to db only after it's validated and prepared.
-		if (empty($return['errors']) && !empty($return['data'])) {
-
-			$return['data'] = $this->orderProductRepo->create($return['data']);
-		}
-		return $return;
+		$orderProduct = $this->prepare($customerId, $productId);
+		return $this->orderProductRepo->create($orderProduct);
 	}
 
 	/**
 	 * #38 Validate and prepare the item.
 	 * 
-	 * @param array $data
-	 * @return array
+	 * @param int $customerId
+	 * @param int $productId
+	 * @return OrderProduct
 	 */
-	public function prepare(array $data): array
+	public function prepare(int $customerId, int $productId): OrderProduct
 	{
-		$return = ['errors' => [], 'status' => false, 'data' => null];
-		$validator = new \App\v2\OrderProductValidator;
-
-		// #38 Check if all required fields are passed.
-		$status = $validator->hasRequiredKeys($data);
-		if ($status !== true) {
-			$return['errors'] = $status;
-			return $return;
-		}
-
-		// TODO: Should this be moved to the Validator?
-		// #38 Check if they exist in the database. Collect seller's and product's information.
-		$customer = $this->userRepo->find($data['customer_id']);
-		if (empty($customer)) {
-			$return['errors']['customer_id'] = ["Invalid 'customer_id'."];
-		}
-		$product = $this->productRepo->find($data['product_id']);
-		if (empty($product)) {
-			$return['errors']['product_id'] = ["Invalid 'product_id'."];
-		}
-
-		// #38 Prepare the data for writing in the database.
-		if (empty($return['errors'])) {
-
-			$seller = $this->userRepo->find($product->getOwnerId());
-			if (empty($seller)) {
-				$return['errors']['seller_id'] = ["Invalid 'seller_id'."];
-			}
-
-			// #38 #36 Collect customer's current 'draft' or create a new one.
-			$draftOrder = $this->orderRepo->insertIfNotExist($customer->getId());
-			if (empty($draftOrder)) {
-				$return['errors']['order_id'] = ["Cannot create a draft order. Please, contact our support."];
-			}
-
-			$return['data'] = $this->orderProductRepo->prepare($customer, $product, $seller, $draftOrder);
-			if (!empty($return['data'])) {
-				$return['status'] = true;
-			}
-		}
-
-		return $return;
+		$customer = $this->userRepo->mustFind($customerId);
+		$product = $this->productRepo->mustFind($productId);
+		$seller = $this->userRepo->mustFind($product->getOwnerId());
+		// #38 #36 Collect customer's current 'draft' or create a new one.
+		$draftOrder = $this->orderRepo->insertIfNotExist($customer->getId());
+		return $this->orderProductRepo->prepare($customer, $product, $seller, $draftOrder);
 	}
 }

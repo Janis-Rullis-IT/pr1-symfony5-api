@@ -28,7 +28,7 @@ class OrderProductController extends AbstractController
 	public function addProductToCart(OrderProductCreator $orderProductCreator, int $customerId, int $productId)
 	{
 		try {
-			$orderProduct = $orderProductCreator->handle(['customer_id' => $customerId, "product_id" => $productId]);
+			$orderProduct = $orderProductCreator->handle($customerId, $productId);
 			return $this->json($orderProduct, Response::HTTP_CREATED);
 		} catch (UidValidatorException $e) {
 			return new Response(null, Response::HTTP_NOT_FOUND);

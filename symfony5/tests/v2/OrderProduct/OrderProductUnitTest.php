@@ -14,6 +14,7 @@ use \App\Exception\OrderValidatorException;
 use App\Exception\OrderCreatorException;
 use \App\v2\OrderValidator;
 use \App\Exception\UidValidatorException;
+use \App\Exception\ProductIdValidatorException;
 
 /**
  * #38 Test that the order product data is stored in the database correctly.
@@ -29,6 +30,7 @@ class OrderProductUnitTest extends KernelTestCase
 	private $orderValidator;
 	private $orderRepo;
 	private $orderProductRepo;
+	private $impossibleInt = 3147483648;
 
 	protected function setUp(): void
 	{
@@ -156,6 +158,9 @@ class OrderProductUnitTest extends KernelTestCase
 		$order->setIsExpress('y');
 	}
 
+	/**
+	 * #40
+	 */
 	public function testOrderProductExceptions()
 	{
 		$orderProduct = new OrderProduct();
@@ -165,33 +170,44 @@ class OrderProductUnitTest extends KernelTestCase
 	}
 
 	/**
+	 * #40 Test OrderProductCreator exceptions.
+	 */
+	public function testOrderProductCreatorExceptions()
+	{
+		$orderProduct = new OrderProduct();
+		$this->expectException(UidValidatorException::class);
+		$this->expectExceptionCode(1);
+		$this->orderProductCreator->handle($this->impossibleInt, $this->impossibleInt);
+	}
+
+	/**
+	 * #40 Invalid user, valid product.
+	 */
+	public function testOrderProductCreatorExceptions1()
+	{
+		$user = $this->insertUsersAndProds()[0];
+		$this->expectException(UidValidatorException::class);
+		$this->expectExceptionCode(1);
+		$this->orderProductCreator->handle($this->impossibleInt, $user->products[0]->getId());
+	}
+
+	/**
+	 * #40 Invalid product, valid user.
+	 */
+	public function testOrderProductCreatorExceptions2()
+	{
+		$user = $this->insertUsersAndProds()[0];
+		$this->expectException(ProductIdValidatorException::class);
+		$this->expectExceptionCode(1);
+		$this->orderProductCreator->handle($user->getId(), $this->impossibleInt);
+	}
+
+	/**
 	 * #38 Test that the customer can add products to a cart (`order_product`).
 	 */
 	public function testAddProductsToCart()
 	{
-		$users = $this->insertUsersAndProds();
-
-		$this->assertEquals($this->orderProductCreator->handle([]), ['status' => false, 'data' => null, 'errors' => [
-				"customer_id" => ["'customer_id' field is missing."], "product_id" => ["'product_id' field is missing."]]]);
-
-		// T-shirt / US / Standard / First.
-		$customerId = $users[2]->getId() + 1000000;
-		$productId = $users[1]->products[0]->getId() + 100000;
-		$invalidCustomerAndProduct = $this->orderProductCreator->handle(['customer_id' => $customerId, "product_id" => $productId]);
-		$expected = ['status' => false, 'data' => null, 'errors' => ["customer_id" => ["Invalid 'customer_id'."], "product_id" => ["Invalid 'product_id'."]]];
-		$this->assertEquals($invalidCustomerAndProduct, $expected);
-
-		$customerId = $users[2]->getId() + 1000000;
-		$productId = $users[1]->products[0]->getId();
-		$invalidCustomer = $this->orderProductCreator->handle(['customer_id' => $customerId, "product_id" => $productId]);
-		$expected = ['status' => false, 'data' => null, 'errors' => ["customer_id" => ["Invalid 'customer_id'."]]];
-		$this->assertEquals($invalidCustomer, $expected);
-
-		$customerId = $users[2]->getId();
-		$productId = $users[1]->products[0]->getId() + 1000000;
-		$invalidProduct = $this->orderProductCreator->handle(['customer_id' => $customerId, "product_id" => $productId]);
-		$expected = ['status' => false, 'data' => null, 'errors' => ["product_id" => ["Invalid 'product_id'."]]];
-		$this->assertEquals($invalidProduct, $expected);
+		$users = $this->insertUsersAndProds(3);
 
 		// #38 #36 Create and get customer's draft order.
 		// TODO: This probably should be moved to a separate test file.
@@ -205,58 +221,52 @@ class OrderProductUnitTest extends KernelTestCase
 		$productId = $users[1]->products[0]->getId();
 
 		// #39 #33 #34 TODO: MAybe this should be optimized.
-		$validProduct = $this->orderProductCreator->handle(['customer_id' => $customerId, "product_id" => $productId]);
-		$this->assertEquals($validProduct['errors'], []);
-		$this->assertEquals($validProduct['status'], true);
-		$this->assertEquals($validProduct['data']->getCustomerId(), $customerId);
-		$this->assertEquals($validProduct['data']->getSellerId(), $users[1]->getId());
-		$this->assertEquals($validProduct['data']->getSellerTitle(), $users[1]->getName() . ' ' . $users[1]->getSurname());
-		$this->assertEquals($validProduct['data']->getProductId(), $productId);
-		$this->assertEquals($validProduct['data']->getProductTitle(), $users[1]->products[0]->getTitle());
-		$this->assertEquals($validProduct['data']->getProductCost(), $users[1]->products[0]->getCost());
-		$this->assertEquals($validProduct['data']->getProductType(), $users[1]->products[0]->getType());
-		$this->assertTrue($validProduct['data']->getId() > 0);
-		$this->assertEquals($validProduct['data']->getOrderId(), $draftOrder->getId());
-		$this->assertEquals($validProduct['data']->getIsAdditional(), NULL);
+		$validProduct = $this->orderProductCreator->handle($customerId, $productId);
+		$this->assertEquals($validProduct->getCustomerId(), $customerId);
+		$this->assertEquals($validProduct->getSellerId(), $users[1]->getId());
+		$this->assertEquals($validProduct->getSellerTitle(), $users[1]->getName() . ' ' . $users[1]->getSurname());
+		$this->assertEquals($validProduct->getProductId(), $productId);
+		$this->assertEquals($validProduct->getProductTitle(), $users[1]->products[0]->getTitle());
+		$this->assertEquals($validProduct->getProductCost(), $users[1]->products[0]->getCost());
+		$this->assertEquals($validProduct->getProductType(), $users[1]->products[0]->getType());
+		$this->assertTrue($validProduct->getId() > 0);
+		$this->assertEquals($validProduct->getOrderId(), $draftOrder->getId());
+		$this->assertEquals($validProduct->getIsAdditional(), NULL);
 
 		// #39 #33 #34 Add additional products  (ex., 2 pieces of the same t-shirt, 2nd is additional).
-		$validProduct2 = $this->orderProductCreator->handle(['customer_id' => $customerId, "product_id" => $productId]);
-		$this->assertEquals($validProduct2['errors'], []);
-		$this->assertEquals($validProduct2['status'], true);
-		$this->assertEquals($validProduct2['data']->getCustomerId(), $customerId);
-		$this->assertEquals($validProduct2['data']->getSellerId(), $users[1]->getId());
-		$this->assertEquals($validProduct2['data']->getSellerTitle(), $users[1]->getName() . ' ' . $users[1]->getSurname());
-		$this->assertEquals($validProduct2['data']->getProductId(), $productId);
-		$this->assertEquals($validProduct2['data']->getProductTitle(), $users[1]->products[0]->getTitle());
-		$this->assertEquals($validProduct2['data']->getProductCost(), $users[1]->products[0]->getCost());
-		$this->assertEquals($validProduct2['data']->getProductType(), $users[1]->products[0]->getType());
-		$this->assertTrue($validProduct2['data']->getId() > 0);
-		$this->assertEquals($validProduct2['data']->getOrderId(), $draftOrder->getId());
-		$this->assertNotEquals($validProduct['data']->getId(), $validProduct2['data']->getId());
-		$this->assertEquals($validProduct2['data']->getIsAdditional(), NULL);
+		$validProduct2 = $this->orderProductCreator->handle($customerId, $productId);
+		$this->assertEquals($validProduct2->getCustomerId(), $customerId);
+		$this->assertEquals($validProduct2->getSellerId(), $users[1]->getId());
+		$this->assertEquals($validProduct2->getSellerTitle(), $users[1]->getName() . ' ' . $users[1]->getSurname());
+		$this->assertEquals($validProduct2->getProductId(), $productId);
+		$this->assertEquals($validProduct2->getProductTitle(), $users[1]->products[0]->getTitle());
+		$this->assertEquals($validProduct2->getProductCost(), $users[1]->products[0]->getCost());
+		$this->assertEquals($validProduct2->getProductType(), $users[1]->products[0]->getType());
+		$this->assertTrue($validProduct2->getId() > 0);
+		$this->assertEquals($validProduct2->getOrderId(), $draftOrder->getId());
+		$this->assertNotEquals($validProduct->getId(), $validProduct2->getId());
+		$this->assertEquals($validProduct2->getIsAdditional(), NULL);
 
-		$validProduct3 = $this->orderProductCreator->handle(['customer_id' => $customerId, "product_id" => $productId]);
-		$this->assertEquals($validProduct3['errors'], []);
-		$this->assertEquals($validProduct3['status'], true);
-		$this->assertEquals($validProduct3['data']->getCustomerId(), $customerId);
-		$this->assertEquals($validProduct3['data']->getSellerId(), $users[1]->getId());
-		$this->assertEquals($validProduct3['data']->getSellerTitle(), $users[1]->getName() . ' ' . $users[1]->getSurname());
-		$this->assertEquals($validProduct3['data']->getProductId(), $productId);
-		$this->assertEquals($validProduct3['data']->getProductTitle(), $users[1]->products[0]->getTitle());
-		$this->assertEquals($validProduct3['data']->getProductCost(), $users[1]->products[0]->getCost());
-		$this->assertEquals($validProduct3['data']->getProductType(), $users[1]->products[0]->getType());
-		$this->assertTrue($validProduct3['data']->getId() > 0);
-		$this->assertEquals($validProduct3['data']->getOrderId(), $draftOrder->getId());
-		$this->assertNotEquals($validProduct2['data']->getId(), $validProduct3['data']->getId());
-		$this->assertEquals($validProduct3['data']->getIsAdditional(), NULL);
+		$validProduct3 = $this->orderProductCreator->handle($customerId, $productId);
+		$this->assertEquals($validProduct3->getCustomerId(), $customerId);
+		$this->assertEquals($validProduct3->getSellerId(), $users[1]->getId());
+		$this->assertEquals($validProduct3->getSellerTitle(), $users[1]->getName() . ' ' . $users[1]->getSurname());
+		$this->assertEquals($validProduct3->getProductId(), $productId);
+		$this->assertEquals($validProduct3->getProductTitle(), $users[1]->products[0]->getTitle());
+		$this->assertEquals($validProduct3->getProductCost(), $users[1]->products[0]->getCost());
+		$this->assertEquals($validProduct3->getProductType(), $users[1]->products[0]->getType());
+		$this->assertTrue($validProduct3->getId() > 0);
+		$this->assertEquals($validProduct3->getOrderId(), $draftOrder->getId());
+		$this->assertNotEquals($validProduct2->getId(), $validProduct3->getId());
+		$this->assertEquals($validProduct3->getIsAdditional(), NULL);
 
 		// #39 #33 #34 Mark additional products (ex., 2 pieces of the same t-shirt, 2nd is additional).
 		$this->assertTrue($this->orderProductRepo->makrCartsAdditionalProducts($draftOrder));
 
 		// #39 #33 #34 Collect updated items. 
-		$validProductUpdated = $this->orderProductRepo->find($validProduct['data']->getId());
-		$validProductUpdated2 = $this->orderProductRepo->find($validProduct2['data']->getId());
-		$validProductUpdated3 = $this->orderProductRepo->find($validProduct3['data']->getId());
+		$validProductUpdated = $this->orderProductRepo->find($validProduct->getId());
+		$validProductUpdated2 = $this->orderProductRepo->find($validProduct2->getId());
+		$validProductUpdated3 = $this->orderProductRepo->find($validProduct3->getId());
 
 		// #39 #33 #34 Make sure they are marked correctly
 		// TODO: Move all assertEquals() values to left side - that's the comparison side.
@@ -428,7 +438,7 @@ class OrderProductUnitTest extends KernelTestCase
 		$this->assertEquals($draftOrder->getShippingCost(), $shippingCostTotal);
 		$this->assertEquals($draftOrder->getProductCost(), $productCostTotal);
 		$this->assertEquals($draftOrder->getTotalCost(), $costTotal);
-		
+
 		// #40 Validate that the shipping is set correctly.
 		$this->assertEmpty($draftOrder->getName());
 		$this->assertEmpty($draftOrder->getSurname());
@@ -437,7 +447,7 @@ class OrderProductUnitTest extends KernelTestCase
 		$this->assertEmpty($draftOrder->getZip());
 		$this->assertEmpty($draftOrder->getCountry());
 		$this->assertEmpty($draftOrder->getPhone());
-		
+
 		$ship_to_address = [
 			"name" => "John",
 			"surname" => "Doe",
@@ -484,35 +494,58 @@ class OrderProductUnitTest extends KernelTestCase
 	 * 
 	 * @return User array
 	 */
-	private function insertUsersAndProds()
+	private function insertUsersAndProds(int $count = 1)
 	{
 		// #38 Create 3 users.
 		$users = [];
-		for ($i = 0; $i < 3; $i++) {
+		for ($i = 0; $i < $count; $i++) {
 
-			$user = new User();
-			$user->setName(rand());
-			$user->setSurname($i + 1);
-			$user->setBalance(1000);
-			$this->entityManager->persist($user);
-			$this->entityManager->flush();
-			$users[$i] = $user;
+			$users[$i] = $user = $this->createUser($i);
 
 			// #38 Create 1 mug and 1 shirt for each user.
 			$user->products = [];
 			$productTypes = ['t-shirt', 'mug'];
 			foreach ($productTypes as $productType) {
-				$product = new Product();
-				$product->setOwnerId($user->getId());
-				$product->setType($productType);
-				$product->setTitle($user->getName() . ' ' . $user->getSurname() . ' ' . $productType);
-				$product->setSku($user->getName() . ' ' . $user->getSurname() . ' ' . $productType);
-				$product->setCost(100);
-				$this->entityManager->persist($product);
-				$this->entityManager->flush();
-				$user->products[] = $product;
+				$user->products[] = $this->createUserProduct($user, $productType);
 			}
 		}
 		return $users;
+	}
+
+	/**
+	 * #40
+	 * 
+	 * @param type $i
+	 * @return User
+	 */
+	private function createUser($i): User
+	{
+		$user = new User();
+		$user->setName(rand());
+		$user->setSurname($i + 1);
+		$user->setBalance(1000);
+		$this->entityManager->persist($user);
+		$this->entityManager->flush();
+		return $user;
+	}
+
+	/**
+	 * #40
+	 * 
+	 * @param User $user
+	 * @param string $productType
+	 * @return Product
+	 */
+	private function createUserProduct(User $user, string $productType): Product
+	{
+		$product = new Product();
+		$product->setOwnerId($user->getId());
+		$product->setType($productType);
+		$product->setTitle($user->getName() . ' ' . $user->getSurname() . ' ' . $productType);
+		$product->setSku($user->getName() . ' ' . $user->getSurname() . ' ' . $productType);
+		$product->setCost(100);
+		$this->entityManager->persist($product);
+		$this->entityManager->flush();
+		return $product;
 	}
 }
