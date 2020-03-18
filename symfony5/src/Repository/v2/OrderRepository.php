@@ -7,6 +7,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use \App\Interfaces\v2\IOrderRepo;
 use Doctrine\ORM\EntityManagerInterface;
+use \App\Exception\OrderValidatorException;
 
 /**
  * @method Order|null find($id, $lockMode = null, $lockVersion = null)
@@ -22,8 +23,8 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 		parent::__construct($registry, Order::class);
 		$this->em = $em;
 	}
-
 	// 
+
 	/**
 	 * #38 #36 Collect customer's current 'draft' or create a new one.
 	 * 
@@ -41,6 +42,10 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 			$item->setStatus('draft');
 			$this->em->persist($item);
 			$this->em->flush();
+		}
+
+		if (empty($item)) {
+			throw new OrderValidatorException([Order::ORDER_ID => Order::CANT_CREATE]);
 		}
 
 		return $item;
@@ -61,39 +66,13 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 	}
 
 	/**
-	 * #39 #33 #34 Mark order's shipping as express or standard.
-	 * The purpose of this field `is_express` is to be used for matching a row in the `shipping_rates` table.
-	 * 
-	 * @param Order $draftOrder
-	 * @param string $isExpress
-	 * @return bool
-	 */
-	public function markExpressShipping(Order $draftOrder, string $isExpress): bool
-	{
-		// #39 #33 #3 4TODO: Return more descriptive data.
-		// #39 #33 #34 Allow only y/n.
-		if (!in_array($isExpress, ['y', 'n'])) {
-			return false;
-		}
-		// #39 #33 #34 Forbid setting `is_express` if is_domestic='y'.
-		if ($isExpress === 'y' && $draftOrder->getIsDomestic() === 'n') {
-			return false;
-		}
-
-		$draftOrder->setIsExpress($isExpress);
-		$this->em->flush();
-
-		return true;
-	}
-
-	/**
 	 * #39 #33 #34 #37 Sum together costs from cart products and store in the order's costs.
 	 * https://github.com/janis-rullis/pr1/issues/33#issuecomment-595102860
 	 * 
-	 * @param Order $draftOrder
+	 * @param Order $order
 	 * @return bool
 	 */
-	public function setOrderCostsFromCartItems(Order $draftOrder): bool
+	public function setOrderCostsFromCartItems(Order $order): bool
 	{
 		// #39 #33 #34 #37 TODO: Rewrite in a query builder format.
 		$orderProductTableName = $this->em->getClassMetadata(OrderProduct::class)->getTableName();
@@ -111,11 +90,48 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 			ON a.id = b.order_id
 			SET a.shipping_cost = b.shipping_cost, a.product_cost = b.product_cost, a.total_cost = b.total_cost;';
 		$stmt = $conn->prepare($sql);
-		$return = $stmt->execute(['order_id' => $draftOrder->getId()]);
+		$return = $stmt->execute(['order_id' => $order->getId()]);
 
 		$this->em->flush();
 		$this->em->clear();
 
 		return $return;
+	}
+
+	// #40
+	public function prepare(Order $order, array $data): Order
+	{
+		$order->setIsDomestic($data['is_domestic']);
+
+		// #39 #33 #34 Mark order's shipping as express or standard.
+		// The purpose of this field `is_express` is to be used for matching a row in the `shipping_rates` table.
+		$order->setIsExpress($data['is_express']);
+
+		$order->setName($data[Order::OWNER_NAME]);
+		$order->setSurname($data[Order::OWNER_SURNAME]);
+		$order->setStreet($data[Order::STREET]);
+
+		if (array_key_exists(Order::STATE, $data))
+			$order->setState($data[Order::STATE]);
+		else
+			$order->setState(null);
+
+		if (array_key_exists(Order::ZIP, $data))
+			$order->setZip($data[Order::ZIP]);
+		else
+			$order->setZip(null);
+
+		$order->setCountry($data[Order::COUNTRY]);
+		$order->setPhone($data[Order::PHONE]);
+		
+		return $order;
+	}
+	
+	// #40
+	public function write(Order $order): Order
+	{
+		$this->em->persist($order);
+		$this->em->flush();
+		return $order;
 	}
 }

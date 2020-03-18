@@ -57,6 +57,15 @@ services:
     test.App\v2\OrderProductCreator:
         alias: App\v2\OrderProductCreator
         public: true
+        
+    # 40
+    test.App\v2\OrderCreator:
+        alias: App\v2\OrderCreator
+        public: true
+     
+    test.App\v2\OrderValidator:
+        alias: App\v2\OrderValidator
+        public: true
     
     # #36 #38
     test.App\Interfaces\v2\IOrderRepo:

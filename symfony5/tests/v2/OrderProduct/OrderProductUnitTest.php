@@ -4,9 +4,16 @@ namespace App\Tests\v2\OrderProduct;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use \App\Entity\User;
 use \App\Entity\Product;
+use \App\Entity\v2\Order;
+use \App\Entity\v2\OrderProduct;
 use \App\v2\OrderProductCreator;
+use \App\v2\OrderCreator;
 use \App\Interfaces\v2\IOrderRepo;
 use \App\Interfaces\v2\IOrderProductRepo;
+use \App\Exception\OrderValidatorException;
+use App\Exception\OrderCreatorException;
+use \App\v2\OrderValidator;
+use \App\Exception\UidValidatorException;
 
 /**
  * #38 Test that the order product data is stored in the database correctly.
@@ -18,6 +25,8 @@ class OrderProductUnitTest extends KernelTestCase
 	private $c;
 	private $entityManager;
 	private $orderProductCreator;
+	private $orderCreator;
+	private $orderValidator;
 	private $orderRepo;
 	private $orderProductRepo;
 
@@ -32,11 +41,127 @@ class OrderProductUnitTest extends KernelTestCase
 		$this->orderProductCreator = $this->c->get('test.' . OrderProductCreator::class);
 		$this->orderRepo = $this->c->get('test.' . IOrderRepo::class);
 		$this->orderProductRepo = $this->c->get('test.' . IOrderProductRepo::class);
+		$this->orderCreator = $this->c->get('test.' . OrderCreator::class);
+		$this->orderValidator = $this->c->get('test.' . OrderValidator::class);
 
 		// Using database in tests https://stackoverflow.com/a/52014145 https://symfony.com/doc/master/testing/database.html#functional-testing-of-a-doctrine-repository
 		$this->entityManager = $this->c->get('doctrine')->getManager();
 
 		// TODO: Truncate specific tables before each run.
+	}
+
+	/**
+	 *  #40
+	 */
+	public function testOrderCreatorExceptions()
+	{
+		$order = new Order();
+		$this->expectException(OrderValidatorException::class);
+		$this->expectExceptionCode(1);
+		$this->orderCreator->handle(1, []);
+	}
+
+	/**
+	 *  #40
+	 */
+	public function testOrderCreatorExceptions2()
+	{
+		$order = new Order();
+		$this->expectException(UidValidatorException::class);
+		$this->expectExceptionCode(1);
+		$ship_to_address = [
+			"name" => "John",
+			"surname" => "Doe",
+			"street" => "Palm street 25-7",
+			"state" => "California",
+			"zip" => "60744",
+			"country" => "US",
+			"phone" => "+1 123 123 123",
+			"is_express" => true
+		];
+		$this->orderCreator->handle(0, $ship_to_address);
+	}
+
+	/**
+	 * #40
+	 */
+	public function testOrderAddressValidatorExceptions()
+	{
+		$this->expectException(OrderValidatorException::class);
+		$this->expectExceptionCode(2);
+		$this->orderValidator->validateAddress([]);
+	}
+
+	/**
+	 * #40
+	 */
+	public function testOrderValidatorExceptions()
+	{
+		$this->expectException(OrderValidatorException::class);
+		$this->expectExceptionCode(1);
+		$this->orderValidator->validate([]);
+	}
+
+	/**
+	 * #40
+	 */
+	public function testOrderValidation()
+	{
+		$ship_to_address = [
+			"name" => "John",
+			"surname" => "Doe",
+			"street" => "Palm street 25-7",
+			"state" => "California",
+			"zip" => "60744",
+			"country" => "US",
+			"phone" => "+1 123 123 123",
+		];
+		$this->assertFalse($this->orderValidator->hasRequiredKeys($ship_to_address));
+		$this->assertEquals(['is_express' => 'is_express'], $this->orderValidator->getMissingKeys($ship_to_address));
+		$ship_to_address['is_express'] = true;
+		$this->assertTrue($this->orderValidator->hasRequiredKeys($ship_to_address));
+
+		$this->assertTrue($this->orderValidator->isAddressValid($ship_to_address));
+		$this->assertTrue($this->orderValidator->isExpressShippingAllowed($ship_to_address));
+		$this->assertTrue($this->orderValidator->isValid($ship_to_address));
+		$ship_to_address['country'] = 'Latvia';
+		$this->assertTrue($this->orderValidator->isAddressValid($ship_to_address));
+		$this->assertFalse($this->orderValidator->isExpressShippingAllowed($ship_to_address));
+		$this->assertFalse($this->orderValidator->isValid($ship_to_address));
+	}
+
+	public function testOrderEnumExceptions()
+	{
+		$order = new Order();
+		$this->expectException(\InvalidArgumentException::class);
+		$this->expectExceptionMessage("'aaa' " . \App\Helper\EnumType::INVALID_ENUM_VALUE);
+		$this->expectExceptionCode(1);
+		$order->setIsDomestic('aaa');
+	}
+
+	public function testOrderIsExpressExceptions()
+	{
+		$order = new Order();
+		$this->expectException(OrderValidatorException::class);
+		$this->expectExceptionCode(1, '#40 Require the `is_domestic` to be set first');
+		$order->setIsExpress('y');
+	}
+
+	public function testOrderIsExpressExceptions2()
+	{
+		$order = new Order();
+		$this->expectException(OrderValidatorException::class);
+		$this->expectExceptionCode(2, '#40 Express must match the region.');
+		$order->setIsDomestic('n');
+		$order->setIsExpress('y');
+	}
+
+	public function testOrderProductExceptions()
+	{
+		$orderProduct = new OrderProduct();
+		$this->expectException(\InvalidArgumentException::class);
+		$this->expectExceptionMessage("'aaa' " . \App\Helper\EnumType::INVALID_ENUM_VALUE);
+		$orderProduct->setIsExpress('aaa');
 	}
 
 	/**
@@ -139,20 +264,6 @@ class OrderProductUnitTest extends KernelTestCase
 		$this->assertEquals($validProductUpdated2->getIsAdditional(), 'y');
 		$this->assertEquals($validProductUpdated3->getIsAdditional(), 'y');
 
-
-		// #40 Check if the passed address is in the domestic region (has lower shipping rates).
-		$this->assertEquals(['errors' => ['country' => ["Invalid 'country' field."]], 'data' => null, 'status' => false], \App\v2\OrderCreator::isDomestic([]));
-		$this->assertEquals(['errors' => ['country' => ["Invalid 'country' field."]], 'data' => null, 'status' => false], \App\v2\OrderCreator::isDomestic(['country' => '']));
-
-		$this->assertEquals(['errors' => [], 'data' => false, 'status' => true], \App\v2\OrderCreator::isDomestic(['country' => 'Italy']));
-		$this->assertEquals(['errors' => [], 'data' => false, 'status' => true], \App\v2\OrderCreator::isDomestic(['country' => 'Germany']));
-
-		$this->assertEquals(['errors' => [], 'data' => true, 'status' => true], \App\v2\OrderCreator::isDomestic(['country' => 'US']));
-		$this->assertEquals(['errors' => [], 'data' => true, 'status' => true], \App\v2\OrderCreator::isDomestic(['country' => 'USA']));
-		$this->assertEquals(['errors' => [], 'data' => true, 'status' => true], \App\v2\OrderCreator::isDomestic(['country' => 'us']));
-		$this->assertEquals(['errors' => [], 'data' => true, 'status' => true], \App\v2\OrderCreator::isDomestic(['country' => 'usa']));
-		$this->assertEquals(['errors' => [], 'data' => true, 'status' => true], \App\v2\OrderCreator::isDomestic(['country' => 'united states of america']));
-
 		// #39 #33 #34 Mark the order as domestic or international.
 		$this->assertEquals($validProductUpdated->getIsDomestic(), NULL);
 		$this->assertEquals($validProductUpdated2->getIsDomestic(), NULL);
@@ -206,11 +317,9 @@ class OrderProductUnitTest extends KernelTestCase
 		$this->assertEquals($draftOrder->getProductCost(), NULL);
 		$this->assertEquals($draftOrder->getTotalCost(), NULL);
 
-		$this->assertEquals(false, $this->orderRepo->markExpressShipping($draftOrder, 'invalid'));
-		$this->assertEquals(true, $this->orderRepo->markExpressShipping($draftOrder, 'n'));
-		$this->assertEquals(false, $this->orderRepo->markExpressShipping($draftOrder, 'y'), 'Forbid setting `is_express` if is_domestic=y');
-
-		$this->assertEquals(true, $this->orderRepo->markExpressShipping($draftOrder, 'n'));
+		// #40 Can't set this before the domestic is set and throw an execption there if they doesn't match.
+		$draftOrder->setIsExpress('n');
+		$this->entityManager->flush();
 		$this->assertEquals(true, $this->orderProductRepo->markExpressShipping($draftOrder));
 		$this->assertEquals(true, $this->orderProductRepo->setShippingRates($draftOrder));
 
@@ -237,10 +346,12 @@ class OrderProductUnitTest extends KernelTestCase
 		$this->assertEquals($draftOrder->getProductCost(), $productCostTotal);
 		$this->assertEquals($draftOrder->getTotalCost(), $costTotal);
 
+
 		$draftOrder->setIsDomestic('y');
 		$this->entityManager->flush();
 		$this->assertEquals(true, $this->orderProductRepo->markDomesticShipping($draftOrder));
-		$this->assertEquals(true, $this->orderRepo->markExpressShipping($draftOrder, 'n'));
+		$draftOrder->setIsExpress('n');
+		$this->entityManager->flush();
 		$this->assertEquals(true, $this->orderProductRepo->markExpressShipping($draftOrder));
 
 		// #39 #33 #34 Collect updated items. 
@@ -278,7 +389,8 @@ class OrderProductUnitTest extends KernelTestCase
 		$this->assertEquals($draftOrder->getProductCost(), $productCostTotal);
 		$this->assertEquals($draftOrder->getTotalCost(), $costTotal);
 
-		$this->assertEquals(true, $this->orderRepo->markExpressShipping($draftOrder, 'y'));
+		$draftOrder->setIsExpress('y');
+		$this->entityManager->flush();
 		$this->assertEquals(true, $this->orderProductRepo->markExpressShipping($draftOrder));
 
 		// #39 #33 #34 Collect updated items. 
@@ -316,6 +428,36 @@ class OrderProductUnitTest extends KernelTestCase
 		$this->assertEquals($draftOrder->getShippingCost(), $shippingCostTotal);
 		$this->assertEquals($draftOrder->getProductCost(), $productCostTotal);
 		$this->assertEquals($draftOrder->getTotalCost(), $costTotal);
+		
+		// #40 Validate that the shipping is set correctly.
+		$this->assertEmpty($draftOrder->getName());
+		$this->assertEmpty($draftOrder->getSurname());
+		$this->assertEmpty($draftOrder->getStreet());
+		$this->assertEmpty($draftOrder->getState());
+		$this->assertEmpty($draftOrder->getZip());
+		$this->assertEmpty($draftOrder->getCountry());
+		$this->assertEmpty($draftOrder->getPhone());
+		
+		$ship_to_address = [
+			"name" => "John",
+			"surname" => "Doe",
+			"street" => "Palm street 25-7",
+			"state" => "California",
+			"zip" => "60744",
+			"country" => "US",
+			"phone" => "+1 123 123 123",
+			"is_express" => true
+		];
+		$draftOrder = $this->orderCreator->handle($draftOrder->getCustomerId(), $ship_to_address);
+		$this->assertEquals($ship_to_address['name'], $draftOrder->getName());
+		$this->assertEquals($ship_to_address['surname'], $draftOrder->getSurname());
+		$this->assertEquals($ship_to_address['street'], $draftOrder->getStreet());
+		$this->assertEquals($ship_to_address['state'], $draftOrder->getState());
+		$this->assertEquals($ship_to_address['zip'], $draftOrder->getZip());
+		$this->assertEquals($ship_to_address['country'], $draftOrder->getCountry());
+		$this->assertEquals($ship_to_address['phone'], $draftOrder->getPhone());
+		$this->assertEquals('y', $draftOrder->getIsDomestic());
+		$this->assertEquals('y', $draftOrder->getIsExpress());
 
 		// #39 #33 #34 #37 TODO: Add `shipping_id` to `shipping_rates`.`id`.
 		;
