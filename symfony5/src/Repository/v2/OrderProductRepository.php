@@ -195,4 +195,18 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
 
 		return $item;
 	}
+
+	/**
+	 * #40 Mark additional products, domestic regions and set rates.
+	 * 
+	 * @param Order $order
+	 * @return void
+	 */
+	public function setShippingValues(Order $order): void
+	{
+		$this->makrCartsAdditionalProducts($order);
+		$this->markDomesticShipping($order);
+		$this->markExpressShipping($order);
+		$this->setShippingRates($order);
+	}
 }

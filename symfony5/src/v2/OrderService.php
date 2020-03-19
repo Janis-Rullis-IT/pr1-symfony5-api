@@ -37,13 +37,8 @@ class OrderService
 		$customer = $this->userRepo->mustFind($customerId);
 		$order = $this->orderRepo->insertIfNotExist($customer->getId());
 		$this->orderShippingValidator->mustHaveShippingSet($order);
-		
-		// #40 TODO: Recalculate order -
-		$this->orderProductRepo->makrCartsAdditionalProducts($order);
-		$this->orderProductRepo->markDomesticShipping($order);
-		$this->orderProductRepo->markExpressShipping($order);
-		$this->orderProductRepo->setShippingRates($order);
-		$this->orderRepo->setOrderCostsFromCartItems($order);
+		$this->recalculateOrder($order);
+//		$this->orderValidator->mustHaveProducts($order);
 
 		// #40 TODO: has at least 1 product - product_cost > 0.
 		// #40 TODO User has enough money to contine if not suggest to change shipping or remove items from the cart.
@@ -51,5 +46,11 @@ class OrderService
 		// #40 TODO Reduce customers balance.
 
 		return $this->orderRepo->findOneBy(["id" => $order->getId()]);
+	}
+
+	public function recalculateOrder($order): void
+	{
+		$this->orderProductRepo->setShippingValues($order);
+		$this->orderRepo->setOrderCostsFromCartItems($order);
 	}
 }

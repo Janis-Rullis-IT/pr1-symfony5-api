@@ -6,6 +6,7 @@ use \App\Interfaces\IUserRepo;
 use \App\Interfaces\v2\IOrderRepo;
 use \App\Interfaces\v2\IOrderProductRepo;
 use App\Entity\v2\Order;
+use \App\v2\OrderService;
 
 class OrderShippingService
 {
@@ -15,14 +16,16 @@ class OrderShippingService
 	private $orderRepo;
 	private $orderProductRepo;
 	private $orderShippingValidator;
+	private $orderService;
 
-	public function __construct(IProductRepo $productRepo, IUserRepo $userRepo, IOrderRepo $orderRepo, IOrderProductRepo $orderProductRepo, OrderShippingValidator $orderShippingValidator)
+	public function __construct(IProductRepo $productRepo, IUserRepo $userRepo, IOrderRepo $orderRepo, IOrderProductRepo $orderProductRepo, OrderShippingValidator $orderShippingValidator, OrderService $orderService)
 	{
 		$this->userRepo = $userRepo;
 		$this->productRepo = $productRepo;
 		$this->orderRepo = $orderRepo;
 		$this->orderProductRepo = $orderProductRepo;
 		$this->orderShippingValidator = $orderShippingValidator;
+		$this->orderService = $orderService;
 	}
 
 	/**
@@ -37,12 +40,7 @@ class OrderShippingService
 		// #38 Validate and prepare the item.
 		$order = $this->prepare($customerId, $data);
 		$order = $this->orderRepo->write($order);
-
-		$this->orderProductRepo->makrCartsAdditionalProducts($order);
-		$this->orderProductRepo->markDomesticShipping($order);
-		$this->orderProductRepo->markExpressShipping($order);
-		$this->orderProductRepo->setShippingRates($order);
-		$this->orderRepo->setOrderCostsFromCartItems($order);
+		$this->orderService->recalculateOrder($order);
 
 		return $this->orderRepo->findOneBy(["id" => $order->getId()]);
 	}
