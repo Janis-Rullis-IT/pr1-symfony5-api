@@ -18,8 +18,7 @@ class OrderService
 
 	public function __construct(
 		IProductRepo $productRepo, IUserRepo $userRepo, IOrderRepo $orderRepo,
-		IOrderProductRepo $orderProductRepo, OrderValidator $orderValidator
-	)
+		IOrderProductRepo $orderProductRepo, OrderValidator $orderValidator)
 	{
 		$this->userRepo = $userRepo;
 		$this->productRepo = $productRepo;
@@ -35,7 +34,7 @@ class OrderService
 	 * @param array $data
 	 * @return array
 	 */
-	public function complete(int $customerId, array $data): Order
+	public function complete(int $customerId): Order
 	{
 		$customer = $this->userRepo->mustFind($customerId);
 		$order = $this->orderRepo->insertIfNotExist($customer->getId());

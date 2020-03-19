@@ -86,7 +86,7 @@ class OrderController extends AbstractController
 	/**
 	 * #40 Complete the order.
 	 * 
-	 * @Route("/users/v2/{customerId}/order", methods={"PUT"})
+	 * @Route("/users/v2/{customerId}/order/complete", methods={"PUT"})
 	 * @SWG\Tag(name="v2:order")
 	 * @SWG\Response(
 	 *   response=200, description="Saved.",
@@ -122,7 +122,7 @@ class OrderController extends AbstractController
 				"surname" => $item->getSurname(), "street" => $item->getStreet(), "country" => $item->getCountry(),
 				"phone" => $item->getPhone(), "state" => $item->getState(), "zip" => $item->getZip()];
 			return $this->json($resp, Response::HTTP_CREATED);
-		} catch (UidValidatorException | ProductIdValidatorException $e) {
+		} catch (UidValidatorException $e) {
 			return $this->json($e->getErrors(), Response::HTTP_NOT_FOUND);
 		} catch (\Exception $e) {
 			return $this->json($e->getErrors(), Response::HTTP_BAD_REQUEST);
