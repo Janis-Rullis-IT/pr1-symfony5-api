@@ -16,7 +16,7 @@ use App\ErrorsLoader;
 use \App\Exception\OrderShippingValidatorException;
 use \App\Helper\EnumType;
 
-class OrderShippingValidator::mustHaveShippingSet()
+class OrderShippingValidator
 {
 
 	private $errors;
