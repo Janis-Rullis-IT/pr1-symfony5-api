@@ -7,7 +7,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Swagger\Annotations as SWG;
-use \App\v2\OrderShipping;
+use \App\v2\OrderShippingService;
 use \App\Exception\UidValidatorException;
 use \App\Exception\ProductIdValidatorException;
 
@@ -62,16 +62,14 @@ class OrderController extends AbstractController
 	 * 
 	 * 
 	 * @param Request $request
-	 * @param OrderShipping $orderShippingCreator
+	 * @param OrderShippingService $orderShippingService
 	 * @param int $customerId
 	 * @return JsonResponse
 	 */
-	public function setShipping(Request $request, OrderShipping $orderShippingCreator, int $customerId): JsonResponse
+	public function setShipping(Request $request, OrderShippingService $orderShippingService, int $customerId): JsonResponse
 	{
 		try {
-			// #40 POST handling https://stackoverflow.com/a/54944381 https://github.com/symfony/http-foundation/blob/master/Request.php#L715 .
-			// #40 JSON handling https://stackoverflow.com/a/57281311 .
-			$item = $orderShippingCreator->set($customerId, json_decode($request->getContent(), true));
+			$item = $orderShippingService->set($customerId, json_decode($request->getContent(), true));
 			$resp = ["is_domestic" => $item->getIsDomestic(), "is_express" => $item->getIsExpress(), "shipping_cost" => $item->getShippingCost(),
 				"product_cost" => $item->getProductCost(), "total_cost" => $item->getTotalCost(), "name" => $item->getName(),
 				"surname" => $item->getSurname(), "street" => $item->getStreet(), "country" => $item->getCountry(),
@@ -114,10 +112,10 @@ class OrderController extends AbstractController
 	 * )
 	 * 
 	 */
-//	public function complete(Request $request, OrderCreator $orderCreator, int $customerId): JsonResponse
+//	public function complete(Request $request, OrderService $orderService, int $customerId): JsonResponse
 //	{
 //		try {
-//			$item = $orderProductCreator->handle($customerId, $productId);
+//			$item = $orderService->complete($customerId, $productId);
 //			$resp = ['id' => $item->getProductId(), 'customerId' => $item->getCustomerId(), 'productId' => $item->getProductId()];
 //			return $this->json($resp, Response::HTTP_CREATED);
 //		} catch (UidValidatorException | ProductIdValidatorException $e) {

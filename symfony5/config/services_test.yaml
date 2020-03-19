@@ -59,8 +59,8 @@ services:
         public: true
         
     # 40
-    test.App\v2\OrderShipping:
-        alias: App\v2\OrderShipping
+    test.App\v2\OrderShippingService:
+        alias: App\v2\OrderShippingService
         public: true
      
     test.App\v2\OrderShippingValidator:

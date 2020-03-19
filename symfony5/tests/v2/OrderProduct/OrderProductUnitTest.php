@@ -7,7 +7,7 @@ use \App\Entity\Product;
 use \App\Entity\v2\Order;
 use \App\Entity\v2\OrderProduct;
 use \App\v2\OrderProductCreator;
-use \App\v2\OrderShipping;
+use \App\v2\OrderShippingService;
 use \App\Interfaces\v2\IOrderRepo;
 use \App\Interfaces\v2\IOrderProductRepo;
 use \App\Exception\OrderValidatorException;
@@ -25,7 +25,7 @@ class OrderProductUnitTest extends KernelTestCase
 	private $c;
 	private $entityManager;
 	private $orderProductCreator;
-	private $orderShipping;
+	private $orderShippingService;
 	private $orderShippingValidator;
 	private $orderRepo;
 	private $orderProductRepo;
@@ -42,7 +42,7 @@ class OrderProductUnitTest extends KernelTestCase
 		$this->orderProductCreator = $this->c->get('test.' . OrderProductCreator::class);
 		$this->orderRepo = $this->c->get('test.' . IOrderRepo::class);
 		$this->orderProductRepo = $this->c->get('test.' . IOrderProductRepo::class);
-		$this->orderShipping = $this->c->get('test.' . OrderShipping::class);
+		$this->orderShippingService = $this->c->get('test.' . OrderShippingService::class);
 		$this->orderShippingValidator = $this->c->get('test.' . OrderShippingValidator::class);
 
 		// Using database in tests https://stackoverflow.com/a/52014145 https://symfony.com/doc/master/testing/database.html#functional-testing-of-a-doctrine-repository
@@ -59,7 +59,7 @@ class OrderProductUnitTest extends KernelTestCase
 		$order = new Order();
 		$this->expectException(OrderValidatorException::class);
 		$this->expectExceptionCode(1);
-		$this->orderShipping->set(1, []);
+		$this->orderShippingService->set(1, []);
 	}
 
 	/**
@@ -80,7 +80,7 @@ class OrderProductUnitTest extends KernelTestCase
 			"phone" => "+1 123 123 123",
 			"is_express" => true
 		];
-		$this->orderShipping->set(0, $ship_to_address);
+		$this->orderShippingService->set(0, $ship_to_address);
 	}
 
 	/**
@@ -457,7 +457,7 @@ class OrderProductUnitTest extends KernelTestCase
 			"phone" => "+1 123 123 123",
 			"is_express" => true
 		];
-		$draftOrder = $this->orderShipping->set($draftOrder->getCustomerId(), $ship_to_address);
+		$draftOrder = $this->orderShippingService->set($draftOrder->getCustomerId(), $ship_to_address);
 		$this->assertEquals($ship_to_address['name'], $draftOrder->getName());
 		$this->assertEquals($ship_to_address['surname'], $draftOrder->getSurname());
 		$this->assertEquals($ship_to_address['street'], $draftOrder->getStreet());

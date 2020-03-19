@@ -7,7 +7,7 @@ use \App\Interfaces\v2\IOrderRepo;
 use \App\Interfaces\v2\IOrderProductRepo;
 use App\Entity\v2\Order;
 
-class OrderShipping
+class OrderShippingService
 {
 
 	private $userRepo;
