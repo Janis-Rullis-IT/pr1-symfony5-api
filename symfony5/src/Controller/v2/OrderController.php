@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Swagger\Annotations as SWG;
 use \App\v2\OrderShippingService;
+use \App\v2\OrderService;
 use \App\Exception\UidValidatorException;
 use \App\Exception\ProductIdValidatorException;
 
@@ -112,16 +113,19 @@ class OrderController extends AbstractController
 	 * )
 	 * 
 	 */
-//	public function complete(Request $request, OrderService $orderService, int $customerId): JsonResponse
-//	{
-//		try {
-//			$item = $orderService->complete($customerId, $productId);
-//			$resp = ['id' => $item->getProductId(), 'customerId' => $item->getCustomerId(), 'productId' => $item->getProductId()];
-//			return $this->json($resp, Response::HTTP_CREATED);
-//		} catch (UidValidatorException | ProductIdValidatorException $e) {
-//			return $this->json($e->getErrors(), Response::HTTP_NOT_FOUND);
-//		} catch (\Exception $e) {
-//			return $this->json($e->getErrors(), Response::HTTP_BAD_REQUEST);
-//		}
-//	}
+	public function complete(Request $request, OrderService $orderService, int $customerId): JsonResponse
+	{
+		try {
+			$item = $orderService->complete($customerId);
+			$resp = ["is_domestic" => $item->getIsDomestic(), "is_express" => $item->getIsExpress(), "shipping_cost" => $item->getShippingCost(),
+				"product_cost" => $item->getProductCost(), "total_cost" => $item->getTotalCost(), "name" => $item->getName(),
+				"surname" => $item->getSurname(), "street" => $item->getStreet(), "country" => $item->getCountry(),
+				"phone" => $item->getPhone(), "state" => $item->getState(), "zip" => $item->getZip()];
+			return $this->json($resp, Response::HTTP_CREATED);
+		} catch (UidValidatorException | ProductIdValidatorException $e) {
+			return $this->json($e->getErrors(), Response::HTTP_NOT_FOUND);
+		} catch (\Exception $e) {
+			return $this->json($e->getErrors(), Response::HTTP_BAD_REQUEST);
+		}
+	}
 }
