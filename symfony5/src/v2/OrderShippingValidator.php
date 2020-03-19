@@ -197,6 +197,7 @@ class OrderShippingValidator
 	public function mustHaveShippingSet(Order $order): void
 	{
 		if (!$this->IsShippingSet($order)) {
+			$this->errorsLoader->load(Order::SHIPPING, Order::MUST_HAVE_SHIPPING_SET, $this->errors);
 			throw new OrderShippingValidatorException($this->errors, 4);
 		}
 	}

@@ -27,7 +27,11 @@ class Order
 	const PHONE = "phone";
 	const CANT_CREATE = "Cannot create a draft order. Please, contact our support.";
 	const FIELD_IS_MISSING = ' field is missing.';
-
+	const PRODUCTS = "products";
+	const MUST_HAVE_PRODUCTS = "Must have at least 1 product.";
+	const SHIPPING = "shipping";
+	const MUST_HAVE_SHIPPING_SET = "The shipping must be set before completing the order.";
+	
 	/**
 	 * @ORM\Id()
 	 * @ORM\GeneratedValue()

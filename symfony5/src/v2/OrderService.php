@@ -14,20 +14,17 @@ class OrderService
 	private $productRepo;
 	private $orderRepo;
 	private $orderProductRepo;
-	private $orderShippingValidator;
 	private $orderValidator;
 
 	public function __construct(
 		IProductRepo $productRepo, IUserRepo $userRepo, IOrderRepo $orderRepo,
-		IOrderProductRepo $orderProductRepo, OrderShippingValidator $orderShippingValidator,
-		OrderValidator $orderValidator
+		IOrderProductRepo $orderProductRepo, OrderValidator $orderValidator
 	)
 	{
 		$this->userRepo = $userRepo;
 		$this->productRepo = $productRepo;
 		$this->orderRepo = $orderRepo;
 		$this->orderProductRepo = $orderProductRepo;
-		$this->orderShippingValidator = $orderShippingValidator;
 		$this->orderValidator = $orderValidator;
 	}
 
@@ -42,19 +39,18 @@ class OrderService
 	{
 		$customer = $this->userRepo->mustFind($customerId);
 		$order = $this->orderRepo->insertIfNotExist($customer->getId());
-		$this->orderShippingValidator->mustHaveShippingSet($order);
 		$this->recalculateOrder($order);
 		$this->orderValidator->mustHaveProducts($order);
-
-		// #40 TODO User has enough money to contine if not suggest to change shipping or remove items from the cart.
-		// #40 TODO Change order's status.
-		// #40 TODO Reduce customers balance.
+		$this->orderValidator->mustHaveMoney($order, $customer);
+		$this->orderRepo->markAsCompleted($order);
+		$this->userRepo->reduceBalance($customer, $order->getTotalCost());
 
 		return $this->orderRepo->findOneBy(["id" => $order->getId()]);
 	}
 
 	public function recalculateOrder($order): void
 	{
+		$this->orderValidator->mustHaveShippingSet($order);
 		$this->orderProductRepo->setShippingValues($order);
 		$this->orderRepo->setOrderCostsFromCartItems($order);
 	}

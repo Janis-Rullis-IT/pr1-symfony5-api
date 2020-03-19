@@ -4,39 +4,24 @@ namespace App\v2;
 use \App\Entity\v2\Order;
 use App\ErrorsLoader;
 use \App\Exception\OrderValidatorException;
+use \App\Entity\User;
+use \App\User\UserValidator;
+use \App\v2\OrderShippingValidator;
 
 class OrderValidator
 {
 
 	private $errors;
 	private $errorsLoader;
+	private $userValidator;
+	private $shippingValidator;
 
-	public function __construct(ErrorsLoader $errors)
+	public function __construct(ErrorsLoader $errorsLoader, UserValidator $userValidator, OrderShippingValidator $shippingValidator)
 	{
+		$this->errorsLoader = $errorsLoader;
 		$this->errors = [];
-	}
-
-	/**
-	 * #40 Validate the order and store errors.
-	 * 
-	 * @param array $data
-	 */
-	public function validate(array $data): void
-	{
-		$this->validateRequiredKeys($data);
-		$this->validateAddress($data);
-		$this->validateExpressShipping($data);
-	}
-
-	/**
-	 * #40 Is order valid?
-	 * 
-	 * @param array $data
-	 * @return bool
-	 */
-	public function isValid(array $data): bool
-	{
-		return $this->hasRequiredKeys($data) && $this->isAddressValid($data) && $this->isExpressShippingAllowed($data);
+		$this->userValidator = $userValidator;
+		$this->shippingValidator = $shippingValidator;
 	}
 
 	public function getErrors(): array
@@ -45,19 +30,14 @@ class OrderValidator
 	}
 
 	/**
-	 * #40 Validate the address and store errors.
+	 * #40 Make sure that the shipping is set before completing the order.
 	 * 
-	 * @param array $data
+	 * @param Order $order
+	 * @return void
 	 */
-	public function validateAddress(array $data): void
+	public function mustHaveShippingSet(Order $order): void
 	{
-		if (!$this->isAddressValid($data)) {
-			$errors = $this->addressValidator->getErrors();
-			foreach ($errors as $key => $val) {
-				$this->errorsLoader->load($key, $val, $this->errors);
-			}
-			throw new OrderShippingValidatorException($this->errors, 2);
-		}
+		$this->shippingValidator->mustHaveShippingSet($order);
 	}
 
 	/**
@@ -83,7 +63,20 @@ class OrderValidator
 	public function mustHaveProducts(Order $order): void
 	{
 		if (!$this->hasProducts($order)) {
+			$this->errorsLoader->load(Order::PRODUCTS, Order::MUST_HAVE_PRODUCTS, $this->errors);
 			throw new OrderValidatorException($this->errors, 5);
 		}
+	}
+
+	/**
+	 * #40 Make sure the user has enough money.
+	 * 
+	 * @param Order $order
+	 * @param User $customer
+	 * @return void
+	 */
+	public function mustHaveMoney(Order $order, User $customer): void
+	{
+		$this->userValidator->mustHaveMoney($customer, $order->getTotalCost());
 	}
 }

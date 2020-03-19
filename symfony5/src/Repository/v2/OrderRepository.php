@@ -123,15 +123,33 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 
 		$order->setCountry($data[Order::COUNTRY]);
 		$order->setPhone($data[Order::PHONE]);
-		
+
 		return $order;
 	}
-	
-	// #40
+
+	/**
+	 * #40 Write to database.
+	 * Shorthand helper so wouldn't need to init the em when there's a repo.
+	 * 
+	 * @param Order $order
+	 * @return Order
+	 */
 	public function write(Order $order): Order
 	{
-		$this->em->persist($order);
 		$this->em->flush();
 		return $order;
+	}
+
+	/**
+	 * #40 Mark the order as completed.
+	 * New products added to the cart won't be attached to this one anymore.
+	 *  
+	 * @param Order $order
+	 * @return Order
+	 */
+	public function markAsCompleted(Order $order): Order
+	{
+		$order->setStatus('completed');
+		return $this->write($order);
 	}
 }
