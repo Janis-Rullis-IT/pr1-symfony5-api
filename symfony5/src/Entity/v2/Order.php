@@ -363,7 +363,6 @@ class Order
 		self::STREET,
 		self::COUNTRY,
 		self::PHONE,
-		self::COUNTRY,
 		self::IS_EXPRESS
 	];
 

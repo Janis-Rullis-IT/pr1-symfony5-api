@@ -25,7 +25,7 @@ class OrderCreator
 	}
 
 	/**
-	 * #38 Validate, prepare and write to db.
+	 * #38 Set order's shipping.
 	 * 
 	 * @param int $customerId
 	 * @param array $data
