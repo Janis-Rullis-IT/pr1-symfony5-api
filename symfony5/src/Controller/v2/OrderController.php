@@ -117,15 +117,19 @@ class OrderController extends AbstractController
 	{
 		try {
 			$item = $orderService->complete($customerId);
-			$resp = ["is_domestic" => $item->getIsDomestic(), "is_express" => $item->getIsExpress(), "shipping_cost" => $item->getShippingCost(),
+			$resp = ["status" => $item->getStatus(), "is_domestic" => $item->getIsDomestic(), "is_express" => $item->getIsExpress(), "shipping_cost" => $item->getShippingCost(),
 				"product_cost" => $item->getProductCost(), "total_cost" => $item->getTotalCost(), "name" => $item->getName(),
 				"surname" => $item->getSurname(), "street" => $item->getStreet(), "country" => $item->getCountry(),
 				"phone" => $item->getPhone(), "state" => $item->getState(), "zip" => $item->getZip()];
-			return $this->json($resp, Response::HTTP_CREATED);
+			return $this->json($resp, Response::HTTP_OK);
 		} catch (UidValidatorException $e) {
 			return $this->json($e->getErrors(), Response::HTTP_NOT_FOUND);
 		} catch (\Exception $e) {
-			return $this->json($e->getErrors(), Response::HTTP_BAD_REQUEST);
+			if (method_exists($e, 'getErrors')) {
+				return $this->json($e->getErrors(), Response::HTTP_BAD_REQUEST);
+			} else {
+				return $this->json($e->getMessage(), Response::HTTP_BAD_REQUEST);
+			}
 		}
 	}
 }

@@ -75,7 +75,7 @@ class UserRepo extends ServiceEntityRepository implements IUserRepo
 	{
 		// #40 TODO: Maybe this should be better done in SQL? To work with actual DB
 		// values and avoid concurrent operations that could impact this data.
-		$user->setBalance($user - $money);
+		$user->setBalance($user->getBalance() - $money);
 		$this->em->flush();
 		return $user;
 	}

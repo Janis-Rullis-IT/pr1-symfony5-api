@@ -63,7 +63,7 @@ class UserValidator
 	 * @return bool
 	 * @throws UserValidatorException
 	 */
-	public function mustHaveMoney(User $user, int $money): bool
+	public function mustHaveMoney(User $user, int $money): void
 	{
 		if(!$this->hasEnoughMoney($user, $money)){
 			$this->errorsLoader->load(User::BALANCE, User::INSUFFICIENT_FUNDS, $this->errors);

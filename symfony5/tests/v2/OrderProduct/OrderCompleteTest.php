@@ -105,6 +105,53 @@ class OrderCompleteTest extends WebTestCase
 		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
 		$this->assertEquals([User::BALANCE => [User::INSUFFICIENT_FUNDS]], $responseBody);
 	}
+	
+	/**
+	 * #40 Insufficient funds.
+	 */
+	public function testInsufficientFunds2()
+	{
+		$client = static::createClient();
+		$balance = 1000;
+		$user = $this->insertUsersAndProds($client, 1, $balance)[0];
+
+		$customerId = $user->getId();
+		$productId = $user->products[0]->getId();
+		$client->request('POST', '/users/v2/' . $customerId . '/cart/' . $productId);
+
+		$uri = '/users/v2/' . $customerId . '/order/shipping';
+		$data = $this->ship_to_address;
+		$client->request('PUT', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
+
+		$uri = '/users/v2/' . $customerId . '/order/complete';
+		$client->request('PUT', $uri);
+		$this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
+		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
+		$this->assertEquals([User::BALANCE => [User::INSUFFICIENT_FUNDS]], $responseBody);
+	}
+	
+	/**
+	 * #40 A valid request.
+	 */
+	public function testValidRequest()
+	{
+		$client = static::createClient();
+		$user = $this->insertUsersAndProds($client)[0];
+
+		$customerId = $user->getId();
+		$productId = $user->products[0]->getId();
+		$client->request('POST', '/users/v2/' . $customerId . '/cart/' . $productId);
+
+		$uri = '/users/v2/' . $customerId . '/order/shipping';
+		$data = $this->ship_to_address;
+		$client->request('PUT', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
+
+		$uri = '/users/v2/' . $customerId . '/order/complete';
+		$client->request('PUT', $uri);
+		$this->assertEquals(Response::HTTP_OK, $client->getResponse()->getStatusCode());
+		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
+		// #40 TODO: Check status.
+	}
 
 	/**
 	 * #38 Create 3 users with 1 mug and 1 shirt.
@@ -113,7 +160,7 @@ class OrderCompleteTest extends WebTestCase
 	 * 
 	 * @return User array
 	 */
-	private function insertUsersAndProds($client, int $count = 1, int $balance = 1000, $productTypes = ['t-shirt', 'mug'])
+	private function insertUsersAndProds($client, int $count = 1, int $balance = 10000, $productTypes = ['t-shirt', 'mug'])
 	{
 		$this->c = $client->getContainer();
 		$this->entityManager = $this->c->get('doctrine')->getManager();
@@ -139,7 +186,7 @@ class OrderCompleteTest extends WebTestCase
 	 * @param type $i
 	 * @return User
 	 */
-	private function createUser($i, int $balance = 1000): User
+	private function createUser($i, int $balance = 10000): User
 	{
 		$user = new User();
 		$user->setName(rand());
