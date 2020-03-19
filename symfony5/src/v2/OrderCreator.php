@@ -37,12 +37,13 @@ class OrderCreator
 		$order = $this->prepare($customerId, $data);
 		$order = $this->orderRepo->write($order);
 
+		$this->orderProductRepo->makrCartsAdditionalProducts($order);
 		$this->orderProductRepo->markDomesticShipping($order);
 		$this->orderProductRepo->markExpressShipping($order);
 		$this->orderProductRepo->setShippingRates($order);
 		$this->orderRepo->setOrderCostsFromCartItems($order);
 
-		return $order;
+		return $this->orderRepo->findOneBy(["id" => $order->getId()]);
 	}
 
 	/**

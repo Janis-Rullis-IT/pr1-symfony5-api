@@ -85,17 +85,20 @@ class OrdertTest extends WebTestCase
 		$user = $this->insertUsersAndProds($client)[0];
 
 		$customerId = $user->getId();
+		$productId = $user->products[0]->getId();
+		$client->request('POST', '/users/v2/' . $customerId . '/cart/' . $productId);
+
 		$uri = '/users/v2/' . $customerId . '/order/shipping';
 		$data = $this->ship_to_address;
 		$client->request('POST', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
 		$this->assertEquals(Response::HTTP_OK, $client->getResponse()->getStatusCode());
 		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
 
-		$this->assertEquals($responseBody['is_domestic'], 'y');
-		$this->assertEquals($responseBody['is_express'], 'y');
-		foreach (["shipping_cost", "product_cost", "total_cost"] as $val) {
-			$this->assertEquals(null, $responseBody[$val]);
-		}
+		$this->assertEquals('y', $responseBody['is_domestic']);
+		$this->assertEquals('y', $responseBody['is_express']);
+		$this->assertEquals(1000, $responseBody['shipping_cost'], '#40 Express costs 10$.');
+		$this->assertEquals($user->products[0]->getCost(), $responseBody['product_cost']);
+		$this->assertEquals(1000 + $user->products[0]->getCost(), $responseBody['total_cost']);
 
 		unset($data['is_express']);
 		foreach ($data as $key => $val) {

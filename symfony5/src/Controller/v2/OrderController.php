@@ -41,9 +41,9 @@ class OrderController extends AbstractController
 	 *   @SWG\Schema(
 	 *    @SWG\Property(property="is_domestic", type="string", example="y"),
 	 *    @SWG\Property(property="is_express", type="string", example="y"),
-	 *    @SWG\Property(property="shipping_cost", type="integer", example=100),
-	 *    @SWG\Property(property="product_cost", type="integer", example=100),
-	 *    @SWG\Property(property="total_cost", type="integer", example=200),
+	 *    @SWG\Property(property="shipping_cost", type="integer", example=1000),
+	 *    @SWG\Property(property="product_cost", type="integer", example=1000),
+	 *    @SWG\Property(property="total_cost", type="integer", example=2000),
 	 *    @SWG\Property(property="name", type="string", example="John"),
 	 *    @SWG\Property(property="surname", type="string", example="Doe"),
 	 *    @SWG\Property(property="street", type="string", example="Palm street 25-7"),
