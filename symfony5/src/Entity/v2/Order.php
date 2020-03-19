@@ -3,7 +3,7 @@ namespace App\Entity\v2;
 
 use Doctrine\ORM\Mapping as ORM;
 use \App\Helper\EnumType;
-use \App\Exception\OrderValidatorException;
+use \App\Exception\OrderShippingValidatorException;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\v2\OrderRepository")
@@ -13,6 +13,7 @@ class Order
 {
 
 	const IS_EXPRESS = "is_express";
+	const IS_DOMESTIC = "is_domestic";
 	const REQUIRE_IS_DOMESTIC = 'Set `is_domestic` before `is_express`.';
 	const EXPRESS_ONLY_IN_DOMESTIC_REGION = "Express shipping is allowed only in domestic regions.";
 	const ID = "id";
@@ -190,10 +191,10 @@ class Order
 
 		// #40 Require the `is_domestic` to be set first and to match the region.
 		if (empty($this->getIsDomestic())) {
-			throw new OrderValidatorException([self::IS_EXPRESS => self::REQUIRE_IS_DOMESTIC], 1);
+			throw new OrderShippingValidatorException([self::IS_EXPRESS => self::REQUIRE_IS_DOMESTIC], 1);
 		}
 		if ($this->getIsDomestic() === 'n' && $is_express === 'y') {
-			throw new OrderValidatorException([self::IS_EXPRESS => self::EXPRESS_ONLY_IN_DOMESTIC_REGION], 2);
+			throw new OrderShippingValidatorException([self::IS_EXPRESS => self::EXPRESS_ONLY_IN_DOMESTIC_REGION], 2);
 		}
 
 		$this->is_express = $is_express;

@@ -11,6 +11,7 @@ use \App\v2\OrderShippingService;
 use \App\Interfaces\v2\IOrderRepo;
 use \App\Interfaces\v2\IOrderProductRepo;
 use \App\Exception\OrderValidatorException;
+use \App\Exception\OrderShippingValidatorException;
 use \App\v2\OrderShippingValidator;
 use \App\Exception\UidValidatorException;
 use \App\Exception\ProductIdValidatorException;
@@ -57,7 +58,7 @@ class OrderProductUnitTest extends KernelTestCase
 	public function testOrderShippingExceptions()
 	{
 		$order = new Order();
-		$this->expectException(OrderValidatorException::class);
+		$this->expectException(OrderShippingValidatorException::class);
 		$this->expectExceptionCode(1);
 		$this->orderShippingService->set(1, []);
 	}
@@ -88,7 +89,7 @@ class OrderProductUnitTest extends KernelTestCase
 	 */
 	public function testOrderAddressValidatorExceptions()
 	{
-		$this->expectException(OrderValidatorException::class);
+		$this->expectException(OrderShippingValidatorException::class);
 		$this->expectExceptionCode(2);
 		$this->orderShippingValidator->validateAddress([]);
 	}
@@ -98,7 +99,7 @@ class OrderProductUnitTest extends KernelTestCase
 	 */
 	public function testOrderValidatorExceptions()
 	{
-		$this->expectException(OrderValidatorException::class);
+		$this->expectException(OrderShippingValidatorException::class);
 		$this->expectExceptionCode(1);
 		$this->orderShippingValidator->validate([]);
 	}
@@ -143,7 +144,7 @@ class OrderProductUnitTest extends KernelTestCase
 	public function testOrderIsExpressExceptions()
 	{
 		$order = new Order();
-		$this->expectException(OrderValidatorException::class);
+		$this->expectException(OrderShippingValidatorException::class);
 		$this->expectExceptionCode(1, '#40 Require the `is_domestic` to be set first');
 		$order->setIsExpress('y');
 	}
@@ -151,7 +152,7 @@ class OrderProductUnitTest extends KernelTestCase
 	public function testOrderIsExpressExceptions2()
 	{
 		$order = new Order();
-		$this->expectException(OrderValidatorException::class);
+		$this->expectException(OrderShippingValidatorException::class);
 		$this->expectExceptionCode(2, '#40 Express must match the region.');
 		$order->setIsDomestic('n');
 		$order->setIsExpress('y');

@@ -13,9 +13,10 @@ use \App\Entity\v2\Order;
 use App\Validators\AddressValidators\AddressValidator;
 use App\Validators\AddressValidators\ShipmentType;
 use App\ErrorsLoader;
-use \App\Exception\OrderValidatorException;
+use \App\Exception\OrderShippingValidatorException;
+use \App\Helper\EnumType;
 
-class OrderShippingValidator
+class OrderShippingValidator::mustHaveShippingSet()
 {
 
 	private $errors;
@@ -79,7 +80,7 @@ class OrderShippingValidator
 			foreach ($errors as $key => $val) {
 				$this->errorsLoader->load($key, $val, $this->errors);
 			}
-			throw new OrderValidatorException($this->errors, 1);
+			throw new OrderShippingValidatorException($this->errors, 1);
 		}
 	}
 
@@ -142,7 +143,7 @@ class OrderShippingValidator
 	{
 		if (!$this->isExpressShippingAllowed($data)) {
 			$this->errorsLoader->load(Order::IS_EXPRESS, Order::EXPRESS_ONLY_IN_DOMESTIC_REGION, $this->errors);
-			throw new OrderValidatorException($this->errors, 3);
+			throw new OrderShippingValidatorException($this->errors, 3);
 		}
 	}
 
@@ -169,7 +170,34 @@ class OrderShippingValidator
 			foreach ($errors as $key => $val) {
 				$this->errorsLoader->load($key, $val, $this->errors);
 			}
-			throw new OrderValidatorException($this->errors, 2);
+			throw new OrderShippingValidatorException($this->errors, 2);
+		}
+	}
+
+	/**
+	 * #40 Is the shipping set? 
+	 * `is_domestic` field should be set to 'y' or 'n' when calling the `OrderShippingService::set()` 
+	 * based on the address.
+	 * 
+	 * @param Order $order
+	 * @return bool
+	 */
+	public function IsShippingSet(Order $order): bool
+	{
+		return !empty($order->getIsDomestic()) && EnumType::isValid($order->getIsDomestic());
+	}
+
+	/**
+	 * #40 Make sure that the shipping is set before completing the order.
+	 * 
+	 * @param Order $order
+	 * @return void
+	 * @throws OrderShippingValidatorException
+	 */
+	public function mustHaveShippingSet(Order $order): void
+	{
+		if (!$this->IsShippingSet($order)) {
+			throw new OrderShippingValidatorException($this->errors, 4);
 		}
 	}
 }

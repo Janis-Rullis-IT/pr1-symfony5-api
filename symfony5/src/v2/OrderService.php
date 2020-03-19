@@ -34,10 +34,10 @@ class OrderService
 	 */
 	public function complete(int $customerId, array $data): Order
 	{
-		// #38 Validate and prepare the item.
-		$order = $this->orderRepo->write($order);
-
-		// #40 TODO: Validation- is shipping set - is_domestic set (not null).
+		$customer = $this->userRepo->mustFind($customerId);
+		$order = $this->orderRepo->insertIfNotExist($customer->getId());
+		$this->orderShippingValidator->mustHaveShippingSet($order);
+		
 		// #40 TODO: Recalculate order -
 		$this->orderProductRepo->makrCartsAdditionalProducts($order);
 		$this->orderProductRepo->markDomesticShipping($order);
@@ -51,19 +51,5 @@ class OrderService
 		// #40 TODO Reduce customers balance.
 
 		return $this->orderRepo->findOneBy(["id" => $order->getId()]);
-	}
-
-	/**
-	 * #40 Validate and prepare the item.
-	 * 
-	 * @param int $customerId
-	 * @param array $data
-	 * @return array
-	 */
-	public function prepare(int $customerId, array $data): Order
-	{
-		$customer = $this->userRepo->mustFind($customerId);
-		$draftOrder = $this->orderRepo->insertIfNotExist($customer->getId());
-		return $this->orderRepo->prepare($draftOrder, $data);
 	}
 }
