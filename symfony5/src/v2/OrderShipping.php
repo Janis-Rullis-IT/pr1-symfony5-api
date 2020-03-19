@@ -7,21 +7,22 @@ use \App\Interfaces\v2\IOrderRepo;
 use \App\Interfaces\v2\IOrderProductRepo;
 use App\Entity\v2\Order;
 
-class OrderCreator
+class OrderShipping
 {
 
 	private $userRepo;
 	private $productRepo;
 	private $orderRepo;
 	private $orderProductRepo;
+	private $orderShippingValidator;
 
-	public function __construct(IProductRepo $productRepo, IUserRepo $userRepo, IOrderRepo $orderRepo, IOrderProductRepo $orderProductRepo, OrderValidator $orderValidator)
+	public function __construct(IProductRepo $productRepo, IUserRepo $userRepo, IOrderRepo $orderRepo, IOrderProductRepo $orderProductRepo, OrderShippingValidator $orderShippingValidator)
 	{
 		$this->userRepo = $userRepo;
 		$this->productRepo = $productRepo;
 		$this->orderRepo = $orderRepo;
 		$this->orderProductRepo = $orderProductRepo;
-		$this->orderValidator = $orderValidator;
+		$this->orderShippingValidator = $orderShippingValidator;
 	}
 
 	/**
@@ -31,7 +32,7 @@ class OrderCreator
 	 * @param array $data
 	 * @return array
 	 */
-	public function handle(int $customerId, array $data): Order
+	public function set(int $customerId, array $data): Order
 	{
 		// #38 Validate and prepare the item.
 		$order = $this->prepare($customerId, $data);
@@ -55,8 +56,8 @@ class OrderCreator
 	 */
 	public function prepare(int $customerId, array $data): Order
 	{
-		$this->orderValidator->validate($data);
-		$data['is_domestic'] = $this->orderValidator->isDomestic($data);
+		$this->orderShippingValidator->validate($data);
+		$data['is_domestic'] = $this->orderShippingValidator->isDomestic($data);
 		$customer = $this->userRepo->mustFind($customerId);
 		// #38 #36 Collect customer's current 'draft' or create a new one.
 		$draftOrder = $this->orderRepo->insertIfNotExist($customer->getId());

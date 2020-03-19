@@ -7,7 +7,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Swagger\Annotations as SWG;
-use \App\v2\OrderCreator;
+use \App\v2\OrderShipping;
 use \App\Exception\UidValidatorException;
 use \App\Exception\ProductIdValidatorException;
 
@@ -17,7 +17,7 @@ class OrderController extends AbstractController
 	/**
 	 * #40 Set order's shipping.
 	 * 
-	 * @Route("/users/v2/{customerId}/order/shipping", methods={"POST"})   
+	 * @Route("/users/v2/{customerId}/order/shipping", methods={"PUT"})
 	 * @SWG\Tag(name="v2:shipping")
 	 * 
 	 * @SWG\Parameter(
@@ -60,19 +60,18 @@ class OrderController extends AbstractController
 	 *   )
 	 * )
 	 * 
-	 * @param \App\Controller\v2\OrderCreator $orderCreator
 	 * 
 	 * @param Request $request
-	 * @param OrderCreator $orderCreator
-	 * @param type $customerId
+	 * @param OrderShipping $orderShippingCreator
+	 * @param int $customerId
 	 * @return JsonResponse
 	 */
-	public function setShipping(Request $request, OrderCreator $orderCreator, int $customerId): JsonResponse
+	public function setShipping(Request $request, OrderShipping $orderShippingCreator, int $customerId): JsonResponse
 	{
 		try {
 			// #40 POST handling https://stackoverflow.com/a/54944381 https://github.com/symfony/http-foundation/blob/master/Request.php#L715 .
 			// #40 JSON handling https://stackoverflow.com/a/57281311 .
-			$item = $orderCreator->handle($customerId, json_decode($request->getContent(), true));
+			$item = $orderShippingCreator->set($customerId, json_decode($request->getContent(), true));
 			$resp = ["is_domestic" => $item->getIsDomestic(), "is_express" => $item->getIsExpress(), "shipping_cost" => $item->getShippingCost(),
 				"product_cost" => $item->getProductCost(), "total_cost" => $item->getTotalCost(), "name" => $item->getName(),
 				"surname" => $item->getSurname(), "street" => $item->getStreet(), "country" => $item->getCountry(),
@@ -84,4 +83,47 @@ class OrderController extends AbstractController
 			return $this->json($e->getErrors(), Response::HTTP_BAD_REQUEST);
 		}
 	}
+
+	/**
+	 * #40 Complete the order.
+	 * 
+	 * @Route("/users/v2/{customerId}/order", methods={"PUT"})
+	 * @SWG\Tag(name="v2:order")
+	 * @SWG\Response(
+	 *   response=200, description="Saved.",
+	 *   @SWG\Schema(
+	 *    @SWG\Property(property="is_domestic", type="string", example="y"),
+	 *    @SWG\Property(property="is_express", type="string", example="y"),
+	 *    @SWG\Property(property="shipping_cost", type="integer", example=1000),
+	 *    @SWG\Property(property="product_cost", type="integer", example=1000),
+	 *    @SWG\Property(property="total_cost", type="integer", example=2000),
+	 *    @SWG\Property(property="name", type="string", example="John"),
+	 *    @SWG\Property(property="surname", type="string", example="Doe"),
+	 *    @SWG\Property(property="street", type="string", example="Palm street 25-7"),
+	 *    @SWG\Property(property="state", type="string", example="California"),
+	 *    @SWG\Property(property="zip", type="string", example="60744"),
+	 *    @SWG\Property(property="country", type="string", example="US"),
+	 *    @SWG\Property(property="phone", type="string", example="+1 123 123 123")
+	 *   )
+	 * )
+	 * @SWG\Response(
+	 *   response=404, description="Not found.",
+	 *   @SWG\Schema(
+	 *    @SWG\Property(property="id", type="string", example="invalid user"),
+	 *   )
+	 * )
+	 * 
+	 */
+//	public function complete(Request $request, OrderCreator $orderCreator, int $customerId): JsonResponse
+//	{
+//		try {
+//			$item = $orderProductCreator->handle($customerId, $productId);
+//			$resp = ['id' => $item->getProductId(), 'customerId' => $item->getCustomerId(), 'productId' => $item->getProductId()];
+//			return $this->json($resp, Response::HTTP_CREATED);
+//		} catch (UidValidatorException | ProductIdValidatorException $e) {
+//			return $this->json($e->getErrors(), Response::HTTP_NOT_FOUND);
+//		} catch (\Exception $e) {
+//			return $this->json($e->getErrors(), Response::HTTP_BAD_REQUEST);
+//		}
+//	}
 }

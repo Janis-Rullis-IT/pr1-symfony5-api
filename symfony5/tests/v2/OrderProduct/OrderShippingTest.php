@@ -7,9 +7,9 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * #40 POST /users/v2/{customerId}/order/shipping .
+ * #40 PUT /users/v2/{customerId}/order/shipping .
  */
-class OrdertTest extends WebTestCase
+class OrderShippingTest extends WebTestCase
 {
 
 	private $impossibleInt = 3147483648;
@@ -35,7 +35,7 @@ class OrdertTest extends WebTestCase
 		$customerId = $this->impossibleInt;
 		$uri = '/users/v2/' . $customerId . '/order/shipping';
 		$data = $this->ship_to_address;
-		$client->request('POST', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
+		$client->request('PUT', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
 		$this->assertEquals(Response::HTTP_NOT_FOUND, $client->getResponse()->getStatusCode());
 		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
 		$this->assertEquals(['id' => "invalid user"], $responseBody);
@@ -51,7 +51,7 @@ class OrdertTest extends WebTestCase
 		$customerId = $this->impossibleInt;
 		$uri = '/users/v2/' . $customerId . '/order/shipping';
 		$data = [];
-		$client->request('POST', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
+		$client->request('PUT', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
 		$this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
 		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
 		foreach (\App\Entity\v2\Order::$requireds as $key => $val) {
@@ -70,7 +70,7 @@ class OrdertTest extends WebTestCase
 		$uri = '/users/v2/' . $customerId . '/order/shipping';
 		$data = $this->ship_to_address;
 		unset($data['is_express']);
-		$client->request('POST', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
+		$client->request('PUT', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
 		$this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
 		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
 		$this->assertEquals(['is_express' => ["'is_express' field is missing."]], $responseBody);
@@ -90,7 +90,7 @@ class OrdertTest extends WebTestCase
 
 		$uri = '/users/v2/' . $customerId . '/order/shipping';
 		$data = $this->ship_to_address;
-		$client->request('POST', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
+		$client->request('PUT', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
 		$this->assertEquals(Response::HTTP_OK, $client->getResponse()->getStatusCode());
 		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
 

@@ -7,12 +7,11 @@ use \App\Entity\Product;
 use \App\Entity\v2\Order;
 use \App\Entity\v2\OrderProduct;
 use \App\v2\OrderProductCreator;
-use \App\v2\OrderCreator;
+use \App\v2\OrderShipping;
 use \App\Interfaces\v2\IOrderRepo;
 use \App\Interfaces\v2\IOrderProductRepo;
 use \App\Exception\OrderValidatorException;
-use App\Exception\OrderCreatorException;
-use \App\v2\OrderValidator;
+use \App\v2\OrderShippingValidator;
 use \App\Exception\UidValidatorException;
 use \App\Exception\ProductIdValidatorException;
 
@@ -26,8 +25,8 @@ class OrderProductUnitTest extends KernelTestCase
 	private $c;
 	private $entityManager;
 	private $orderProductCreator;
-	private $orderCreator;
-	private $orderValidator;
+	private $orderShipping;
+	private $orderShippingValidator;
 	private $orderRepo;
 	private $orderProductRepo;
 	private $impossibleInt = 3147483648;
@@ -43,8 +42,8 @@ class OrderProductUnitTest extends KernelTestCase
 		$this->orderProductCreator = $this->c->get('test.' . OrderProductCreator::class);
 		$this->orderRepo = $this->c->get('test.' . IOrderRepo::class);
 		$this->orderProductRepo = $this->c->get('test.' . IOrderProductRepo::class);
-		$this->orderCreator = $this->c->get('test.' . OrderCreator::class);
-		$this->orderValidator = $this->c->get('test.' . OrderValidator::class);
+		$this->orderShipping = $this->c->get('test.' . OrderShipping::class);
+		$this->orderShippingValidator = $this->c->get('test.' . OrderShippingValidator::class);
 
 		// Using database in tests https://stackoverflow.com/a/52014145 https://symfony.com/doc/master/testing/database.html#functional-testing-of-a-doctrine-repository
 		$this->entityManager = $this->c->get('doctrine')->getManager();
@@ -55,18 +54,18 @@ class OrderProductUnitTest extends KernelTestCase
 	/**
 	 *  #40
 	 */
-	public function testOrderCreatorExceptions()
+	public function testOrderShippingExceptions()
 	{
 		$order = new Order();
 		$this->expectException(OrderValidatorException::class);
 		$this->expectExceptionCode(1);
-		$this->orderCreator->handle(1, []);
+		$this->orderShipping->set(1, []);
 	}
 
 	/**
 	 *  #40
 	 */
-	public function testOrderCreatorExceptions2()
+	public function testOrderShippingExceptions2()
 	{
 		$order = new Order();
 		$this->expectException(UidValidatorException::class);
@@ -81,7 +80,7 @@ class OrderProductUnitTest extends KernelTestCase
 			"phone" => "+1 123 123 123",
 			"is_express" => true
 		];
-		$this->orderCreator->handle(0, $ship_to_address);
+		$this->orderShipping->set(0, $ship_to_address);
 	}
 
 	/**
@@ -91,7 +90,7 @@ class OrderProductUnitTest extends KernelTestCase
 	{
 		$this->expectException(OrderValidatorException::class);
 		$this->expectExceptionCode(2);
-		$this->orderValidator->validateAddress([]);
+		$this->orderShippingValidator->validateAddress([]);
 	}
 
 	/**
@@ -101,7 +100,7 @@ class OrderProductUnitTest extends KernelTestCase
 	{
 		$this->expectException(OrderValidatorException::class);
 		$this->expectExceptionCode(1);
-		$this->orderValidator->validate([]);
+		$this->orderShippingValidator->validate([]);
 	}
 
 	/**
@@ -118,18 +117,18 @@ class OrderProductUnitTest extends KernelTestCase
 			"country" => "US",
 			"phone" => "+1 123 123 123",
 		];
-		$this->assertFalse($this->orderValidator->hasRequiredKeys($ship_to_address));
-		$this->assertEquals(['is_express' => 'is_express'], $this->orderValidator->getMissingKeys($ship_to_address));
+		$this->assertFalse($this->orderShippingValidator->hasRequiredKeys($ship_to_address));
+		$this->assertEquals(['is_express' => 'is_express'], $this->orderShippingValidator->getMissingKeys($ship_to_address));
 		$ship_to_address['is_express'] = true;
-		$this->assertTrue($this->orderValidator->hasRequiredKeys($ship_to_address));
+		$this->assertTrue($this->orderShippingValidator->hasRequiredKeys($ship_to_address));
 
-		$this->assertTrue($this->orderValidator->isAddressValid($ship_to_address));
-		$this->assertTrue($this->orderValidator->isExpressShippingAllowed($ship_to_address));
-		$this->assertTrue($this->orderValidator->isValid($ship_to_address));
+		$this->assertTrue($this->orderShippingValidator->isAddressValid($ship_to_address));
+		$this->assertTrue($this->orderShippingValidator->isExpressShippingAllowed($ship_to_address));
+		$this->assertTrue($this->orderShippingValidator->isValid($ship_to_address));
 		$ship_to_address['country'] = 'Latvia';
-		$this->assertTrue($this->orderValidator->isAddressValid($ship_to_address));
-		$this->assertFalse($this->orderValidator->isExpressShippingAllowed($ship_to_address));
-		$this->assertFalse($this->orderValidator->isValid($ship_to_address));
+		$this->assertTrue($this->orderShippingValidator->isAddressValid($ship_to_address));
+		$this->assertFalse($this->orderShippingValidator->isExpressShippingAllowed($ship_to_address));
+		$this->assertFalse($this->orderShippingValidator->isValid($ship_to_address));
 	}
 
 	public function testOrderEnumExceptions()
@@ -458,7 +457,7 @@ class OrderProductUnitTest extends KernelTestCase
 			"phone" => "+1 123 123 123",
 			"is_express" => true
 		];
-		$draftOrder = $this->orderCreator->handle($draftOrder->getCustomerId(), $ship_to_address);
+		$draftOrder = $this->orderShipping->set($draftOrder->getCustomerId(), $ship_to_address);
 		$this->assertEquals($ship_to_address['name'], $draftOrder->getName());
 		$this->assertEquals($ship_to_address['surname'], $draftOrder->getSurname());
 		$this->assertEquals($ship_to_address['street'], $draftOrder->getStreet());

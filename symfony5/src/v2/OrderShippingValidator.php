@@ -15,7 +15,7 @@ use App\Validators\AddressValidators\ShipmentType;
 use App\ErrorsLoader;
 use \App\Exception\OrderValidatorException;
 
-class OrderValidator
+class OrderShippingValidator
 {
 
 	private $errors;
@@ -38,36 +38,6 @@ class OrderValidator
 	 */
 	public function validate(array $data): void
 	{
-		// #40 Error, Exceptions and PHPUNit best practices
-		// https://www.guru99.com/error-handling-and-exceptions.html
-		// https://dev.to/anastasionico/good-practices-handling-error-and-exceptions-in-php-5d8c
-		// https://guh.me/how-to-assert-that-an-exception-is-not-thrown-on-phpunit
-		// https://riptutorial.com/phpunit/example/23271/assert-an-exception-is-thrown
-		// https://www.greycampus.com/codelabs/php/exception-handling
-		// https://blog.eleven-labs.com/en/fr/php7-throwable-error-exception/
-		// https://code-boxx.com/php-error-handling-best-practices/
-		// https://phpunit.readthedocs.io/en/9.0/writing-tests-for-phpunit.html#testing-exceptions
-		// When to use Exception and when not to? https://www.startutorial.com/articles/view/modern-php-developer-exception
-		// 
-		// http://bestpractices.thecodingmachine.com/php/error_handling.html
-		// - Return vs exception "Developers tend to forget to add required checks. 
-		// So throw an exception that the error will be noticed even wo the check."
-		// - Always extend Exceptions so they could be differenetiated one from another.
-		// 
-		// https://www.nikolaposa.in.rs/blog/2016/08/17/exceptional-behavior-best-practices/ 
-		// try/catch block which is a more clearer and meaningful way of expressing our intents in a cod
-		//
-		// void vs bool return
-		// https://symfony.com/doc/master/contributing/code/standards.html
-		// https://wiki.php.net/rfc/void_return_type 
-		// "In C, a void function can't be used in an expression, only as a statement.
-		// void signifies an unimportant return value that won't be used.".
-		// #40 Personal note: Couldn't find a case where a return value could do a harm.		
-		// My current thought is - return always, use if want.
-		// 
-		// Update about void: void is a good note for action methods that doesn't returns values
-		// but stores in the class.
-		//
 		$this->validateRequiredKeys($data);
 		$this->validateAddress($data);
 		$this->validateExpressShipping($data);

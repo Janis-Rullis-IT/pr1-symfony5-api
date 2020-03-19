@@ -59,12 +59,12 @@ services:
         public: true
         
     # 40
-    test.App\v2\OrderCreator:
-        alias: App\v2\OrderCreator
+    test.App\v2\OrderShipping:
+        alias: App\v2\OrderShipping
         public: true
      
-    test.App\v2\OrderValidator:
-        alias: App\v2\OrderValidator
+    test.App\v2\OrderShippingValidator:
+        alias: App\v2\OrderShippingValidator
         public: true
     
     # #36 #38
