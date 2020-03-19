@@ -15,14 +15,20 @@ class OrderService
 	private $orderRepo;
 	private $orderProductRepo;
 	private $orderShippingValidator;
+	private $orderValidator;
 
-	public function __construct(IProductRepo $productRepo, IUserRepo $userRepo, IOrderRepo $orderRepo, IOrderProductRepo $orderProductRepo, OrderShippingValidator $orderShippingValidator)
+	public function __construct(
+		IProductRepo $productRepo, IUserRepo $userRepo, IOrderRepo $orderRepo,
+		IOrderProductRepo $orderProductRepo, OrderShippingValidator $orderShippingValidator,
+		OrderValidator $orderValidator
+	)
 	{
 		$this->userRepo = $userRepo;
 		$this->productRepo = $productRepo;
 		$this->orderRepo = $orderRepo;
 		$this->orderProductRepo = $orderProductRepo;
 		$this->orderShippingValidator = $orderShippingValidator;
+		$this->orderValidator = $orderValidator;
 	}
 
 	/**
@@ -38,9 +44,8 @@ class OrderService
 		$order = $this->orderRepo->insertIfNotExist($customer->getId());
 		$this->orderShippingValidator->mustHaveShippingSet($order);
 		$this->recalculateOrder($order);
-//		$this->orderValidator->mustHaveProducts($order);
+		$this->orderValidator->mustHaveProducts($order);
 
-		// #40 TODO: has at least 1 product - product_cost > 0.
 		// #40 TODO User has enough money to contine if not suggest to change shipping or remove items from the cart.
 		// #40 TODO Change order's status.
 		// #40 TODO Reduce customers balance.
