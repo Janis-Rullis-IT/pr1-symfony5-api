@@ -11,6 +11,7 @@ use \App\Helper\EnumType;
  */
 class OrderProduct
 {
+	const PRODUCT_ID = 'product_id';
 
 	/**
 	 * @ORM\Id()

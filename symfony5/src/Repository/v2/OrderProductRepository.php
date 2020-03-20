@@ -209,15 +209,20 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
 		$this->setShippingRates($order);
 	}
 
-	
 	/**
 	 * #40 Get order's products.
 	 * 
-	 * @param Order $draftOrder
+	 * @param int $orderId
 	 * @return array
 	 */
-	public function findOrderProducts(Order $draftOrder): array
+	public function findOrderProducts(int $orderId): array
 	{
-		return $this->findBy(["order_id" => $draftOrder->getId()]);
+		return $this->createQueryBuilder('p')
+				// #40 TODO: Replace these keys with cosnt.
+				->select('p.id, p.customer_id, p.product_id, p.product_cost, p.shipping_cost, p.is_express, p.is_additional')
+				->where('p.order_id = :orderId')
+				->setParameter('orderId', $orderId)
+				->getQuery()->execute();
+		// #40 TODO: Find a way how this can be converted to Entity.
 	}
 }

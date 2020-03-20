@@ -175,12 +175,12 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 		//$item = $this->findOneBy(["customer_id" => $userId, "id" => $orderId]);
 		$item = $this->createQueryBuilder('p')
 			// #40 TODO: Replace these keys with cosnt.
-				->select('p.id, p.is_domestic, p.is_express, p.shipping_cost, p.product_cost, p.total_cost, p.name, p.surname, p.street, p.country, p.phone, p.state, p.zip')
+				->select('p.id, p.status, p.is_domestic, p.is_express, p.shipping_cost, p.product_cost, p.total_cost, p.name, p.surname, p.street, p.country, p.phone, p.state, p.zip')
 				->where('p.id = :orderId')
 				->andWhere('p.customer_id = :userId')
 				->setParameter('orderId', $orderId)
 				->setParameter('userId', $userId)
-				->getQuery()->execute();
+				->getQuery()->getOneOrNullResult();
 		// #40 TODO: Find a way how this can be converted to Entity.
 		if (empty($item)) {
 			throw new OrderValidatorException([Order::ID => Order::INVALID], 1);
@@ -191,9 +191,8 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 	public function mustFindUsersOrderWithProducts(int $userId, int $orderId): array
 	{
 		$order = $this->mustFindUsersOrder($userId, $orderId);
-//		$products = $this->orderProductRepo->findOrderProducts($order);
+		$order[Order::PRODUCTS]  = $this->orderProductRepo->findOrderProducts($orderId);
 //		$order->setProducts($products);
-
 		return $order;
 	}
 }

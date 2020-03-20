@@ -6,6 +6,7 @@ use App\Entity\Product;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 use \App\Entity\v2\Order;
+use \App\Entity\v2\OrderProduct;
 
 /**
  * #40 PUT /users/v2/{customerId}/order/complete
@@ -161,10 +162,12 @@ class OrderCompleteTest extends WebTestCase
 		$responseBody2 = json_decode($client->getResponse()->getContent(), TRUE);
 		$this->assertGreaterThan($responseBody[Order::ID], $responseBody2[Order::ID], '#40 Add a new product to the cart and make sure that the order\'s ID is different');
 
+		// #40 Get user's order.
 		$client->request('GET', '/users/' . $customerId . '/orders/' . $responseBody2[Order::ID]);
-//		$this->assertEquals(Response::HTTP_OK, $client->getResponse()->getStatusCode());
+		$this->assertEquals(Response::HTTP_OK, $client->getResponse()->getStatusCode());
 		$responseOrder = json_decode($client->getResponse()->getContent(), TRUE);
-//		dd($responseOrder);
+		$this->assertEquals($responseBody2[Order::ID], $responseOrder[Order::ID]);
+		$this->assertEquals($responseOrder[Order::PRODUCTS][0][OrderProduct::PRODUCT_ID], $productId);
 	}
 
 	/**
