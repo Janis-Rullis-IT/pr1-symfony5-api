@@ -40,6 +40,7 @@ class OrderController extends AbstractController
 	 * @SWG\Response(
 	 *   response=200, description="Saved.",
 	 *   @SWG\Schema(
+	 *    @SWG\Property(property="id", type="integer", example=1),
 	 *    @SWG\Property(property="is_domestic", type="string", example="y"),
 	 *    @SWG\Property(property="is_express", type="string", example="y"),
 	 *    @SWG\Property(property="shipping_cost", type="integer", example=1000),
@@ -71,7 +72,7 @@ class OrderController extends AbstractController
 	{
 		try {
 			$item = $orderShippingService->set($customerId, json_decode($request->getContent(), true));
-			$resp = ["is_domestic" => $item->getIsDomestic(), "is_express" => $item->getIsExpress(), "shipping_cost" => $item->getShippingCost(),
+			$resp = ["id" => $item->getId(), "is_domestic" => $item->getIsDomestic(), "is_express" => $item->getIsExpress(), "shipping_cost" => $item->getShippingCost(),
 				"product_cost" => $item->getProductCost(), "total_cost" => $item->getTotalCost(), "name" => $item->getName(),
 				"surname" => $item->getSurname(), "street" => $item->getStreet(), "country" => $item->getCountry(),
 				"phone" => $item->getPhone(), "state" => $item->getState(), "zip" => $item->getZip()];
@@ -91,6 +92,7 @@ class OrderController extends AbstractController
 	 * @SWG\Response(
 	 *   response=200, description="Saved.",
 	 *   @SWG\Schema(
+	 *    @SWG\Property(property="id", type="integer", example=1),
 	 *    @SWG\Property(property="is_domestic", type="string", example="y"),
 	 *    @SWG\Property(property="is_express", type="string", example="y"),
 	 *    @SWG\Property(property="shipping_cost", type="integer", example=1000),
@@ -117,7 +119,7 @@ class OrderController extends AbstractController
 	{
 		try {
 			$item = $orderService->complete($customerId);
-			$resp = ["status" => $item->getStatus(), "is_domestic" => $item->getIsDomestic(), "is_express" => $item->getIsExpress(), "shipping_cost" => $item->getShippingCost(),
+			$resp = ["id" => $item->getId(), "status" => $item->getStatus(), "is_domestic" => $item->getIsDomestic(), "is_express" => $item->getIsExpress(), "shipping_cost" => $item->getShippingCost(),
 				"product_cost" => $item->getProductCost(), "total_cost" => $item->getTotalCost(), "name" => $item->getName(),
 				"surname" => $item->getSurname(), "street" => $item->getStreet(), "country" => $item->getCountry(),
 				"phone" => $item->getPhone(), "state" => $item->getState(), "zip" => $item->getZip()];

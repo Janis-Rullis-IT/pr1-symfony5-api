@@ -142,13 +142,8 @@ class OrderCompleteTest extends WebTestCase
 		$product = $user->products[0];
 		$productId = $product->getId();
 		$client->request('POST', '/users/v2/' . $customerId . '/cart/' . $productId);
-
-		$uri = '/users/v2/' . $customerId . '/order/shipping';
-		$data = $this->ship_to_address;
-		$client->request('PUT', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
-
-		$uri = '/users/v2/' . $customerId . '/order/complete';
-		$client->request('PUT', $uri);
+		$client->request('PUT', '/users/v2/' . $customerId . '/order/shipping', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($this->ship_to_address));
+		$client->request('PUT', '/users/v2/' . $customerId . '/order/complete');
 		$this->assertEquals(Response::HTTP_OK, $client->getResponse()->getStatusCode());
 		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
 		$this->assertEquals(Order::COMPLETED, $responseBody[Order::STATUS]);
@@ -158,7 +153,15 @@ class OrderCompleteTest extends WebTestCase
 		$this->assertEquals($totalCost, $responseBody[Order::TOTAL_COST]);
 		$userUpdated = $this->entityManager->find(User::class, $customerId);
 		$this->assertEquals($user->getBalance() - $totalCost, $userUpdated->getBalance(), '#40 User\'s balance must be reduced correctly.');
-		// #40 TODO: Add a new product to the cart and make sure that the order's ID is different.
+
+		$data = $this->ship_to_address;
+		$data['name'] = 'Hue';
+		$client->request('POST', '/users/v2/' . $customerId . '/cart/' . $productId);
+		$client->request('PUT', '/users/v2/' . $customerId . '/order/shipping', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
+//		$client->request('PUT', '/users/v2/' . $customerId . '/order/complete');
+		$responseBody2 = json_decode($client->getResponse()->getContent(), TRUE);
+		$this->assertNotEquals($responseBody[Order::ID], $responseBody2[Order::ID], '#40 Add a new product to the cart and make sure that the order\'s ID is different');
+		// #40 TODO: Fix that new items are attached to the same order!
 	}
 
 	/**

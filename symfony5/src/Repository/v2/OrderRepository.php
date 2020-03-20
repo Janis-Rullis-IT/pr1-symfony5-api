@@ -139,6 +139,7 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 		// #40 https://www.doctrine-project.org/projects/doctrine-orm/en/2.7/reference/working-with-objects.html#persisting-entities
 		$this->em->persist($order);
 		$this->em->flush();
+		$this->em->clear();
 		return $order;
 	}
 
