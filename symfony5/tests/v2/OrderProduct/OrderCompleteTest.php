@@ -158,10 +158,8 @@ class OrderCompleteTest extends WebTestCase
 		$data['name'] = 'Hue';
 		$client->request('POST', '/users/v2/' . $customerId . '/cart/' . $productId);
 		$client->request('PUT', '/users/v2/' . $customerId . '/order/shipping', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
-//		$client->request('PUT', '/users/v2/' . $customerId . '/order/complete');
 		$responseBody2 = json_decode($client->getResponse()->getContent(), TRUE);
-		$this->assertNotEquals($responseBody[Order::ID], $responseBody2[Order::ID], '#40 Add a new product to the cart and make sure that the order\'s ID is different');
-		// #40 TODO: Fix that new items are attached to the same order!
+		$this->assertGreaterThan($responseBody[Order::ID], $responseBody2[Order::ID], '#40 Add a new product to the cart and make sure that the order\'s ID is different');
 	}
 
 	/**

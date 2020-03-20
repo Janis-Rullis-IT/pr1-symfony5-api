@@ -136,8 +136,6 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 	 */
 	public function write(Order $order): Order
 	{
-		// #40 https://www.doctrine-project.org/projects/doctrine-orm/en/2.7/reference/working-with-objects.html#persisting-entities
-		$this->em->persist($order);
 		$this->em->flush();
 		$this->em->clear();
 		return $order;
@@ -152,6 +150,11 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 	 */
 	public function markAsCompleted(Order $order): Order
 	{
+		// #40 A refresh-entity workaround for the field not being updated. 
+		// https://www.doctrine-project.org/projects/doctrine-orm/en/2.7/reference/unitofwork.html https://www.doctrine-project.org/api/orm/latest/Doctrine/ORM/EntityManager.html
+		// If `persist()` is being used then a naw record is inserted.
+		// TODO: Ask someone about this behaviour.
+		$order = $this->em->getReference(Order::class, $order->getId());
 		$order->setStatus(Order::COMPLETED);
 		return $this->write($order);
 	}
