@@ -73,10 +73,17 @@ class UserRepo extends ServiceEntityRepository implements IUserRepo
 	 */
 	public function reduceBalance(User $user, int $money): User
 	{
+		// #40 A refresh-entity workaround for the field not being updated. 
+		// https://www.doctrine-project.org/projects/doctrine-orm/en/2.7/reference/unitofwork.html https://www.doctrine-project.org/api/orm/latest/Doctrine/ORM/EntityManager.html
+		// If `persist()` is being used then a naw record is inserted.
+		// TODO: Ask someone about this behaviour.
+		$user = $this->em->getReference(User::class, $user->getId());
+
 		// #40 TODO: Maybe this should be better done in SQL? To work with actual DB
 		// values and avoid concurrent operations that could impact this data.
 		$user->setBalance($user->getBalance() - $money);
 		$this->em->flush();
+
 		return $user;
 	}
 }

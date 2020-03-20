@@ -105,7 +105,7 @@ class OrderCompleteTest extends WebTestCase
 		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
 		$this->assertEquals([User::BALANCE => [User::INSUFFICIENT_FUNDS]], $responseBody);
 	}
-	
+
 	/**
 	 * #40 Insufficient funds.
 	 */
@@ -129,7 +129,7 @@ class OrderCompleteTest extends WebTestCase
 		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
 		$this->assertEquals([User::BALANCE => [User::INSUFFICIENT_FUNDS]], $responseBody);
 	}
-	
+
 	/**
 	 * #40 A valid request.
 	 */
@@ -139,7 +139,8 @@ class OrderCompleteTest extends WebTestCase
 		$user = $this->insertUsersAndProds($client)[0];
 
 		$customerId = $user->getId();
-		$productId = $user->products[0]->getId();
+		$product = $user->products[0];
+		$productId = $product->getId();
 		$client->request('POST', '/users/v2/' . $customerId . '/cart/' . $productId);
 
 		$uri = '/users/v2/' . $customerId . '/order/shipping';
@@ -151,9 +152,12 @@ class OrderCompleteTest extends WebTestCase
 		$this->assertEquals(Response::HTTP_OK, $client->getResponse()->getStatusCode());
 		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
 		$this->assertEquals(Order::COMPLETED, $responseBody[Order::STATUS]);
-
-		// #40 TODO: CHeck that the total cost is product's cost + 10$.
-		// #40 TODO: CHeck that user's balance has reduced correctly.
+		$this->assertEquals($product->getCost(), $responseBody[Order::PRODUCT_COST]);
+		$this->assertEquals(1000, $responseBody[Order::SHIPPING_COST]);
+		$totalCost = $product->getCost() + 1000;
+		$this->assertEquals($totalCost, $responseBody[Order::TOTAL_COST]);
+		$userUpdated = $this->entityManager->find(User::class, $customerId);
+		$this->assertEquals($user->getBalance() - $totalCost, $userUpdated->getBalance(), '#40 User\'s balance must be reduced correctly.');
 		// #40 TODO: Add a new product to the cart and make sure that the order's ID is different.
 	}
 

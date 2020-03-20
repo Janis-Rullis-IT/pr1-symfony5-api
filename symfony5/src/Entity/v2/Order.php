@@ -25,6 +25,9 @@ class Order
 	const ZIP = "zip";
 	const COUNTRY = "country";
 	const PHONE = "phone";
+	const PRODUCT_COST = "product_cost";
+	const SHIPPING_COST = "shipping_cost";
+	const TOTAL_COST = "total_cost";
 	const CANT_CREATE = "Cannot create a draft order. Please, contact our support.";
 	const FIELD_IS_MISSING = ' field is missing.';
 	const PRODUCTS = "products";

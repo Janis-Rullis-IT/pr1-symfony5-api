@@ -216,7 +216,8 @@ class OrderProductUnitTest extends KernelTestCase
 		
 		// #40 Check status.
 		$this->assertEquals(Order::DRAFT, $draftOrder0->getStatus());
-		$draftOrder0 = $this->orderRepo->markAsCompleted($draftOrder0);
+		$this->orderRepo->markAsCompleted($draftOrder0);
+		$draftOrder0 = $this->orderRepo->find($draftOrder0->getId());
 		$this->assertEquals(Order::COMPLETED, $draftOrder0->getStatus());	
 		$draftOrder = $this->orderRepo->insertIfNotExist($users[2]->getId());
 		$this->assertNotEquals($draftOrder0->getId(), $draftOrder->getId(), '#40 A new order should be created after the previous is completed.');
