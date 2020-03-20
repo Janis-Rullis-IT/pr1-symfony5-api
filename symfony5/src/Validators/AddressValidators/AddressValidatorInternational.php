@@ -28,6 +28,7 @@ class AddressValidatorInternational
         $this->countryValidator = $country;
         $this->phoneValidator = $phone;
         $this->errors = [];
+        $this->errorsLoader = $errors;
     }
 
     public function validate(array $address): bool
