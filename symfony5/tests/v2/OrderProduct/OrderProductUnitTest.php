@@ -212,7 +212,15 @@ class OrderProductUnitTest extends KernelTestCase
 		// #38 #36 Create and get customer's draft order.
 		// TODO: This probably should be moved to a separate test file.
 		$this->assertNull($this->orderRepo->getCurrentDraft($users[2]->getId()), '#36 #38 New customer shouldnt have a draft order.');
+		$draftOrder0 = $this->orderRepo->insertIfNotExist($users[2]->getId());
+		
+		// #40 Check status.
+		$this->assertEquals(Order::DRAFT, $draftOrder0->getStatus());
+		$draftOrder0 = $this->orderRepo->markAsCompleted($draftOrder0);
+		$this->assertEquals(Order::COMPLETED, $draftOrder0->getStatus());	
 		$draftOrder = $this->orderRepo->insertIfNotExist($users[2]->getId());
+		$this->assertNotEquals($draftOrder0->getId(), $draftOrder->getId(), '#40 A new order should be created after the previous is completed.');
+		
 		$this->assertNotNull($draftOrder, '#36 #38 A draft order should be created if it doesnt exist.');
 		$this->assertEquals($this->orderRepo->getCurrentDraft($users[2]->getId())->getId(), $draftOrder->getId(), '#36 #38 Should find an existing one.');
 		$this->assertEquals($this->orderRepo->getCurrentDraft($users[2]->getId())->getId(), $this->orderRepo->insertIfNotExist($users[2]->getId())->getId(), "#36 #38 A new draft order shouldnt be created if there is already one.");

@@ -150,7 +150,8 @@ class OrderCompleteTest extends WebTestCase
 		$client->request('PUT', $uri);
 		$this->assertEquals(Response::HTTP_OK, $client->getResponse()->getStatusCode());
 		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
-		// #40 TODO: Check status.
+		$this->assertEquals(Order::COMPLETED, $responseBody[Order::STATUS]);
+
 		// #40 TODO: CHeck that the total cost is product's cost + 10$.
 		// #40 TODO: CHeck that user's balance has reduced correctly.
 		// #40 TODO: Add a new product to the cart and make sure that the order's ID is different.

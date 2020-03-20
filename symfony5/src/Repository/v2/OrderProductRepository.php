@@ -36,7 +36,6 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
 	 */
 	public function create(OrderProduct $item): OrderProduct
 	{
-		// persist() works as insert, without it works as update. https://www.doctrine-project.org/projects/doctrine-orm/en/2.7/tutorials/getting-started.html#updating-entities
 		$this->em->persist($item);
 		$this->em->flush();
 		return $item;

@@ -39,7 +39,7 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 		if (empty($item)) {
 			$item = new Order();
 			$item->setCustomerId($customerId);
-			$item->setStatus('draft');
+			$item->setStatus(Order::DRAFT);
 			$this->em->persist($item);
 			$this->em->flush();
 		}
@@ -61,7 +61,7 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 	{
 		return $this->findOneBy([
 				"customer_id" => $customerId,
-				"status" => 'draft'
+				"status" => Order::DRAFT
 		]);
 	}
 
@@ -136,6 +136,8 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 	 */
 	public function write(Order $order): Order
 	{
+		// #40 https://www.doctrine-project.org/projects/doctrine-orm/en/2.7/reference/working-with-objects.html#persisting-entities
+		$this->em->persist($order);
 		$this->em->flush();
 		return $order;
 	}
@@ -149,7 +151,7 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 	 */
 	public function markAsCompleted(Order $order): Order
 	{
-		$order->setStatus('completed');
+		$order->setStatus(Order::COMPLETED);
 		return $this->write($order);
 	}
 }

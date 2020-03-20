@@ -31,6 +31,9 @@ class Order
 	const MUST_HAVE_PRODUCTS = "Must have at least 1 product.";
 	const SHIPPING = "shipping";
 	const MUST_HAVE_SHIPPING_SET = "The shipping must be set before completing the order.";
+	const STATUS = 'status';
+	const COMPLETED = 'completed';
+	const DRAFT = 'draft';
 	
 	/**
 	 * @ORM\Id()
