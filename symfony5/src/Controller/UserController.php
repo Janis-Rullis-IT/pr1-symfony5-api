@@ -21,7 +21,7 @@ class UserController extends AbstractController
 	 * - "surname" : accepts upper and lowercase letters, spaces, dot (.) , comma (,) , apostrophe (') and dash (-).
 	 *
 	 * @Route("/users", name="createUser", methods={"POST"})
-	 * @SWG\Tag(name="user")
+	 * @SWG\Tag(name="1. user")
 	 *
 	 * @SWG\Parameter(
 	 *   name="body",
@@ -59,7 +59,7 @@ class UserController extends AbstractController
 	 * View a user.
 	 * 
 	 * @Route("/users/{id}", name="getUserById", methods={"GET"})
-	 * @SWG\Tag(name="user")
+	 * @SWG\Tag(name="1. user")
 	 * 
 	 * @SWG\Response(
 	 *   response=200, description="",
@@ -86,7 +86,7 @@ class UserController extends AbstractController
 	 * View all user.
 	 * 
 	 * @Route("/users", name="getUsers", methods={"GET"})
-	 * @SWG\Tag(name="user")
+	 * @SWG\Tag(name="1. user")
 	 * 
 	 * @SWG\Response(
 	 *   response=200, description="",

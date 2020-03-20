@@ -19,7 +19,7 @@ class OrderProductController extends AbstractController
 	 * #40 #38 Add a product to customer's cart (draft order).
 	 * 
 	 * @Route("/users/v2/{customerId}/cart/{productId}", methods={"POST"})   
-	 * @SWG\Tag(name="v2:cart")
+	 * @SWG\Tag(name="3. cart")
 	 * @SWG\Response(
 	 *   response=201, description="Created.",
 	 *   @SWG\Schema(

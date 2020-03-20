@@ -24,7 +24,7 @@ class ProductController extends AbstractController
 	 * - "cost" : must be an integer representing cents
 	 * 
 	 * @Route("/users/{id_user}/products", name="createProduct", methods={"POST"})   
-	 * @SWG\Tag(name="product")
+	 * @SWG\Tag(name="2. product")
 	 * @SWG\Parameter(
 	 *   name="body",
 	 *   in="body",
@@ -69,7 +69,7 @@ class ProductController extends AbstractController
 	 * View user's product.
 	 * 
 	 * @Route("/users/{id_user}/products/{id}", name="getProduct", methods={"GET"})
-	 * @SWG\Tag(name="product")
+	 * @SWG\Tag(name="2. product")
 	 * @SWG\Response(
 	 *   response=200, description="",
 	 *   @SWG\Schema(
@@ -97,7 +97,7 @@ class ProductController extends AbstractController
 	 * View user's all products.
 
 	 * @Route("/users/{id_user}/products", name="getProducts", methods={"GET"})
-	 * @SWG\Tag(name="product")
+	 * @SWG\Tag(name="2. product")
 	 *
 	 * @SWG\Response(
 	 *   response=200, description="",

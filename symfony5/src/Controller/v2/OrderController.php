@@ -1,4 +1,9 @@
 <?php
+
+/**
+ * #40 Doc Annotations https://symfony.com/doc/current/bundles/NelmioApiDocBundle/faq.html
+ */
+
 namespace App\Controller\v2;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -19,7 +24,7 @@ class OrderController extends AbstractController
 	 * #40 Set order's shipping.
 	 * 
 	 * @Route("/users/v2/{customerId}/order/shipping", methods={"PUT"})
-	 * @SWG\Tag(name="v2:shipping")
+	 * @SWG\Tag(name="4. shipping")
 	 * 
 	 * @SWG\Parameter(
 	 *   name="body",
@@ -88,7 +93,7 @@ class OrderController extends AbstractController
 	 * #40 Complete the order.
 	 * 
 	 * @Route("/users/v2/{customerId}/order/complete", methods={"PUT"})
-	 * @SWG\Tag(name="v2:order")
+	 * @SWG\Tag(name="5. order")
 	 * @SWG\Response(
 	 *   response=200, description="Saved.",
 	 *   @SWG\Schema(

@@ -53,7 +53,7 @@ class OrderController extends AbstractController
      * - If the user has sufficient funds, order is created. Once it is created, funds from user are deducted.
      * 
      * @Route("/users/{id_user}/orders", name="createOrder", methods={"POST"})
-     * @SWG\Tag(name="order")
+     * @SWG\Tag(name="TODO replace order")
      * @SWG\Parameter(
 	 *   name="body",
 	 *   in="body",
@@ -93,7 +93,7 @@ class OrderController extends AbstractController
      * View user's order.
      * 
      * @Route("/users/{id_user}/orders/{id}", name="viewOrder", methods={"GET"})
-     * @SWG\Tag(name="order")
+     * @SWG\Tag(name="TODO replace order")
      * 
      * @SWG\Response(
 	 *   response=200, description="",
@@ -120,7 +120,7 @@ class OrderController extends AbstractController
      *  View user's all orders.
      * 
      * @Route("/users/{id_user}/orders", name="viewOrders", methods={"GET"})
-     * @SWG\Tag(name="order")
+     * @SWG\Tag(name="TODO replace order")
      * @SWG\Response(
 	 *   response=200, description="",
 	 *     @SWG\Schema(
