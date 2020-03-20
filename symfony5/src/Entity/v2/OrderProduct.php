@@ -12,6 +12,9 @@ use \App\Helper\EnumType;
 class OrderProduct
 {
 	const PRODUCT_ID = 'product_id';
+	const ORDER_ID = 'order_id';
+	const CUSTOMER_ID = 'customer_id';
+	
 
 	/**
 	 * @ORM\Id()

@@ -38,6 +38,7 @@ class Order
 	const COMPLETED = 'completed';
 	const DRAFT = 'draft';
 	const INVALID = 'Invalid order.';
+	const CUSTOMER_ID = 'customer_id';
 
 	/**
 	 * @ORM\Id()

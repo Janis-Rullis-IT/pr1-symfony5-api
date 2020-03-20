@@ -1,9 +1,7 @@
 <?php
-
 /**
  * #40 Doc Annotations https://symfony.com/doc/current/bundles/NelmioApiDocBundle/faq.html
  */
-
 namespace App\Controller\v2;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,6 +13,8 @@ use Swagger\Annotations as SWG;
 use \App\v2\OrderShippingService;
 use \App\v2\OrderService;
 use \App\Exception\UidValidatorException;
+use \App\Exception\OrderValidatorException;
+use \App\Repository\v2\OrderRepository;
 
 class OrderController extends AbstractController
 {
@@ -66,7 +66,6 @@ class OrderController extends AbstractController
 	 *   )
 	 * )
 	 * 
-	 * 
 	 * @param Request $request
 	 * @param OrderShippingService $orderShippingService
 	 * @param int $customerId
@@ -93,7 +92,7 @@ class OrderController extends AbstractController
 	 * #40 Complete the order.
 	 * 
 	 * @Route("/users/v2/{customerId}/order/complete", methods={"PUT"})
-	 * @SWG\Tag(name="5. order")
+	 * @SWG\Tag(name="5. complete order")
 	 * @SWG\Response(
 	 *   response=200, description="Saved.",
 	 *   @SWG\Schema(
@@ -137,6 +136,67 @@ class OrderController extends AbstractController
 			} else {
 				return $this->json($e->getMessage(), Response::HTTP_BAD_REQUEST);
 			}
+		}
+	}
+
+	/**
+	 * View user's order.
+	 * 
+	 * @Route("/users/{id_user}/orders/{id}", methods={"GET"})
+	 * @SWG\Tag(name="6. order")
+	 * @SWG\Response(
+	 *   response=404, description="Not found.",
+	 *   @SWG\Schema(
+	 *    @SWG\Property(property="id", type="string", example="Invalid order."),
+	 *   )
+	 * )
+	 * 
+	 * @param OrderRepository $repo
+	 * @param int $id_user
+	 * @param int $id
+	 * @return JsonResponse
+	 */
+	public function getOrderById(OrderRepository $repo, int $id_user, int $id): JsonResponse
+	{
+		try {
+			$resp = $repo->mustFindUsersOrderWithProducts($id_user, $id);
+			return $this->json($resp, Response::HTTP_OK);
+		} catch (OrderValidatorException $e) {
+			return $this->json($e->getErrors(), Response::HTTP_NOT_FOUND);
+		} catch (\Exception $e) {
+			if (method_exists($e, 'getErrors')) {
+				return $this->json($e->getErrors(), Response::HTTP_BAD_REQUEST);
+			} else {
+				return $this->json($e->getMessage(), Response::HTTP_BAD_REQUEST);
+			}
+		}
+	}
+
+	/**
+	 * View user's order.
+	 * 
+	 * @Route("/users/{id_user}/orders", methods={"GET"})
+	 * @SWG\Tag(name="6. order")
+	 * @SWG\Response(
+	 *   response=404, description="Not found.",
+	 *   @SWG\Schema(
+	 *    @SWG\Property(property="id", type="string", example="Invalid order."),
+	 *   )
+	 * )
+	 * 
+	 * @param OrderRepository $repo
+	 * @param int $id_user
+	 * @return JsonResponse
+	 */
+	public function getUsersOrders(OrderRepository $repo, int $id_user): JsonResponse
+	{
+		try {
+			$resp = $repo->mustFindUsersOrdersWithProducts($id_user);
+			return $this->json($resp, Response::HTTP_OK);
+		} catch (OrderValidatorException $e) {
+			return $this->json($e->getErrors(), Response::HTTP_NOT_FOUND);
+		} catch (\Exception $e) {
+			return $this->json($e->getErrors(), Response::HTTP_BAD_REQUEST);
 		}
 	}
 }

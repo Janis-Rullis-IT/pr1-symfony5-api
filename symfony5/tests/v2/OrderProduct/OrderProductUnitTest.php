@@ -480,11 +480,10 @@ class OrderProductUnitTest extends KernelTestCase
 
 		//#40 Collect order's products.
 		$orderWithProducts = $this->orderRepo->mustFindUsersOrderWithProducts($draftOrder->getCustomerId(), $draftOrder->getId());
-//		dd($orderWithProducts);
-//		$firstProduct = $orderWithProducts->getProducts()[0];
-//		$this->assertEquals($draftOrder->getId(), $firstProduct->getOrderId());
-//		$this->assertEquals($draftOrder->getCustomerId(), $firstProduct->getCustomerId());
-
+		$firstProduct = $orderWithProducts[Order::PRODUCTS][0];
+		$this->assertEquals($draftOrder->getId(), $firstProduct[OrderProduct::ORDER_ID]);
+		$this->assertEquals($draftOrder->getCustomerId(), $firstProduct[OrderProduct::CUSTOMER_ID]);
+		
 //		#40 TODO: Learn how to implement this using OneToMany relations and JOINS. Goal is to filter fields and perfomance.
 //		 #40 https://www.doctrine-project.org/api/collections/latest/Doctrine/Common/Collections/ArrayCollection.html
 //		 * https://www.doctrine-project.org/projects/doctrine-orm/en/2.7/cookbook/aggregate-fields.html

@@ -18,7 +18,9 @@ use \App\Entity\Product;
  */
 class OrderProductRepository extends ServiceEntityRepository implements IOrderProductRepo
 {
-
+	// #40 TODO: Try to implement this with ORM annotations.
+	// #40 TODO: Replace with array and then convert to CSV.
+	const SEL_COLUMNS = 'r.id AS order_product_id, r.order_id, r.customer_id, r.product_id, r.product_cost AS order_product_cost, r.shipping_cost AS order_product_shipping_cost, r.is_express, r.is_additional';
 	private $em;
 
 	public function __construct(ManagerRegistry $registry, EntityManagerInterface $em)
@@ -217,10 +219,10 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
 	 */
 	public function findOrderProducts(int $orderId): array
 	{
-		return $this->createQueryBuilder('p')
+		return $this->createQueryBuilder('r')
 				// #40 TODO: Replace these keys with cosnt.
-				->select('p.id, p.customer_id, p.product_id, p.product_cost, p.shipping_cost, p.is_express, p.is_additional')
-				->where('p.order_id = :orderId')
+				->select(self::SEL_COLUMNS)
+				->where('r.order_id	= :orderId')
 				->setParameter('orderId', $orderId)
 				->getQuery()->execute();
 		// #40 TODO: Find a way how this can be converted to Entity.
