@@ -160,6 +160,11 @@ class OrderCompleteTest extends WebTestCase
 		$client->request('PUT', '/users/v2/' . $customerId . '/order/shipping', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
 		$responseBody2 = json_decode($client->getResponse()->getContent(), TRUE);
 		$this->assertGreaterThan($responseBody[Order::ID], $responseBody2[Order::ID], '#40 Add a new product to the cart and make sure that the order\'s ID is different');
+
+		$client->request('GET', '/users/' . $customerId . '/orders/' . $responseBody2[Order::ID]);
+//		$this->assertEquals(Response::HTTP_OK, $client->getResponse()->getStatusCode());
+		$responseOrder = json_decode($client->getResponse()->getContent(), TRUE);
+//		dd($responseOrder);
 	}
 
 	/**

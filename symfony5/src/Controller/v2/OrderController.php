@@ -15,7 +15,6 @@ use Swagger\Annotations as SWG;
 use \App\v2\OrderShippingService;
 use \App\v2\OrderService;
 use \App\Exception\UidValidatorException;
-use \App\Exception\ProductIdValidatorException;
 
 class OrderController extends AbstractController
 {
@@ -76,6 +75,7 @@ class OrderController extends AbstractController
 	public function setShipping(Request $request, OrderShippingService $orderShippingService, int $customerId): JsonResponse
 	{
 		try {
+			// #40 TODO: Replace this with $resp = $repo->mustFindUsersOrderWithProducts($id_user, $id); ?
 			$item = $orderShippingService->set($customerId, json_decode($request->getContent(), true));
 			$resp = ["id" => $item->getId(), "is_domestic" => $item->getIsDomestic(), "is_express" => $item->getIsExpress(), "shipping_cost" => $item->getShippingCost(),
 				"product_cost" => $item->getProductCost(), "total_cost" => $item->getTotalCost(), "name" => $item->getName(),

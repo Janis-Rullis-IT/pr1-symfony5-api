@@ -208,4 +208,16 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
 		$this->markExpressShipping($order);
 		$this->setShippingRates($order);
 	}
+
+	
+	/**
+	 * #40 Get order's products.
+	 * 
+	 * @param Order $draftOrder
+	 * @return array
+	 */
+	public function findOrderProducts(Order $draftOrder): array
+	{
+		return $this->findBy(["order_id" => $draftOrder->getId()]);
+	}
 }

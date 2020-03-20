@@ -37,7 +37,8 @@ class Order
 	const STATUS = 'status';
 	const COMPLETED = 'completed';
 	const DRAFT = 'draft';
-	
+	const INVALID = 'Invalid order.';
+
 	/**
 	 * @ORM\Id()
 	 * @ORM\GeneratedValue()
@@ -135,6 +136,23 @@ class Order
 	 */
 	private $zip;
 
+	/**
+	 * #40 Store order products.
+	 * @var type 
+	 */
+	private $products;
+
+	public function setProducts($products): self
+	{
+		$this->products = $products;
+		return $this;
+	}
+
+	public function getProducts(): array
+	{
+		return $this->products;
+	}
+
 	public function getId(): ?int
 	{
 		return $this->id;
@@ -183,7 +201,7 @@ class Order
 
 	public function setIsDomestic($is_domestic): self
 	{
-		 #40 Convert the value to defined enum values.
+		#40 Convert the value to defined enum values.
 		$this->is_domestic = EnumType::parse($is_domestic);
 
 		return $this;

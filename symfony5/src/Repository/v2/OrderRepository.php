@@ -18,10 +18,13 @@ use \App\Exception\OrderValidatorException;
 class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 {
 
-	public function __construct(ManagerRegistry $registry, EntityManagerInterface $em)
+	private $orderProductRepo;
+
+	public function __construct(ManagerRegistry $registry, EntityManagerInterface $em, OrderProductRepository $orderProductRepo)
 	{
 		parent::__construct($registry, Order::class);
 		$this->em = $em;
+		$this->orderProductRepo = $orderProductRepo;
 	}
 	// 
 
@@ -144,7 +147,7 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 	/**
 	 * #40 Mark the order as completed.
 	 * New products added to the cart won't be attached to this one anymore.
-	 *  
+	 * 		
 	 * @param Order $order
 	 * @return Order
 	 */
@@ -157,5 +160,40 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 		$order = $this->em->getReference(Order::class, $order->getId());
 		$order->setStatus(Order::COMPLETED);
 		return $this->write($order);
+	}
+
+	/**
+	 * #40 Find order by id. Throw an exception if not found.
+	 * 
+	 * @param int $userId
+	 * @param int $orderId
+	 * @return Order
+	 * @throws OrderValidatorException
+	 */
+	public function mustFindUsersOrder(int $userId, int $orderId): array
+	{
+		//$item = $this->findOneBy(["customer_id" => $userId, "id" => $orderId]);
+		$item = $this->createQueryBuilder('p')
+			// #40 TODO: Replace these keys with cosnt.
+				->select('p.id, p.is_domestic, p.is_express, p.shipping_cost, p.product_cost, p.total_cost, p.name, p.surname, p.street, p.country, p.phone, p.state, p.zip')
+				->where('p.id = :orderId')
+				->andWhere('p.customer_id = :userId')
+				->setParameter('orderId', $orderId)
+				->setParameter('userId', $userId)
+				->getQuery()->execute();
+		// #40 TODO: Find a way how this can be converted to Entity.
+		if (empty($item)) {
+			throw new OrderValidatorException([Order::ID => Order::INVALID], 1);
+		}
+		return $item;
+	}
+
+	public function mustFindUsersOrderWithProducts(int $userId, int $orderId): array
+	{
+		$order = $this->mustFindUsersOrder($userId, $orderId);
+//		$products = $this->orderProductRepo->findOrderProducts($order);
+//		$order->setProducts($products);
+
+		return $order;
 	}
 }

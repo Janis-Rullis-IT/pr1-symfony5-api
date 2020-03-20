@@ -213,15 +213,15 @@ class OrderProductUnitTest extends KernelTestCase
 		// TODO: This probably should be moved to a separate test file.
 		$this->assertNull($this->orderRepo->getCurrentDraft($users[2]->getId()), '#36 #38 New customer shouldnt have a draft order.');
 		$draftOrder0 = $this->orderRepo->insertIfNotExist($users[2]->getId());
-		
+
 		// #40 Check status.
 		$this->assertEquals(Order::DRAFT, $draftOrder0->getStatus());
 		$this->orderRepo->markAsCompleted($draftOrder0);
 		$draftOrder0 = $this->orderRepo->find($draftOrder0->getId());
-		$this->assertEquals(Order::COMPLETED, $draftOrder0->getStatus());	
+		$this->assertEquals(Order::COMPLETED, $draftOrder0->getStatus());
 		$draftOrder = $this->orderRepo->insertIfNotExist($users[2]->getId());
 		$this->assertNotEquals($draftOrder0->getId(), $draftOrder->getId(), '#40 A new order should be created after the previous is completed.');
-		
+
 		$this->assertNotNull($draftOrder, '#36 #38 A draft order should be created if it doesnt exist.');
 		$this->assertEquals($this->orderRepo->getCurrentDraft($users[2]->getId())->getId(), $draftOrder->getId(), '#36 #38 Should find an existing one.');
 		$this->assertEquals($this->orderRepo->getCurrentDraft($users[2]->getId())->getId(), $this->orderRepo->insertIfNotExist($users[2]->getId())->getId(), "#36 #38 A new draft order shouldnt be created if there is already one.");
@@ -478,6 +478,19 @@ class OrderProductUnitTest extends KernelTestCase
 		$this->assertEquals('y', $draftOrder->getIsDomestic());
 		$this->assertEquals('y', $draftOrder->getIsExpress());
 
+		//#40 Collect order's products.
+		$orderWithProducts = $this->orderRepo->mustFindUsersOrderWithProducts($draftOrder->getCustomerId(), $draftOrder->getId());
+//		dd($orderWithProducts);
+//		$firstProduct = $orderWithProducts->getProducts()[0];
+//		$this->assertEquals($draftOrder->getId(), $firstProduct->getOrderId());
+//		$this->assertEquals($draftOrder->getCustomerId(), $firstProduct->getCustomerId());
+
+//		#40 TODO: Learn how to implement this using OneToMany relations and JOINS. Goal is to filter fields and perfomance.
+//		 #40 https://www.doctrine-project.org/api/collections/latest/Doctrine/Common/Collections/ArrayCollection.html
+//		 * https://www.doctrine-project.org/projects/doctrine-orm/en/2.7/cookbook/aggregate-fields.html
+//	 https://www.doctrine-project.org/projects/doctrine-orm/en/2.7/reference/annotations-reference.html#annref_joincolumns
+//	 * https://www.doctrine-project.org/projects/doctrine-orm/en/2.6/reference/association-mapping.html#one-to-many-unidirectional-with-join-table
+//		$products = $draftOrder->getAa()->toArray();
 		// #39 #33 #34 #37 TODO: Add `shipping_id` to `shipping_rates`.`id`.
 		;
 
