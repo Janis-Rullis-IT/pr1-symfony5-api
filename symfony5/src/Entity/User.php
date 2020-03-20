@@ -19,6 +19,7 @@ class User
     const NO_SURNAME = "surname key not set";
     const INVALID_NAME = "Invalid name. It can only consist of letters, spaces, dot (.) , comma (,) , apostrophe ('), dash (-) and can not be empty";
     const INVALID_SURNAME = "Invalid surname. It can only consist of letters, spaces, dot (.) , comma (,) , apostrophe ('), dash (-) and can not be empty";
+	const INSUFFICIENT_FUNDS = "Insufficient funds.";
 
     /**
      * @ORM\Id()

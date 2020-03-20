@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Tests;
 
 use App\Entity\User;
@@ -8,22 +7,26 @@ use Symfony\Component\HttpFoundation\Response;
 
 class GetUsersTest extends WebTestCase
 {
-    public function test_get_users()
-    {
-        $client = static::createClient();
 
-        $client->request('GET', '/users');
+	public function test_get_users()
+	{
+		$client = static::createClient();
 
-        $this->assertEquals(Response::HTTP_OK, $client->getResponse()->getStatusCode());
+		// #40 Prepare a user.
+		$client->request('POST', '/users', [], [], ['CONTENT_TYPE' => 'application/json'], '{"name":"John","surname":"Doe"}');
+		$responseUser = json_decode($client->getResponse()->getContent(), TRUE);
 
-        $responseBody = json_decode($client->getResponse()->getContent(), TRUE);
+		$client->request('GET', '/users');
 
-        $responseBody = json_decode($client->getResponse()->getContent(), TRUE);
-        $this->assertIsArray($responseBody);
-        $this->assertIsArray($responseBody[0]);
-        $this->assertEquals($responseBody[0][User::ID], 1);
-        $this->assertEquals($responseBody[0][User::NAME], "John");
-        $this->assertEquals($responseBody[0][User::SURNAME], "Doe");
-        $this->assertEquals($responseBody[0][User::BALANCE], 10000);
-    }
+		$this->assertEquals(Response::HTTP_OK, $client->getResponse()->getStatusCode());
+
+		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
+		$lastUser = $responseBody[count($responseBody) - 1];
+		$this->assertIsArray($responseBody);
+		$this->assertIsArray($lastUser);
+		$this->assertEquals($lastUser[User::ID], $lastUser[User::ID]);
+		$this->assertEquals($lastUser[User::NAME], $lastUser[User::NAME]);
+		$this->assertEquals($lastUser[User::SURNAME], $lastUser[User::SURNAME]);
+		$this->assertEquals($lastUser[User::BALANCE], $lastUser[User::BALANCE]);
+	}
 }

@@ -13,15 +13,12 @@ class ProductCreatorTest extends WebTestCase
     public function test_valid_request_body()
     {
         $client = static::createClient();
-
-        $client->request(
-            'POST',
-            '/users/1/products',
-            array(),
-            array(),
-            array('CONTENT_TYPE' => 'application/json'),
-            '{"type":"t-shirt","title":"aware-wolf", "sku":"100-abc-1000", "cost":1000}'
-        );
+		
+        // #40 Prepare a user and a product.
+		$client->request('POST', '/users', [], [], ['CONTENT_TYPE' => 'application/json'], '{"name":"John","surname":"Doe"}');
+		$responseUser = json_decode($client->getResponse()->getContent(), TRUE);
+		$client->request('POST', '/users/' . $responseUser['id'] . '/products', [], [], ['CONTENT_TYPE' => 'application/json'], '{"type":"t-shirt","title":"aware-wolf", "sku":"100-abc-1000-' . $responseUser['id'] . '", "cost":1000}');
+		
         $this->assertEquals(Response::HTTP_CREATED, $client->getResponse()->getStatusCode());
 
         $responseBody = json_decode($client->getResponse()->getContent(), TRUE);
@@ -33,12 +30,12 @@ class ProductCreatorTest extends WebTestCase
         $this->assertArrayHasKey(Product::SKU, $responseBody);
         $this->assertArrayHasKey(Product::COST, $responseBody);
         /* test key values */
-        $this->assertEquals($responseBody[Product::ID], 2);
-        $this->assertEquals($responseBody[Product::OWNER_ID], 1);
-        $this->assertEquals($responseBody[Product::TYPE], "t-shirt");
-        $this->assertEquals($responseBody[Product::TITLE], "aware-wolf");
-        $this->assertEquals($responseBody[Product::SKU], "100-abc-1000");
-        $this->assertEquals($responseBody[Product::COST], 1000);
+        $this->assertEquals($responseBody[Product::ID], $responseBody['id']);
+		$this->assertEquals($responseBody[Product::OWNER_ID], $responseBody['ownerId']);
+		$this->assertEquals($responseBody[Product::TYPE], $responseBody['type']);
+		$this->assertEquals($responseBody[Product::TITLE], $responseBody['title']);
+		$this->assertEquals($responseBody[Product::SKU], $responseBody['sku']);
+		$this->assertEquals($responseBody[Product::COST], $responseBody['cost']);
         /* test value types */
         $this->assertIsInt($responseBody[Product::ID]);
         $this->assertIsInt($responseBody[Product::OWNER_ID]);
@@ -215,14 +212,11 @@ class ProductCreatorTest extends WebTestCase
     {
         $client = static::createClient();
 
-        $client->request(
-            'POST',
-            '/users/1/products',
-            array(),
-            array(),
-            array('CONTENT_TYPE' => 'application/json'),
-            '{"type":"t-shirt","title":"aware-wolf", "sku":"100-abc-999", "cost":1000}'
-        );
+        // #40 Prepare a user and a product.
+		$client->request('POST', '/users', [], [], ['CONTENT_TYPE' => 'application/json'], '{"name":"John","surname":"Doe"}');
+		$responseUser = json_decode($client->getResponse()->getContent(), TRUE);
+		$client->request('POST', '/users/' . $responseUser['id'] . '/products', [], [], ['CONTENT_TYPE' => 'application/json'], '{"type":"t-shirt","title":"aware-wolf", "sku":"100-abc-1000-' . $responseUser['id'] . '", "cost":1000}');
+		$client->request('POST', '/users/' . $responseUser['id'] . '/products', [], [], ['CONTENT_TYPE' => 'application/json'], '{"type":"t-shirt","title":"aware-wolf", "sku":"100-abc-1000-' . $responseUser['id'] . '", "cost":1000}');
 
         $this->assertEquals(Response::HTTP_CONFLICT, $client->getResponse()->getStatusCode());
         $responseBody = json_decode($client->getResponse()->getContent(), TRUE);

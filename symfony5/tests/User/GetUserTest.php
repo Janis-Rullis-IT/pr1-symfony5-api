@@ -11,8 +11,12 @@ class GetUserTest extends WebTestCase
     public function test_valid_id()
     {
         $client = static::createClient();
+		
+		// #40 Prepare a user.
+		$client->request('POST', '/users', [], [], ['CONTENT_TYPE' => 'application/json'], '{"name":"John","surname":"Doe"}');
+		$responseUser = json_decode($client->getResponse()->getContent(), TRUE);
 
-        $client->request('GET', '/users/1');
+        $client->request('GET', '/users/'. $responseUser[User::ID]);
 
         $this->assertEquals(Response::HTTP_OK, $client->getResponse()->getStatusCode());
 
@@ -24,10 +28,10 @@ class GetUserTest extends WebTestCase
         $this->assertArrayHasKey(User::SURNAME, $responseBody);
         $this->assertArrayHasKey(User::BALANCE, $responseBody);
         /* test key values */
-        $this->assertEquals($responseBody[User::ID], 1);
-        $this->assertEquals($responseBody[User::NAME], "John");
-        $this->assertEquals($responseBody[User::SURNAME], "Doe");
-        $this->assertEquals($responseBody[User::BALANCE], 10000);
+        $this->assertEquals($responseBody[User::ID], $responseUser[User::ID]);
+        $this->assertEquals($responseBody[User::NAME], $responseUser[User::NAME]);
+        $this->assertEquals($responseBody[User::SURNAME], $responseUser[User::SURNAME]);
+        $this->assertEquals($responseBody[User::BALANCE], $responseUser[User::BALANCE]);
         /* test value types */
         $this->assertIsInt($responseBody[User::ID]);
         $this->assertIsString($responseBody[User::NAME]);

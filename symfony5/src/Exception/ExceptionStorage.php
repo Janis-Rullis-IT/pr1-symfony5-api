@@ -10,10 +10,11 @@ class ExceptionStorage extends \Exception
 {
     private $errors = [];
 
-    public function __construct(array $errors)
+    public function __construct(array $errors, int $code = 0)
     {
         $this->errors = $errors;
-        parent::__construct("", 0, null);
+		$this->code = $code;
+        parent::__construct("", $code, null);
     }
 
     public function getErrors()

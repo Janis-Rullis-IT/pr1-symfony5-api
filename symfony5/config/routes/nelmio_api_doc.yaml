@@ -1,3 +1,6 @@
+# https://symfony.com/doc/current/bundles/NelmioApiDocBundle/areas.html
+# https://symfony.com/doc/current/bundles/NelmioApiDocBundle/faq.html
+
 # Expose your documentation as JSON swagger compliant
 # app.swagger:
 #     path: /doc.json
