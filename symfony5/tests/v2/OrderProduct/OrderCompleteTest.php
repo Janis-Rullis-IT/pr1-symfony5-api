@@ -165,9 +165,13 @@ class OrderCompleteTest extends WebTestCase
 		// #40 Get user's order.
 		$client->request('GET', '/users/' . $this->impossibleInt . '/orders/' . $responseBody2[Order::ID]);
 		$this->assertEquals(Response::HTTP_NOT_FOUND, $client->getResponse()->getStatusCode());
-		$responseOrder = json_decode($client->getResponse()->getContent(), TRUE);
-		dd($responseOrder);
+		$responseInvalidOrder = json_decode($client->getResponse()->getContent(), TRUE);
+		$this->assertEquals(['id' => "Invalid order."], $responseInvalidOrder);
 		
+		$client->request('GET', '/users/' . $customerId . '/orders/' . $this->impossibleInt);
+		$this->assertEquals(Response::HTTP_NOT_FOUND, $client->getResponse()->getStatusCode());
+		$responseInvalidOrder = json_decode($client->getResponse()->getContent(), TRUE);
+		$this->assertEquals(['id' => "Invalid order."], $responseInvalidOrder);
 		
 		$client->request('GET', '/users/' . $customerId . '/orders/' . $responseBody2[Order::ID]);
 		$this->assertEquals(Response::HTTP_OK, $client->getResponse()->getStatusCode());
