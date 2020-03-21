@@ -203,7 +203,17 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 
 	public function mustFindUsersOrdersWithProducts(int $userId): array
 	{
-//		dd($orderProductTableName);
+		// #40 TODO: Save this as a ...WithQueryBuilder
+		// #40 Use the Annotation JOIN because it will return Entitites rather than 
+		// arrays (as QB does). This approach will give more freedom - choose
+		// to work with the Entity or convert to array.
+		;
+		// #40 Create toArray($keys) methods that will convert the Entity to
+		// array in a unified manner. Will give same result in cart/products, 
+		// order, orders.
+		
+		
+		
 		$return = [];
 		$list = $this->createQueryBuilder('p')
 				->select(self::SEL_COLUMNS . ',' . OrderProductRepository::SEL_COLUMNS)
