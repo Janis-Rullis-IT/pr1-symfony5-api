@@ -485,6 +485,7 @@ class OrderProductUnitTest extends KernelTestCase
 		$this->assertEquals($draftOrder->getCustomerId(), $firstProduct[OrderProduct::CUSTOMER_ID]);
 
 		// #40 Use the Annotation JOIN because it will return Entitites rather than arrays (as QB does). 
+ 		// This approach will give more freedom - choose to work with the Entity or convert to array.
 		;
 		// #40 Tests started to slow down. SQL logs doesn't seem to load JOINs by def.
 		// There might be some other issue.

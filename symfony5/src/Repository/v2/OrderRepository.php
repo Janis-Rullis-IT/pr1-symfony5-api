@@ -10,12 +10,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use \App\Exception\OrderValidatorException;
 use \Doctrine\ORM\Query;
 
-/**
- * @method Order|null find($id, $lockMode = null, $lockVersion = null)
- * @method Order|null findOneBy(array $criteria, array $orderBy = null)
- * @method Order[]    findAll()
- * @method Order[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
- */
 class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 {
 
@@ -67,10 +61,7 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 	 */
 	public function getCurrentDraft(int $customerId): ?Order
 	{
-		return $this->findOneBy([
-				"customer_id" => $customerId,
-				"status" => Order::DRAFT
-		]);
+		return $this->findOneBy(["customer_id" => $customerId, "status" => Order::DRAFT]);
 	}
 
 	/**
@@ -177,6 +168,18 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 	 */
 	public function mustFindUsersOrder(int $userId, int $orderId): array
 	{
+//		$order = $this->findOneBy(["customer_id" => $userId, "id" => $orderId]);
+//		if (empty($order)) {
+//			throw new OrderValidatorException([Order::ID => Order::INVALID], 1);
+//		}
+//		dd($order);
+		// #40 Use the Annotation JOIN because it will return Entitites rather than arrays (as QB does). 
+		// This approach will give more freedom - choose to work with the Entity or convert to array.
+		;
+		// #40 Create toArray($keys) methods that will convert the Entity to
+		// array in a unified manner. Will give same result in cart/products, 
+		// order, orders.
+//		dd(' ee');
 		//$item = $this->findOneBy(["customer_id" => $userId, "id" => $orderId]);
 		$item = $this->createQueryBuilder('p')
 				// #40 TODO: Replace these keys with cosnt.
@@ -187,9 +190,7 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 				->setParameter('userId', $userId)
 				->getQuery()->getOneOrNullResult();
 		// #40 TODO: Find a way how this can be converted to Entity.
-		if (empty($item)) {
-			throw new OrderValidatorException([Order::ID => Order::INVALID], 1);
-		}
+
 		return $item;
 	}
 
@@ -232,13 +233,12 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 
 	public function mustFindUsersOrdersWithProducts(int $userId): array
 	{
-		
 		;
 		// #40 Create toArray($keys) methods that will convert the Entity to
 		// array in a unified manner. Will give same result in cart/products, 
 		// order, orders.
-	
-	$return = [];
+
+		$return = [];
 		$list = $this->createQueryBuilder('p')
 				->select(self::SEL_COLUMNS . ',' . OrderProductRepository::SEL_COLUMNS)
 				->where('p.customer_id = :userId')->setParameter('userId', $userId)
@@ -253,6 +253,47 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 			// #40 This should be replaced with a relation or in worst case a built-in filtering/grouping tool.
 			foreach ($list as $item) {
 				$return[$item['order_id']][$item['order_product_id']] = $item;
+			}
+		}
+		return $return;
+	}
+
+	public function getFields($item, $fields = []): Order
+	{
+		$return = [];
+		$fields = empty($fields) ? Order::PUB_FIELDS : $fields;
+		foreach ($fields as $field) {
+			switch ($field) {
+				case 'id':
+					$return[$field] = $item->getId();
+					break;
+				case 'status': $return[$field] = $item->getIsStatus();
+					break;
+				case 'is_domestic': $return[$field] = $item->getIsDomestic();
+					break;
+				case 'is_express': $return[$field] = $item->getIsExpress();
+					break;
+				case 'shipping_cost': $return[$field] = $item->getShippingCost();
+					break;
+				case 'product_cost': $return[$field] = $item->getProductCost();
+					break;
+				case 'total_cost': $return[$field] = $item->getTotalCost();
+					break;
+				case 'name': $return[$field] = $item->getName();
+					break;
+				case 'surname': $return[$field] = $item->getSurname();
+					break;
+				case 'street': $return[$field] = $item->getStreet();
+					break;
+				case 'country': $return[$field] = $item->getCountry();
+					break;
+				case 'phone': $return[$field] = $item->getPhone();
+					break;
+				case 'state': $return[$field] = $item->getState();
+					break;
+				case 'zip': $return[$field] = $item->getZip();
+					break;
+				default: null;
 			}
 		}
 		return $return;
