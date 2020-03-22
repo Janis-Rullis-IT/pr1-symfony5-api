@@ -201,20 +201,44 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 		return $order;
 	}
 
+	/**
+	 * #40 Collect user's orders with products using the query builder. 
+	 * This is left here to work as an example.
+	 * 
+	 * @param int $userId
+	 * @return array
+	 */
+	public function mustFindUsersOrdersWithProductsQB(int $userId): array
+	{
+		$return = [];
+		$list = $this->createQueryBuilder('p')
+				->select(self::SEL_COLUMNS . ',' . OrderProductRepository::SEL_COLUMNS)
+				->where('p.customer_id = :userId')->setParameter('userId', $userId)
+				->innerJoin(OrderProduct::class, 'r', 'WITH', 'p.id = r.order_id')
+				->getQuery()->getResult(Query::HYDRATE_OBJECT);
+		// #40 TODO: Try to implement this with relations so it would result in `[{order1:products[]},{order2:[products]}]`.
+		// #40 TODO: Find a way how this can be converted to Entity.
+		// #40 https://www.doctrine-project.org/projects/doctrine-orm/en/2.7/reference/dql-doctrine-query-language.html#fetching-multiple-from-entities
+		if (empty($list)) {
+			throw new OrderValidatorException([Order::ID => Order::INVALID], 1);
+		} else {
+			// #40 This should be replaced with a relation or in worst case a built-in filtering/grouping tool.
+			foreach ($list as $item) {
+				$return[$item['order_id']][$item['order_product_id']] = $item;
+			}
+		}
+		return $return;
+	}
+
 	public function mustFindUsersOrdersWithProducts(int $userId): array
 	{
-		// #40 TODO: Save this as a ...WithQueryBuilder
-		// #40 Use the Annotation JOIN because it will return Entitites rather than 
-		// arrays (as QB does). This approach will give more freedom - choose
-		// to work with the Entity or convert to array.
+		
 		;
 		// #40 Create toArray($keys) methods that will convert the Entity to
 		// array in a unified manner. Will give same result in cart/products, 
 		// order, orders.
-		
-		
-		
-		$return = [];
+	
+	$return = [];
 		$list = $this->createQueryBuilder('p')
 				->select(self::SEL_COLUMNS . ',' . OrderProductRepository::SEL_COLUMNS)
 				->where('p.customer_id = :userId')->setParameter('userId', $userId)

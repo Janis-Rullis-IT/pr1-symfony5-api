@@ -483,20 +483,25 @@ class OrderProductUnitTest extends KernelTestCase
 		$firstProduct = $orderWithProducts[Order::PRODUCTS][0];
 		$this->assertEquals($draftOrder->getId(), $firstProduct[OrderProduct::ORDER_ID]);
 		$this->assertEquals($draftOrder->getCustomerId(), $firstProduct[OrderProduct::CUSTOMER_ID]);
-		
-//		#40 TODO: Learn how to implement this using OneToMany relations and JOINS. Goal is to filter fields and perfomance.
-//		 #40 https://www.doctrine-project.org/api/collections/latest/Doctrine/Common/Collections/ArrayCollection.html
-//		 * https://www.doctrine-project.org/projects/doctrine-orm/en/2.7/cookbook/aggregate-fields.html
-//	 https://www.doctrine-project.org/projects/doctrine-orm/en/2.7/reference/annotations-reference.html#annref_joincolumns
-//	 * https://www.doctrine-project.org/projects/doctrine-orm/en/2.6/reference/association-mapping.html#one-to-many-unidirectional-with-join-table
-//		$products = $draftOrder->getAa()->toArray();
-		// #39 #33 #34 #37 TODO: Add `shipping_id` to `shipping_rates`.`id`.
-		;
 
-		// #38 #36 TODO: Add more use cases when work on the #39.
-		// #38 #36 TODO: Decide what to do with the existing tests that doesn't use DB. 
-		// On one hand they are currently broken and on the other hand they should be updated
-		// to use DB.
+		// #40 Use the Annotation JOIN because it will return Entitites rather than arrays (as QB does). 
+		;
+		// #40 Tests started to slow down. SQL logs doesn't seem to load JOINs by def.
+		// There might be some other issue.
+		// https://www.doctrine-project.org/projects/doctrine-orm/en/2.7/tutorials/extra-lazy-associations.html
+		// Hiccup stars at `$this->assertTrue($this->orderProductRepo->makrCartsAdditionalProducts($draftOrder));`.
+		// [x] Remove the assoc. Annotation and see if speed changes. - Didn't help. Maybe the Order method.
+		// [x] bin/console all cache clears. - Didn' t help.
+		// [x] Revert last changes.
+		// [x] Dump composer.
+		// [x] Clear tables. Might be that db struct is filled and is not optimized. YES!! That' s the cause.
+		;
+		// #40 TODO: Import huge datasets using fixtures and check how current queries will react on that.
+		$products = $draftOrder->getProducts()->toArray()[0];
+		foreach ($products as $product) {
+			$this->assertEquals($draftOrder->getId(), $product->getOrderId());
+		}
+		// #39 #33 #34 #37 TODO: Add `shipping_id` to `shipping_rates`.`id`.
 	}
 
 	protected function tearDown(): void

@@ -4,6 +4,7 @@ namespace App\Entity\v2;
 use Doctrine\ORM\Mapping as ORM;
 use \App\Helper\EnumType;
 use \App\Exception\OrderShippingValidatorException;
+use \App\Entity\v2\OrderProduct;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\v2\OrderRepository")
@@ -138,18 +139,26 @@ class Order
 	private $zip;
 
 	/**
-	 * #40 Store order products.
-	 * @var type 
+	 * #40 Store order's products when called `getProducts()`.
+	 * #40 Annotation based ManyToMany relation that collects order's products.
+	 * https://www.doctrine-project.org/projects/doctrine-orm/en/2.7/cookbook/aggregate-fields.html
+	 * https://www.doctrine-project.org/projects/doctrine-orm/en/2.7/reference/annotations-reference.html#annref_joincolumns
+	 * https://www.doctrine-project.org/projects/doctrine-orm/en/2.6/reference/association-mapping.html#one-to-many-unidirectional-with-join-table
+	 * https://www.doctrine-project.org/api/collections/latest/Doctrine/Common/Collections/ArrayCollection.html
+	 * @ORM\ManyToMany(targetEntity="OrderProduct")
+	 * @ORM\JoinTable(name="v2_order_product",
+	 *      joinColumns={@ORM\JoinColumn(name="order_id", referencedColumnName="id")},
+	 *      inverseJoinColumns={@ORM\JoinColumn(name="id", referencedColumnName="id", unique=true)}
+	 * )
 	 */
 	private $products;
 
-	public function setProducts($products): self
-	{
-		$this->products = $products;
-		return $this;
-	}
-
-	public function getProducts(): array
+	/**
+	 * #40 Collect order's products.
+	 * Collected using annotation JOIN. See `$products`.
+	 * @return type
+	 */
+	public function getProducts()
 	{
 		return $this->products;
 	}
