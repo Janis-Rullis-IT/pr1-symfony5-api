@@ -46,7 +46,11 @@ class Order
 	const INVALID = 'Invalid order.';
 	// #40 Key collections - used for data parsing.
 	// #40 Default fields to display to public. Used in repo's `getField()`.
-	const PUB_FIELDS = [self::ID, self::IS_DOMESTIC, self::IS_EXPRESS, self::SHIPPING_COST, self::PRODUCT_COST, self::TOTAL_COST, self::OWNER_NAME, self::OWNER_SURNAME, self::STREET, self::COUNTRY, self::PHONE, self::STATE, self::ZIP];
+	const PUB_FIELDS = [
+		self::ID, self::IS_DOMESTIC, self::IS_EXPRESS,
+		self::SHIPPING_COST, self::PRODUCT_COST, self::TOTAL_COST, self::OWNER_NAME,
+		self::OWNER_SURNAME, self::STREET, self::COUNTRY, self::PHONE, self::STATE, self::ZIP
+	];
 
 	// #40 TODO: Convert to const.
 	public static $requireds = [self::OWNER_NAME, self::OWNER_SURNAME, self::STREET, self::COUNTRY, self::PHONE, self::IS_EXPRESS];
@@ -407,11 +411,11 @@ class Order
 	}
 
 	/**
-	 * #40 Convert the Entity to array in a unified manner. 
-	 * Will give same result in cart/products, /order, /orders.	 
+	 * #40 Convert the Entity to array in unified manner. 
+	 * Will give same result in different endpoints.
 	 * 
 	 * @param array $fields
-	 * @return Order
+	 * @return array
 	 */
 	public function toArray(?array $fields = []): array
 	{
@@ -421,7 +425,7 @@ class Order
 			self::ID => $this->getId(), self::STATUS => $this->getStatus(),
 			self::IS_DOMESTIC => $this->getIsDomestic(), self::IS_EXPRESS => $this->getIsExpress(),
 			self::SHIPPING_COST => $this->getShippingCost(), self::PRODUCT_COST => $this->getProductCost(),
-			self::TOTAL_COST => $this->getTotalCost(), self::OWNER_SURNAME => $this->getName(),
+			self::TOTAL_COST => $this->getTotalCost(), self::OWNER_NAME => $this->getName(),
 			self::OWNER_SURNAME => $this->getSurname(), self::STREET => $this->getStreet(), self::COUNTRY => $this->getCountry(),
 			self::PHONE => $this->getPhone(), self::STATE => $this->getState(), self::ZIP => $this->getZip()];
 		if (empty($fields)) {

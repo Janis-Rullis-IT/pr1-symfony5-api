@@ -11,10 +11,31 @@ use \App\Helper\EnumType;
  */
 class OrderProduct
 {
-	const PRODUCT_ID = 'product_id';
-	const ORDER_ID = 'order_id';
+
+	// #40 Fields.
+	const ID = "id";
 	const CUSTOMER_ID = 'customer_id';
-	
+	const ORDER_ID = 'order_id';
+	const SELLER_ID = 'seller_id';
+	const SELLER_TITLE = 'seller_title';
+	const PRODUCT_ID = 'product_id';
+	const PRODUCT_TITLE = 'product_title';
+	const PRODUCT_COST = 'product_cost';
+	const PRODUCT_TYPE = 'product_type';
+	const IS_DOMESTIC = "is_domestic";
+	const IS_ADDITIONAL = "is_additional";
+	const IS_EXPRESS = "is_express";
+	const SHIPPING_COST = 'shipping_cost';
+	// #40 Key collections - used for data parsing.
+	// #40 Default fields to display to public. Used in repo's `getField()`.
+	const PUB_FIELDS = [
+		self::ID, self::CUSTOMER_ID, self::ORDER_ID, self::SELLER_ID,
+		self::SELLER_TITLE, self::PRODUCT_ID, self::PRODUCT_TITLE,
+		self::PRODUCT_COST, self::PRODUCT_TYPE, self::IS_DOMESTIC,
+		self::IS_ADDITIONAL, self::IS_EXPRESS, self::SHIPPING_COST
+	];
+
+	public static $requireds = ['customer_id', 'product_id'];
 
 	/**
 	 * @ORM\Id()
@@ -240,7 +261,7 @@ class OrderProduct
 	public function setIsExpress($is_express): self
 	{
 		$this->is_express = EnumType::parse($is_express);
-		
+
 		return $this;
 	}
 
@@ -304,6 +325,33 @@ class OrderProduct
 		return $this;
 	}
 
-	public static $requireds = ['customer_id', 'product_id'];
-
+	/**
+	 * #40 Convert the Entity to array in unified manner. 
+	 * Will give same result in different endpoints.
+	 * 
+	 * @param array $fields
+	 * @return array
+	 */
+	public function toArray(?array $fields = []): array
+	{
+		$return = [];
+		// #40 Contains most popular fields. Add a field is necessary.
+		$allFields = [
+			self::ID => $this->getId(), self::CUSTOMER_ID => $this->getCustomerId(),
+			self::ORDER_ID => $this->getOrderId(), self::SELLER_ID => $this->getSellerId(),
+			self::SELLER_TITLE => $this->getSellerTitle(), self::PRODUCT_ID => $this->getProductId(),
+			self::PRODUCT_TITLE => $this->getProductTitle(), self::PRODUCT_COST => $this->getProductCost(),
+			self::PRODUCT_TYPE => $this->getProductType(), self::IS_DOMESTIC => $this->getIsDomestic(),
+			self::IS_ADDITIONAL => $this->getIsAdditional(), self::IS_EXPRESS => $this->getIsExpress(),
+			self::SHIPPING_COST => $this->getShippingCost()
+		];
+		if (empty($fields)) {
+			$return = $allFields;
+		} else {
+			foreach ($fields as $field) {
+				$return[$field] = isset($allFields[$field]) ? $allFields[$field] : null;
+			}
+		}
+		return $return;
+	}
 }
