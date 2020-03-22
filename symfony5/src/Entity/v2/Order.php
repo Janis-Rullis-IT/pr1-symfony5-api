@@ -413,7 +413,7 @@ class Order
 	 * @param array $fields
 	 * @return Order
 	 */
-	public function toArray(?array $fields): array
+	public function toArray(?array $fields = []): array
 	{
 		$return = [];
 		// #40 Contains most popular fields. Add a field is necessary.

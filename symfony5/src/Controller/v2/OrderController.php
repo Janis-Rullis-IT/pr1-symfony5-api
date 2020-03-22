@@ -122,11 +122,7 @@ class OrderController extends AbstractController
 	public function complete(Request $request, OrderService $orderService, int $customerId): JsonResponse
 	{
 		try {
-			$item = $orderService->complete($customerId);
-			$resp = ["id" => $item->getId(), "status" => $item->getStatus(), "is_domestic" => $item->getIsDomestic(), "is_express" => $item->getIsExpress(), "shipping_cost" => $item->getShippingCost(),
-				"product_cost" => $item->getProductCost(), "total_cost" => $item->getTotalCost(), "name" => $item->getName(),
-				"surname" => $item->getSurname(), "street" => $item->getStreet(), "country" => $item->getCountry(),
-				"phone" => $item->getPhone(), "state" => $item->getState(), "zip" => $item->getZip()];
+			$resp = $orderService->complete($customerId)->toArray();
 			return $this->json($resp, Response::HTTP_OK);
 		} catch (UidValidatorException $e) {
 			return $this->json($e->getErrors(), Response::HTTP_NOT_FOUND);

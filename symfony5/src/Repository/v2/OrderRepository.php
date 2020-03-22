@@ -189,6 +189,9 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 				->setParameter('orderId', $orderId)
 				->setParameter('userId', $userId)
 				->getQuery()->getOneOrNullResult();
+		if (empty($item)) {
+			throw new OrderValidatorException([Order::ID => Order::INVALID], 1);
+		}
 		// #40 TODO: Find a way how this can be converted to Entity.
 
 		return $item;
