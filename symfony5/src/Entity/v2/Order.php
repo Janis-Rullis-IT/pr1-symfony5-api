@@ -418,12 +418,12 @@ class Order
 		$return = [];
 		// #40 Contains most popular fields. Add a field is necessary.
 		$allFields = [
-			"id" => $this->getId(), "status" => $this->getStatus(),
-			"is_domestic" => $this->getIsDomestic(), "is_express" => $this->getIsExpress(),
-			"shipping_cost" => $this->getShippingCost(), "product_cost" => $this->getProductCost(),
-			"total_cost" => $this->getTotalCost(), "name" => $this->getName(),
-			"surname" => $this->getSurname(), "street" => $this->getStreet(), "country" => $this->getCountry(),
-			"phone" => $this->getPhone(), "state" => $this->getState(), "zip" => $this->getZip()];
+			self::ID => $this->getId(), self::STATUS => $this->getStatus(),
+			self::IS_DOMESTIC => $this->getIsDomestic(), self::IS_EXPRESS => $this->getIsExpress(),
+			self::SHIPPING_COST => $this->getShippingCost(), self::PRODUCT_COST => $this->getProductCost(),
+			self::TOTAL_COST => $this->getTotalCost(), self::OWNER_SURNAME => $this->getName(),
+			self::OWNER_SURNAME => $this->getSurname(), self::STREET => $this->getStreet(), self::COUNTRY => $this->getCountry(),
+			self::PHONE => $this->getPhone(), self::STATE => $this->getState(), self::ZIP => $this->getZip()];
 		if (empty($fields)) {
 			$return = $allFields;
 		} else {

@@ -21,6 +21,7 @@ class OrderController extends AbstractController
 
 	/**
 	 * #40 Set order's shipping.
+	 * #40 TODO: Replace this with Order schema.
 	 * 
 	 * @Route("/users/v2/{customerId}/order/shipping", methods={"PUT"})
 	 * @SWG\Tag(name="4. shipping")
@@ -85,6 +86,7 @@ class OrderController extends AbstractController
 
 	/**
 	 * #40 Complete the order.
+	 * #40 TODO: Replace this with Order schema.
 	 * 
 	 * @Route("/users/v2/{customerId}/order/complete", methods={"PUT"})
 	 * @SWG\Tag(name="5. complete order")
@@ -165,6 +167,7 @@ class OrderController extends AbstractController
 
 	/**
 	 * View user's order.
+	 * #40 TODO: Replace this with Order schema.
 	 * 
 	 * @Route("/users/{id_user}/orders", methods={"GET"})
 	 * @SWG\Tag(name="6. order")

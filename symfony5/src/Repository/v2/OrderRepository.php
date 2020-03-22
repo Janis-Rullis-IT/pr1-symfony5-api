@@ -168,11 +168,10 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 	 */
 	public function mustFindUsersOrder(int $userId, int $orderId): array
 	{
-//		$order = $this->findOneBy(["customer_id" => $userId, "id" => $orderId]);
-//		if (empty($order)) {
-//			throw new OrderValidatorException([Order::ID => Order::INVALID], 1);
-//		}
-//		dd($order);
+		$order = $this->findOneBy(["customer_id" => $userId, "id" => $orderId]);
+		if (empty($order)) {
+			throw new OrderValidatorException([Order::ID => Order::INVALID], 1);
+		}
 		// #40 Use the Annotation JOIN because it will return Entitites rather than arrays (as QB does). 
 		// This approach will give more freedom - choose to work with the Entity or convert to array.
 		;
