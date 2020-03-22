@@ -1,5 +1,5 @@
 <?php
-namespace App\Tests\v2\OrderProduct;
+namespace App\Tests\OrderProduct;
 
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use \App\Entity\User;
@@ -20,7 +20,7 @@ use \App\Exception\ProductIdValidatorException;
  * #38 Test that the order product data is stored in the database correctly.
  * Test v2 functionality: `vendor/bin/phpunit tests/v2/`
  */
-class OrderProductUnitTest extends KernelTestCase
+class OrderUnitTest extends KernelTestCase
 {
 
 	private $c;
