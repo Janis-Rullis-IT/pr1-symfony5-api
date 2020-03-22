@@ -17,6 +17,7 @@ class OrderProductController extends AbstractController
 
 	/**
 	 * #40 #38 Add a product to customer's cart (draft order).
+	 * #40 TODO: Add other fields.
 	 * 
 	 * @Route("/users/v2/{customerId}/cart/{productId}", methods={"POST"})   
 	 * @SWG\Tag(name="3. cart")
@@ -24,8 +25,8 @@ class OrderProductController extends AbstractController
 	 *   response=201, description="Created.",
 	 *   @SWG\Schema(
 	 *    @SWG\Property(property="id", type="integer", example="1"),
-	 *    @SWG\Property(property="customerId", type="integer", example="1"),
-	 *    @SWG\Property(property="productId", type="integer", example="1"),
+	 *    @SWG\Property(property="customer_id", type="integer", example="1"),
+	 *    @SWG\Property(property="product_id", type="integer", example="1"),
 	 *   )
 	 * )
 	 * @SWG\Response(
@@ -42,8 +43,7 @@ class OrderProductController extends AbstractController
 	public function addProductToCart(OrderProductCreator $orderProductCreator, int $customerId, int $productId)
 	{
 		try {
-			$item = $orderProductCreator->handle($customerId, $productId);
-			$resp = ['id' => $item->getProductId(), 'customerId' => $item->getCustomerId(), 'productId' => $item->getProductId()];
+			$resp = $orderProductCreator->handle($customerId, $productId)->toArray();
 			return $this->json($resp, Response::HTTP_CREATED);
 		} catch (UidValidatorException | ProductIdValidatorException $e) {
 			return $this->json($e->getErrors(), Response::HTTP_NOT_FOUND);

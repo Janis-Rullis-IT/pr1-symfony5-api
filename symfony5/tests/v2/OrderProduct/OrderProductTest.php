@@ -85,8 +85,8 @@ class OrderProductTest extends WebTestCase
 
 		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
 		$this->assertNotEmpty($responseBody['id']);
-		$this->assertEquals($productId, $responseBody['productId']);
-		$this->assertEquals($customerId, $responseBody['customerId']);
+		$this->assertEquals($productId, $responseBody['product_id']);
+		$this->assertEquals($customerId, $responseBody['customer_id']);
 
 		// #40 More thorough tests regarding this are located in OrderProductUnitTest.
 	}
