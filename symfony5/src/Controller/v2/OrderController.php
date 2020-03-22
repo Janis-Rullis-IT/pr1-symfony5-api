@@ -22,7 +22,7 @@ class OrderController extends AbstractController
 
 	/**
 	 * #40 Set order's shipping.
-	 * #40 TODO: Replace this with Order schema.
+	 * #45 TODO: Replace this with Order schema.
 	 * 
 	 * @Route("/users/v2/{customerId}/order/shipping", methods={"PUT"})
 	 * @SWG\Tag(name="4. shipping")
