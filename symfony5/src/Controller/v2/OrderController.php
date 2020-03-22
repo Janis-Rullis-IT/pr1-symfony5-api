@@ -74,12 +74,7 @@ class OrderController extends AbstractController
 	public function setShipping(Request $request, OrderShippingService $orderShippingService, int $customerId): JsonResponse
 	{
 		try {
-			// #40 TODO: Replace this with $resp = $repo->mustFindUsersOrderWithProducts($id_user, $id); ?
-			$item = $orderShippingService->set($customerId, json_decode($request->getContent(), true));
-			$resp = ["id" => $item->getId(), "is_domestic" => $item->getIsDomestic(), "is_express" => $item->getIsExpress(), "shipping_cost" => $item->getShippingCost(),
-				"product_cost" => $item->getProductCost(), "total_cost" => $item->getTotalCost(), "name" => $item->getName(),
-				"surname" => $item->getSurname(), "street" => $item->getStreet(), "country" => $item->getCountry(),
-				"phone" => $item->getPhone(), "state" => $item->getState(), "zip" => $item->getZip()];
+			$resp = $orderShippingService->set($customerId, json_decode($request->getContent(), true))->toArray();
 			return $this->json($resp, Response::HTTP_OK);
 		} catch (UidValidatorException $e) {
 			return $this->json($e->getErrors(), Response::HTTP_NOT_FOUND);
