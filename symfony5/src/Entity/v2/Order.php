@@ -405,4 +405,32 @@ class Order
 
 		return $this;
 	}
+
+	/**
+	 * #40 Convert the Entity to array in a unified manner. 
+	 * Will give same result in cart/products, /order, /orders.	 
+	 * 
+	 * @param array $fields
+	 * @return Order
+	 */
+	public function toArray(?array $fields): array
+	{
+		$return = [];
+		// #40 Contains most popular fields. Add a field is necessary.
+		$allFields = [
+			"id" => $this->getId(), "status" => $this->getStatus(),
+			"is_domestic" => $this->getIsDomestic(), "is_express" => $this->getIsExpress(),
+			"shipping_cost" => $this->getShippingCost(), "product_cost" => $this->getProductCost(),
+			"total_cost" => $this->getTotalCost(), "name" => $this->getName(),
+			"surname" => $this->getSurname(), "street" => $this->getStreet(), "country" => $this->getCountry(),
+			"phone" => $this->getPhone(), "state" => $this->getState(), "zip" => $this->getZip()];
+		if (empty($fields)) {
+			$return = $allFields;
+		} else {
+			foreach ($fields as $field) {
+				$return[$field] = isset($allFields[$field]) ? $allFields[$field] : null;
+			}
+		}
+		return $return;
+	}
 }

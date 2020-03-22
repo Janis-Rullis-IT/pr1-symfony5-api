@@ -234,9 +234,7 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 	public function mustFindUsersOrdersWithProducts(int $userId): array
 	{
 		;
-		// #40 Create toArray($keys) methods that will convert the Entity to
-		// array in a unified manner. Will give same result in cart/products, 
-		// order, orders.
+		// #40 Create toArray($keys) methods that will 
 
 		$return = [];
 		$list = $this->createQueryBuilder('p')
@@ -253,47 +251,6 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 			// #40 This should be replaced with a relation or in worst case a built-in filtering/grouping tool.
 			foreach ($list as $item) {
 				$return[$item['order_id']][$item['order_product_id']] = $item;
-			}
-		}
-		return $return;
-	}
-
-	public function getFields($item, $fields = []): Order
-	{
-		$return = [];
-		$fields = empty($fields) ? Order::PUB_FIELDS : $fields;
-		foreach ($fields as $field) {
-			switch ($field) {
-				case 'id':
-					$return[$field] = $item->getId();
-					break;
-				case 'status': $return[$field] = $item->getIsStatus();
-					break;
-				case 'is_domestic': $return[$field] = $item->getIsDomestic();
-					break;
-				case 'is_express': $return[$field] = $item->getIsExpress();
-					break;
-				case 'shipping_cost': $return[$field] = $item->getShippingCost();
-					break;
-				case 'product_cost': $return[$field] = $item->getProductCost();
-					break;
-				case 'total_cost': $return[$field] = $item->getTotalCost();
-					break;
-				case 'name': $return[$field] = $item->getName();
-					break;
-				case 'surname': $return[$field] = $item->getSurname();
-					break;
-				case 'street': $return[$field] = $item->getStreet();
-					break;
-				case 'country': $return[$field] = $item->getCountry();
-					break;
-				case 'phone': $return[$field] = $item->getPhone();
-					break;
-				case 'state': $return[$field] = $item->getState();
-					break;
-				case 'zip': $return[$field] = $item->getZip();
-					break;
-				default: null;
 			}
 		}
 		return $return;
