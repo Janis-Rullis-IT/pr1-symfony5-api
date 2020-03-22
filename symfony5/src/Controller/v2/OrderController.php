@@ -95,6 +95,7 @@ class OrderController extends AbstractController
 	 *   response=200, description="Saved.",
 	 *   @SWG\Schema(
 	 *    @SWG\Property(property="id", type="integer", example=1),
+	 *    @SWG\Property(property="customer_id", type="integer", example=1),
 	 *    @SWG\Property(property="is_domestic", type="string", example="y"),
 	 *    @SWG\Property(property="is_express", type="string", example="y"),
 	 *    @SWG\Property(property="shipping_cost", type="integer", example=1000),
@@ -106,7 +107,7 @@ class OrderController extends AbstractController
 	 *    @SWG\Property(property="state", type="string", example="California"),
 	 *    @SWG\Property(property="zip", type="string", example="60744"),
 	 *    @SWG\Property(property="country", type="string", example="US"),
-	 *    @SWG\Property(property="phone", type="string", example="+1 123 123 123")
+	 *    @SWG\Property(property="phone", type="string", example="+1 123 123 123"),
 	 *   )
 	 * )
 	 * @SWG\Response(
@@ -115,7 +116,6 @@ class OrderController extends AbstractController
 	 *    @SWG\Property(property="id", type="string", example="invalid user"),
 	 *   )
 	 * )
-	 * 
 	 */
 	public function complete(Request $request, OrderService $orderService, int $customerId): JsonResponse
 	{
@@ -138,6 +138,45 @@ class OrderController extends AbstractController
 	 * 
 	 * @Route("/users/{id_user}/orders/{id}", methods={"GET"})
 	 * @SWG\Tag(name="6. order")
+	 * @SWG\Response(
+	 *   response=200, description="Saved.",
+	 *   @SWG\Schema(
+	 *    @SWG\Property(property="id", type="integer", example=1),
+	 *    @SWG\Property(property="customer_id", type="integer", example=1),
+	 *    @SWG\Property(property="is_domestic", type="string", example="y"),
+	 *    @SWG\Property(property="is_express", type="string", example="y"),
+	 *    @SWG\Property(property="shipping_cost", type="integer", example=1000),
+	 *    @SWG\Property(property="product_cost", type="integer", example=1000),
+	 *    @SWG\Property(property="total_cost", type="integer", example=2000),
+	 *    @SWG\Property(property="name", type="string", example="John"),
+	 *    @SWG\Property(property="surname", type="string", example="Doe"),
+	 *    @SWG\Property(property="street", type="string", example="Palm street 25-7"),
+	 *    @SWG\Property(property="state", type="string", example="California"),
+	 *    @SWG\Property(property="zip", type="string", example="60744"),
+	 *    @SWG\Property(property="country", type="string", example="US"),
+	 *    @SWG\Property(property="phone", type="string", example="+1 123 123 123"),
+	 *    @SWG\Property(
+	 *      property="products",
+	 *      type="array",
+	 *      @SWG\Items(
+	 * 		type="object",
+	 *        @SWG\Property(property="id", type="integer", example=1),
+	 *        @SWG\Property(property="customer_id", type="integer", example=1),
+	 *        @SWG\Property(property="order_id", type="integer", example=1),
+	 *        @SWG\Property(property="seller_id", type="integer", example=1),
+	 *        @SWG\Property(property="seller_title", type="string", example="John Doe"),
+	 *        @SWG\Property(property="product_id", type="integer", example=1),
+	 *        @SWG\Property(property="product_cost", type="integer", example=1000),
+	 *        @SWG\Property(property="product_type", type="string", example="t-shirt"),
+	 *        @SWG\Property(property="is_domestic", type="string", example="null"),
+	 *        @SWG\Property(property="is_additional", type="string", example="null"),
+	 *        @SWG\Property(property="is_express", type="string", example="null"),
+	 *        @SWG\Property(property="shipping_cost", type="integer", example="null"),
+	 *       ),
+	 *     )
+	 *   )
+	 * )
+	 * 
 	 * @SWG\Response(
 	 *   response=404, description="Not found.",
 	 *   @SWG\Schema(
@@ -172,6 +211,48 @@ class OrderController extends AbstractController
 	 * 
 	 * @Route("/users/{id_user}/orders", methods={"GET"})
 	 * @SWG\Tag(name="6. order")
+	 * @SWG\Response(
+	 *   response=200, description="Saved.",
+	 *   @SWG\Schema(
+	 *      @SWG\Items(
+	 * 		type="object",
+	 *      @SWG\Property(property="id", type="integer", example=1),
+	 *      @SWG\Property(property="customer_id", type="integer", example=1),
+	 *      @SWG\Property(property="is_domestic", type="string", example="y"),
+	 *      @SWG\Property(property="is_express", type="string", example="y"),
+	 *      @SWG\Property(property="shipping_cost", type="integer", example=1000),
+	 *      @SWG\Property(property="product_cost", type="integer", example=1000),
+	 *      @SWG\Property(property="total_cost", type="integer", example=2000),
+	 *      @SWG\Property(property="name", type="string", example="John"),
+	 *      @SWG\Property(property="surname", type="string", example="Doe"),
+	 *      @SWG\Property(property="street", type="string", example="Palm street 25-7"),
+	 *      @SWG\Property(property="state", type="string", example="California"),
+	 *      @SWG\Property(property="zip", type="string", example="60744"),
+	 *      @SWG\Property(property="country", type="string", example="US"),
+	 *      @SWG\Property(property="phone", type="string", example="+1 123 123 123"),
+	 *      @SWG\Property(
+	 *        property="products",
+	 *        type="array",
+	 *        @SWG\Items(
+	 * 		  type="object",
+	 *          @SWG\Property(property="id", type="integer", example=1),
+	 *          @SWG\Property(property="customer_id", type="integer", example=1),
+	 *          @SWG\Property(property="order_id", type="integer", example=1),
+	 *          @SWG\Property(property="seller_id", type="integer", example=1),
+	 *          @SWG\Property(property="seller_title", type="string", example="John Doe"),
+	 *          @SWG\Property(property="product_id", type="integer", example=1),
+	 *          @SWG\Property(property="product_cost", type="integer", example=1000),
+	 *          @SWG\Property(property="product_type", type="string", example="t-shirt"),
+	 *          @SWG\Property(property="is_domestic", type="string", example="null"),
+	 *          @SWG\Property(property="is_additional", type="string", example="null"),
+	 *          @SWG\Property(property="is_express", type="string", example="null"),
+	 *          @SWG\Property(property="shipping_cost", type="integer", example="null"),
+	 *       ),
+	 *     )
+	 *     )
+	 *   )
+	 * )
+	 * 
 	 * @SWG\Response(
 	 *   response=404, description="Not found.",
 	 *   @SWG\Schema(
