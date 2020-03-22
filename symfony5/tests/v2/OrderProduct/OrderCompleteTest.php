@@ -178,6 +178,12 @@ class OrderCompleteTest extends WebTestCase
 		$responseOrder = json_decode($client->getResponse()->getContent(), TRUE);
 		$this->assertEquals($responseBody2[Order::ID], $responseOrder[Order::ID]);
 		$this->assertEquals($responseOrder[Order::PRODUCTS][0][OrderProduct::PRODUCT_ID], $productId);
+		
+		$client->request('GET', '/users/' . $customerId . '/orders' );
+		$this->assertEquals(Response::HTTP_OK, $client->getResponse()->getStatusCode());
+		$responseOrders = json_decode($client->getResponse()->getContent(), TRUE);
+		$responseOrder = $responseOrders[0];
+		$this->assertEquals($responseOrder[Order::PRODUCTS][0][OrderProduct::PRODUCT_ID], $productId);
 	}
 
 	/**

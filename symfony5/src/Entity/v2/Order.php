@@ -13,11 +13,10 @@ use \App\Entity\v2\OrderProduct;
 class Order
 {
 
+	// #40 Fields.
+	const ID = "id";
 	const IS_EXPRESS = "is_express";
 	const IS_DOMESTIC = "is_domestic";
-	const REQUIRE_IS_DOMESTIC = 'Set `is_domestic` before `is_express`.';
-	const EXPRESS_ONLY_IN_DOMESTIC_REGION = "Express shipping is allowed only in domestic regions.";
-	const ID = "id";
 	const ORDER_ID = "order_id";
 	const OWNER_NAME = "name";
 	const OWNER_SURNAME = "surname";
@@ -29,17 +28,32 @@ class Order
 	const PRODUCT_COST = "product_cost";
 	const SHIPPING_COST = "shipping_cost";
 	const TOTAL_COST = "total_cost";
-	const CANT_CREATE = "Cannot create a draft order. Please, contact our support.";
-	const FIELD_IS_MISSING = ' field is missing.';
-	const PRODUCTS = "products";
-	const MUST_HAVE_PRODUCTS = "Must have at least 1 product.";
-	const SHIPPING = "shipping";
-	const MUST_HAVE_SHIPPING_SET = "The shipping must be set before completing the order.";
 	const STATUS = 'status';
+	const CUSTOMER_ID = 'customer_id';
+	// #40 Non-db keys.
+	const PRODUCTS = "products";
+	const SHIPPING = "shipping";
+	// #40 Values.
 	const COMPLETED = 'completed';
 	const DRAFT = 'draft';
+	// #40 Messages.
+	const REQUIRE_IS_DOMESTIC = 'Set `is_domestic` before `is_express`.';
+	const EXPRESS_ONLY_IN_DOMESTIC_REGION = "Express shipping is allowed only in domestic regions.";
+	const CANT_CREATE = "Cannot create a draft order. Please, contact our support.";
+	const FIELD_IS_MISSING = ' field is missing.';
+	const MUST_HAVE_PRODUCTS = "Must have at least 1 product.";
+	const MUST_HAVE_SHIPPING_SET = "The shipping must be set before completing the order.";
 	const INVALID = 'Invalid order.';
-	const CUSTOMER_ID = 'customer_id';
+	// #40 Key collections - used for data parsing.
+	// #40 Default fields to display to public. Used in repo's `getField()`.
+	const PUB_FIELDS = [
+		self::ID, self::IS_DOMESTIC, self::IS_EXPRESS,
+		self::SHIPPING_COST, self::PRODUCT_COST, self::TOTAL_COST, self::OWNER_NAME,
+		self::OWNER_SURNAME, self::STREET, self::COUNTRY, self::PHONE, self::STATE, self::ZIP
+	];
+
+	// #40 TODO: Convert to const.
+	public static $requireds = [self::OWNER_NAME, self::OWNER_SURNAME, self::STREET, self::COUNTRY, self::PHONE, self::IS_EXPRESS];
 
 	/**
 	 * @ORM\Id()
@@ -396,13 +410,49 @@ class Order
 		return $this;
 	}
 
-	public static $requireds = [
-		self::OWNER_NAME,
-		self::OWNER_SURNAME,
-		self::STREET,
-		self::COUNTRY,
-		self::PHONE,
-		self::IS_EXPRESS
-	];
+	/**
+	 * #40 Convert the Entity to array in unified manner. 
+	 * Will give same result in different endpoints.
+	 * 
+	 * @param array $fields
+	 * @return array
+	 */
+	public function toArray(?array $fields = [], $relations = []): array
+	{
+		$return = [];
+		// #40 Contains most popular fields. Add a field is necessary.
+		$allFields = [
+			self::ID => $this->getId(), self::STATUS => $this->getStatus(),
+			self::IS_DOMESTIC => $this->getIsDomestic(), self::IS_EXPRESS => $this->getIsExpress(),
+			self::SHIPPING_COST => $this->getShippingCost(), self::PRODUCT_COST => $this->getProductCost(),
+			self::TOTAL_COST => $this->getTotalCost(), self::OWNER_NAME => $this->getName(),
+			self::OWNER_SURNAME => $this->getSurname(), self::STREET => $this->getStreet(), self::COUNTRY => $this->getCountry(),
+			self::PHONE => $this->getPhone(), self::STATE => $this->getState(), self::ZIP => $this->getZip()
+		];
 
+		// #40 Fill order's fields.
+		if (empty($fields)) {
+			$return = $allFields;
+		} else {
+			foreach ($fields as $field) {
+				$return[$field] = isset($allFields[$field]) ? $allFields[$field] : null;
+			}
+		}
+		// #40 Fill relations.
+		if (!empty($relations)) {
+			foreach ($relations as $relation) {
+				switch ($relation) {
+					case Order::PRODUCTS:
+						$products = $this->getProducts();
+						foreach ($products as $product) {
+							$return[Order::PRODUCTS][] = $product->toArray();
+						}
+						break;
+					default: null;
+				}
+			}
+		}
+
+		return $return;
+	}
 }

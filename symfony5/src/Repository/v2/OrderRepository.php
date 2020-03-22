@@ -10,12 +10,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use \App\Exception\OrderValidatorException;
 use \Doctrine\ORM\Query;
 
-/**
- * @method Order|null find($id, $lockMode = null, $lockVersion = null)
- * @method Order|null findOneBy(array $criteria, array $orderBy = null)
- * @method Order[]    findAll()
- * @method Order[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
- */
 class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 {
 
@@ -67,10 +61,7 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 	 */
 	public function getCurrentDraft(int $customerId): ?Order
 	{
-		return $this->findOneBy([
-				"customer_id" => $customerId,
-				"status" => Order::DRAFT
-		]);
+		return $this->findOneBy(["customer_id" => $customerId, "status" => Order::DRAFT]);
 	}
 
 	/**
@@ -175,35 +166,30 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 	 * @return Order
 	 * @throws OrderValidatorException
 	 */
-	public function mustFindUsersOrder(int $userId, int $orderId): array
+	public function mustFindUsersOrder(int $userId, int $orderId): Order
 	{
-		//$item = $this->findOneBy(["customer_id" => $userId, "id" => $orderId]);
-		$item = $this->createQueryBuilder('p')
-				// #40 TODO: Replace these keys with cosnt.
-				->select('p.id, p.status, p.is_domestic, p.is_express, p.shipping_cost, p.product_cost, p.total_cost, p.name, p.surname, p.street, p.country, p.phone, p.state, p.zip')
-				->where('p.id = :orderId')
-				->andWhere('p.customer_id = :userId')
-				->setParameter('orderId', $orderId)
-				->setParameter('userId', $userId)
-				->getQuery()->getOneOrNullResult();
-		// #40 TODO: Find a way how this can be converted to Entity.
-		if (empty($item)) {
+		$order = $this->findOneBy(["customer_id" => $userId, "id" => $orderId]);
+		if (empty($order)) {
 			throw new OrderValidatorException([Order::ID => Order::INVALID], 1);
 		}
-		return $item;
-	}
 
-	public function mustFindUsersOrderWithProducts(int $userId, int $orderId): array
-	{
-		$order = $this->mustFindUsersOrder($userId, $orderId);
-		$order[Order::PRODUCTS] = $this->orderProductRepo->findOrderProducts($orderId);
-//		$order->setProducts($products);
 		return $order;
 	}
 
 	/**
+	 * #40 Find user's orders.
+	 * 
+	 * @param int $userId
+	 * @return array
+	 */
+	public function mustFindUsersOrders(int $userId): array
+	{
+		return $this->findBy(["customer_id" => $userId]);
+	}
+
+	/**
 	 * #40 Collect user's orders with products using the query builder. 
-	 * This is left here to work as an example.
+	 * Keep this! Left here to work as an example.
 	 * 
 	 * @param int $userId
 	 * @return array
@@ -211,34 +197,6 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 	public function mustFindUsersOrdersWithProductsQB(int $userId): array
 	{
 		$return = [];
-		$list = $this->createQueryBuilder('p')
-				->select(self::SEL_COLUMNS . ',' . OrderProductRepository::SEL_COLUMNS)
-				->where('p.customer_id = :userId')->setParameter('userId', $userId)
-				->innerJoin(OrderProduct::class, 'r', 'WITH', 'p.id = r.order_id')
-				->getQuery()->getResult(Query::HYDRATE_OBJECT);
-		// #40 TODO: Try to implement this with relations so it would result in `[{order1:products[]},{order2:[products]}]`.
-		// #40 TODO: Find a way how this can be converted to Entity.
-		// #40 https://www.doctrine-project.org/projects/doctrine-orm/en/2.7/reference/dql-doctrine-query-language.html#fetching-multiple-from-entities
-		if (empty($list)) {
-			throw new OrderValidatorException([Order::ID => Order::INVALID], 1);
-		} else {
-			// #40 This should be replaced with a relation or in worst case a built-in filtering/grouping tool.
-			foreach ($list as $item) {
-				$return[$item['order_id']][$item['order_product_id']] = $item;
-			}
-		}
-		return $return;
-	}
-
-	public function mustFindUsersOrdersWithProducts(int $userId): array
-	{
-		
-		;
-		// #40 Create toArray($keys) methods that will convert the Entity to
-		// array in a unified manner. Will give same result in cart/products, 
-		// order, orders.
-	
-	$return = [];
 		$list = $this->createQueryBuilder('p')
 				->select(self::SEL_COLUMNS . ',' . OrderProductRepository::SEL_COLUMNS)
 				->where('p.customer_id = :userId')->setParameter('userId', $userId)

@@ -15,12 +15,14 @@ use \App\v2\OrderService;
 use \App\Exception\UidValidatorException;
 use \App\Exception\OrderValidatorException;
 use \App\Repository\v2\OrderRepository;
+use \App\Entity\v2\Order;
 
 class OrderController extends AbstractController
 {
 
 	/**
 	 * #40 Set order's shipping.
+	 * #40 TODO: Replace this with Order schema.
 	 * 
 	 * @Route("/users/v2/{customerId}/order/shipping", methods={"PUT"})
 	 * @SWG\Tag(name="4. shipping")
@@ -74,12 +76,7 @@ class OrderController extends AbstractController
 	public function setShipping(Request $request, OrderShippingService $orderShippingService, int $customerId): JsonResponse
 	{
 		try {
-			// #40 TODO: Replace this with $resp = $repo->mustFindUsersOrderWithProducts($id_user, $id); ?
-			$item = $orderShippingService->set($customerId, json_decode($request->getContent(), true));
-			$resp = ["id" => $item->getId(), "is_domestic" => $item->getIsDomestic(), "is_express" => $item->getIsExpress(), "shipping_cost" => $item->getShippingCost(),
-				"product_cost" => $item->getProductCost(), "total_cost" => $item->getTotalCost(), "name" => $item->getName(),
-				"surname" => $item->getSurname(), "street" => $item->getStreet(), "country" => $item->getCountry(),
-				"phone" => $item->getPhone(), "state" => $item->getState(), "zip" => $item->getZip()];
+			$resp = $orderShippingService->set($customerId, json_decode($request->getContent(), true))->toArray();
 			return $this->json($resp, Response::HTTP_OK);
 		} catch (UidValidatorException $e) {
 			return $this->json($e->getErrors(), Response::HTTP_NOT_FOUND);
@@ -90,6 +87,7 @@ class OrderController extends AbstractController
 
 	/**
 	 * #40 Complete the order.
+	 * #40 TODO: Replace this with Order schema.
 	 * 
 	 * @Route("/users/v2/{customerId}/order/complete", methods={"PUT"})
 	 * @SWG\Tag(name="5. complete order")
@@ -122,11 +120,7 @@ class OrderController extends AbstractController
 	public function complete(Request $request, OrderService $orderService, int $customerId): JsonResponse
 	{
 		try {
-			$item = $orderService->complete($customerId);
-			$resp = ["id" => $item->getId(), "status" => $item->getStatus(), "is_domestic" => $item->getIsDomestic(), "is_express" => $item->getIsExpress(), "shipping_cost" => $item->getShippingCost(),
-				"product_cost" => $item->getProductCost(), "total_cost" => $item->getTotalCost(), "name" => $item->getName(),
-				"surname" => $item->getSurname(), "street" => $item->getStreet(), "country" => $item->getCountry(),
-				"phone" => $item->getPhone(), "state" => $item->getState(), "zip" => $item->getZip()];
+			$resp = $orderService->complete($customerId)->toArray();
 			return $this->json($resp, Response::HTTP_OK);
 		} catch (UidValidatorException $e) {
 			return $this->json($e->getErrors(), Response::HTTP_NOT_FOUND);
@@ -156,10 +150,10 @@ class OrderController extends AbstractController
 	 * @param int $id
 	 * @return JsonResponse
 	 */
-	public function getOrderById(OrderRepository $repo, int $id_user, int $id): JsonResponse
+	public function getUsersOrderById(OrderRepository $repo, int $id_user, int $id): JsonResponse
 	{
 		try {
-			$resp = $repo->mustFindUsersOrderWithProducts($id_user, $id);
+			$resp = $repo->mustFindUsersOrder($id_user, $id)->toArray([], [Order::PRODUCTS]);
 			return $this->json($resp, Response::HTTP_OK);
 		} catch (OrderValidatorException $e) {
 			return $this->json($e->getErrors(), Response::HTTP_NOT_FOUND);
@@ -174,6 +168,7 @@ class OrderController extends AbstractController
 
 	/**
 	 * View user's order.
+	 * #40 TODO: Replace this with Order schema.
 	 * 
 	 * @Route("/users/{id_user}/orders", methods={"GET"})
 	 * @SWG\Tag(name="6. order")
@@ -191,7 +186,11 @@ class OrderController extends AbstractController
 	public function getUsersOrders(OrderRepository $repo, int $id_user): JsonResponse
 	{
 		try {
-			$resp = $repo->mustFindUsersOrdersWithProducts($id_user);
+			$resp = [];
+			$orders = $repo->mustFindUsersOrders($id_user);
+			foreach ($orders as $order) {
+				$resp[] = $order->toArray([], [Order::PRODUCTS]);
+			}
 			return $this->json($resp, Response::HTTP_OK);
 		} catch (OrderValidatorException $e) {
 			return $this->json($e->getErrors(), Response::HTTP_NOT_FOUND);

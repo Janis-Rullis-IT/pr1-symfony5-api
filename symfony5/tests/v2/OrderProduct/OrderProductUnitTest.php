@@ -479,28 +479,16 @@ class OrderProductUnitTest extends KernelTestCase
 		$this->assertEquals('y', $draftOrder->getIsExpress());
 
 		//#40 Collect order's products.
-		$orderWithProducts = $this->orderRepo->mustFindUsersOrderWithProducts($draftOrder->getCustomerId(), $draftOrder->getId());
+		$orderWithProducts = $this->orderRepo->mustFindUsersOrder($draftOrder->getCustomerId(), $draftOrder->getId())->toArray([], [Order::PRODUCTS]);
 		$firstProduct = $orderWithProducts[Order::PRODUCTS][0];
 		$this->assertEquals($draftOrder->getId(), $firstProduct[OrderProduct::ORDER_ID]);
 		$this->assertEquals($draftOrder->getCustomerId(), $firstProduct[OrderProduct::CUSTOMER_ID]);
 
-		// #40 Use the Annotation JOIN because it will return Entitites rather than arrays (as QB does). 
-		;
-		// #40 Tests started to slow down. SQL logs doesn't seem to load JOINs by def.
-		// There might be some other issue.
-		// https://www.doctrine-project.org/projects/doctrine-orm/en/2.7/tutorials/extra-lazy-associations.html
-		// Hiccup stars at `$this->assertTrue($this->orderProductRepo->makrCartsAdditionalProducts($draftOrder));`.
-		// [x] Remove the assoc. Annotation and see if speed changes. - Didn't help. Maybe the Order method.
-		// [x] bin/console all cache clears. - Didn' t help.
-		// [x] Revert last changes.
-		// [x] Dump composer.
-		// [x] Clear tables. Might be that db struct is filled and is not optimized. YES!! That' s the cause.
-		;
-		// #40 TODO: Import huge datasets using fixtures and check how current queries will react on that.
 		$products = $draftOrder->getProducts()->toArray()[0];
 		foreach ($products as $product) {
 			$this->assertEquals($draftOrder->getId(), $product->getOrderId());
 		}
+		// #40 TODO: Import huge datasets using fixtures and check how current queries will react on that.
 		// #39 #33 #34 #37 TODO: Add `shipping_id` to `shipping_rates`.`id`.
 	}
 
