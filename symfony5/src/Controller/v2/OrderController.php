@@ -15,6 +15,7 @@ use \App\v2\OrderService;
 use \App\Exception\UidValidatorException;
 use \App\Exception\OrderValidatorException;
 use \App\Repository\v2\OrderRepository;
+use \App\Entity\v2\Order;
 
 class OrderController extends AbstractController
 {
@@ -152,7 +153,7 @@ class OrderController extends AbstractController
 	public function getOrderById(OrderRepository $repo, int $id_user, int $id): JsonResponse
 	{
 		try {
-			$resp = $repo->mustFindUsersOrderWithProducts($id_user, $id);
+			$resp = $repo->mustFindUsersOrder($id_user, $id)->toArray([], [Order::PRODUCTS]);
 			return $this->json($resp, Response::HTTP_OK);
 		} catch (OrderValidatorException $e) {
 			return $this->json($e->getErrors(), Response::HTTP_NOT_FOUND);

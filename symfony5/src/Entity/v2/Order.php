@@ -417,7 +417,7 @@ class Order
 	 * @param array $fields
 	 * @return array
 	 */
-	public function toArray(?array $fields = []): array
+	public function toArray(?array $fields = [], $relations = []): array
 	{
 		$return = [];
 		// #40 Contains most popular fields. Add a field is necessary.
@@ -427,7 +427,10 @@ class Order
 			self::SHIPPING_COST => $this->getShippingCost(), self::PRODUCT_COST => $this->getProductCost(),
 			self::TOTAL_COST => $this->getTotalCost(), self::OWNER_NAME => $this->getName(),
 			self::OWNER_SURNAME => $this->getSurname(), self::STREET => $this->getStreet(), self::COUNTRY => $this->getCountry(),
-			self::PHONE => $this->getPhone(), self::STATE => $this->getState(), self::ZIP => $this->getZip()];
+			self::PHONE => $this->getPhone(), self::STATE => $this->getState(), self::ZIP => $this->getZip()
+		];
+
+		// #40 Fill order's fields.
 		if (empty($fields)) {
 			$return = $allFields;
 		} else {
@@ -435,6 +438,21 @@ class Order
 				$return[$field] = isset($allFields[$field]) ? $allFields[$field] : null;
 			}
 		}
+		// #40 Fill relations.
+		if (!empty($relations)) {
+			foreach ($relations as $relation) {
+				switch ($relation) {
+					case Order::PRODUCTS:
+						$products = $this->getProducts();
+						foreach ($products as $product) {
+							$return[Order::PRODUCTS][] = $product->toArray();
+						}
+						break;
+					default: null;
+				}
+			}
+		}
+
 		return $return;
 	}
 }

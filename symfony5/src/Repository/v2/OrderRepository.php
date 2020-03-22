@@ -166,41 +166,13 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 	 * @return Order
 	 * @throws OrderValidatorException
 	 */
-	public function mustFindUsersOrder(int $userId, int $orderId): array
+	public function mustFindUsersOrder(int $userId, int $orderId): Order
 	{
 		$order = $this->findOneBy(["customer_id" => $userId, "id" => $orderId]);
 		if (empty($order)) {
 			throw new OrderValidatorException([Order::ID => Order::INVALID], 1);
 		}
-		// #40 Use the Annotation JOIN because it will return Entitites rather than arrays (as QB does). 
-		// This approach will give more freedom - choose to work with the Entity or convert to array.
-		;
-		// #40 Create toArray($keys) methods that will convert the Entity to
-		// array in a unified manner. Will give same result in cart/products, 
-		// order, orders.
-//		dd(' ee');
-		//$item = $this->findOneBy(["customer_id" => $userId, "id" => $orderId]);
-		$item = $this->createQueryBuilder('p')
-				// #40 TODO: Replace these keys with cosnt.
-				->select('p.id, p.status, p.is_domestic, p.is_express, p.shipping_cost, p.product_cost, p.total_cost, p.name, p.surname, p.street, p.country, p.phone, p.state, p.zip')
-				->where('p.id = :orderId')
-				->andWhere('p.customer_id = :userId')
-				->setParameter('orderId', $orderId)
-				->setParameter('userId', $userId)
-				->getQuery()->getOneOrNullResult();
-		if (empty($item)) {
-			throw new OrderValidatorException([Order::ID => Order::INVALID], 1);
-		}
-		// #40 TODO: Find a way how this can be converted to Entity.
-
-		return $item;
-	}
-
-	public function mustFindUsersOrderWithProducts(int $userId, int $orderId): array
-	{
-		$order = $this->mustFindUsersOrder($userId, $orderId);
-		$order[Order::PRODUCTS] = $this->orderProductRepo->findOrderProducts($orderId);
-//		$order->setProducts($products);
+		
 		return $order;
 	}
 
