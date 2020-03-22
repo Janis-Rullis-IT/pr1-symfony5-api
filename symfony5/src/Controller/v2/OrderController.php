@@ -150,7 +150,7 @@ class OrderController extends AbstractController
 	 * @param int $id
 	 * @return JsonResponse
 	 */
-	public function getOrderById(OrderRepository $repo, int $id_user, int $id): JsonResponse
+	public function getUsersOrderById(OrderRepository $repo, int $id_user, int $id): JsonResponse
 	{
 		try {
 			$resp = $repo->mustFindUsersOrder($id_user, $id)->toArray([], [Order::PRODUCTS]);
@@ -186,7 +186,11 @@ class OrderController extends AbstractController
 	public function getUsersOrders(OrderRepository $repo, int $id_user): JsonResponse
 	{
 		try {
-			$resp = $repo->mustFindUsersOrdersWithProducts($id_user);
+			$resp = [];
+			$orders = $repo->mustFindUsersOrders($id_user);
+			foreach ($orders as $order) {
+				$resp[] = $order->toArray([], [Order::PRODUCTS]);
+			}
 			return $this->json($resp, Response::HTTP_OK);
 		} catch (OrderValidatorException $e) {
 			return $this->json($e->getErrors(), Response::HTTP_NOT_FOUND);
