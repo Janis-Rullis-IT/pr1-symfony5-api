@@ -61,4 +61,4 @@ Please, submit an issue [here](https://github.com/janis-rullis/pr1/issues).
 ## Honorable mentions
 
 * Thanks to [@lauris-printify](https://github.com/lauris-printify) / [homework-v3](https://github.com/lauris-printify/homework-v3) for the main codebase (till [3d0a](https://github.com/janis-rullis/pr1/commit/3d0a2d1c0581493bfc67d3e201c3926741f608f6)) :+1: :1st_place_medal: :beers:
-* [pr0](https://github.com/janis-rullis/pr0) for the Docker structure.
+* [lara5-vue2-api](https://github.com/janis-rullis/lara5-vue2-api) for the Docker structure.
