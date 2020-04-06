@@ -2,7 +2,7 @@
 
 namespace App\Tests;
 
-use App\Entity\Order;
+use App\Entity\v2\Order;
 use App\ErrorsLoader;
 use App\Validators\AddressValidators\AddressValidatorDomestic;
 use App\Validators\AddressValidators\Modules\CountryValidator;
