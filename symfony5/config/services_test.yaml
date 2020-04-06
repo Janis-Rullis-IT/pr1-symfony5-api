@@ -26,8 +26,6 @@ services:
     # mapping interface to production repositories
     App\Interfaces\IUserRepo: '@UserRepo'
     App\Interfaces\IProductRepo: '@ProductRepo'
-    App\Interfaces\IOrderRepo: '@OrderRepo'
-    App\Interfaces\IRelationRepo: '@RelationRepo'
 
     # -------- repositories pointed to by interface --------
     UserRepo:
@@ -35,13 +33,6 @@ services:
 
     ProductRepo:
         class: App\Repository\Prod\ProductRepo
-
-    OrderRepo:
-        class: App\Repository\Prod\OrderRepo
-
-    RelationRepo:
-       class: App\Repository\Prod\RelationRepo
-
     # -------- services --------
 
     App\EventListener\ExceptionListener:
