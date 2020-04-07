@@ -117,7 +117,7 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
 
 	/**
 	 * #39 #33 #34 Mark cart's product shipping as express or standard. 
-	 * The purpose of this field `is_express` is to be used for matching a row in the `shipping_rates` table.
+	 * The purpose of this field `is_express` is to be used for matching a row in the `shipping_rate` table.
 	 * 
 	 * @param Order $draftOrder
 	 * @return bool
@@ -140,7 +140,7 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
 
 	/**
 	 * #39 #33 #34 #37 Set order's product shipping costs based on the 
-	 * matching rates in the `v2_shipping_rates` table.
+	 * matching rates in the `shipping_rate` table.
 	 * https://github.com/janis-rullis/pr1/issues/34#issuecomment-595221093
 	 * 
 	 * @param Order $draftOrder
@@ -152,7 +152,7 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
 		$conn = $this->em->getConnection();
 		$sql = '
 			UPDATE `' . $tableName . '` a
-			JOIN v2_shipping_rate b
+			JOIN shipping_rate b
 			ON a.product_type = b.product_type
 			AND  a.is_domestic = b.is_domestic
 			AND  a.is_additional = b.is_additional

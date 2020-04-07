@@ -7,7 +7,7 @@ use \App\Helper\EnumType;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\OrderProductRepository")
- * @ORM\Table(name="v2_order_product")
+ * @ORM\Table(name="order_product")
  */
 class OrderProduct
 {

@@ -8,7 +8,7 @@ use \App\Entity\OrderProduct;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\OrderRepository")
- * @ORM\Table(name="v2_order")
+ * @ORM\Table(name="`order`")
  */
 class Order
 {
@@ -188,7 +188,7 @@ class Order
 	 * https://www.doctrine-project.org/projects/doctrine-orm/en/2.6/reference/association-mapping.html#one-to-many-unidirectional-with-join-table
 	 * https://www.doctrine-project.org/api/collections/latest/Doctrine/Common/Collections/ArrayCollection.html
 	 * @ORM\ManyToMany(targetEntity="OrderProduct")
-	 * @ORM\JoinTable(name="v2_order_product",
+	 * @ORM\JoinTable(name="order_product",
 	 *      joinColumns={@ORM\JoinColumn(name="order_id", referencedColumnName="id")},
 	 *      inverseJoinColumns={@ORM\JoinColumn(name="id", referencedColumnName="id", unique=true)}
 	 * )
