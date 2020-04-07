@@ -1,0 +1,60 @@
+{# templates/bundles/NelmioApiDocBundle/SwaggerUi/index.html.twig #}
+
+{#
+    To avoid a "reached nested level" error an exclamation mark `!` has to be added
+    See https://symfony.com/blog/new-in-symfony-3-4-improved-the-overriding-of-templates
+#}
+{% extends '@!NelmioApiDoc/SwaggerUi/index.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+{% endblock stylesheets %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script type="text/javascript">
+
+      function refreshInit(){
+          const data = JSON.parse(document.getElementById('swagger-data').innerText);
+          const ui = SwaggerUIBundle({
+            spec: data.spec,
+            dom_id: '#swagger-ui',
+            validatorUrl: null,
+            presets: [
+              SwaggerUIBundle.presets.apis,
+              SwaggerUIStandalonePreset
+            ],
+            plugins: [
+              SwaggerUIBundle.plugins.DownloadUrl
+            ],
+            layout: 'StandaloneLayout',
+              tagsSorter: 'alpha'
+          });
+          window.ui = ui;
+      }
+
+      // #42 `DOMContentLoaded` doesn't work most probably because JS is still working after the doc is ready.
+      // https://github.com/Janis-Rullis-IT/dev/blob/master/Front/js/Doc-ready.md
+      // document.addEventListener("DOMContentLoaded", refreshInit);
+
+      // #42 Too lazy to look for callbacks and wait for them to complete. 
+      // Hide body because it will display elements sorted in the wrong order.
+      document.querySelector('body').style.display = "none";
+
+      // #42 Wait for the main element to appear.
+      var checkExist = setInterval(function() {
+        if (document.querySelector('div.swagger-ui')) {
+          
+          // #42 Re-order.
+          refreshInit();
+
+          // #42 Display the body again.
+          document.querySelector('body').style.display = "block";
+
+          // #42 Stop waiting.
+          clearInterval(checkExist);
+        }
+      }, 100)
+    </script>
+
+{% endblock javascripts %}
