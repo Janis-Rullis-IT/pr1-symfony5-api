@@ -3,11 +3,13 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Swagger\Annotations as SWG;
+use Symfony\Component\Serializer\Annotation\Groups;
+
 
 /**
  * @ORM\Entity(repositoryClass="ProductRepo")
  */
-
 class Product
 {
     const ID = "id";
@@ -38,31 +40,42 @@ class Product
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+	 * #45 Schema annotations implemented.
+	 * @SWG\Property(property="id", type="integer", example="1")
      */
     private $id;
 
     /**
      * @ORM\Column(type="integer")
+	 * @SWG\Property(property="ownerId", type="integer", example="1")
      */
     private $ownerId;
 
     /**
      * @ORM\Column(type="string", length=30)
+	 * @SWG\Property(property="type", type="string", example="t-shirt", description="valid product types are 't-shirt' and 'mug'. They can be written in upper or lowercase e.g. 'T-Shirt' is valid.")
+	 * @Groups({"CREATE", "PUB" }))
      */
     private $type;
 
     /**
      * @ORM\Column(type="string", length=50)
+	 * @SWG\Property(property="title", type="string", example="just do it", description="Can consist of upper and lowercase letters, digits, dash (-) and space ( ). It is stored as a string later on.")
+	 * @Groups({"CREATE", "PUB" }))
      */
     private $title;
 
     /**
      * @ORM\Column(type="string", length=20)
+	 * @SWG\Property(property="sku", type="string", example="100-abc-999", description="(stock keeping unit) must be unique among products user has submitted. It is stored as a string later on.")
+	 * @Groups({"CREATE", "PUB" }))
      */
     private $sku;
 
     /**
      * @ORM\Column(type="integer")
+	 * @SWG\Property(property="cost", type="integer", example=1000, description="Must be an integer representing cents.")
+	 * @Groups({"CREATE", "PUB" })
      */
     private $cost;
 
