@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Tests;
+namespace App\Tests\Validators\AddressValidators;
 
-use App\Entity\v2\Order;
+use App\Entity\Order;
 use App\ErrorsLoader;
 use App\Validators\AddressValidators\AddressValidatorDomestic;
 use App\Validators\AddressValidators\Modules\CountryValidator;

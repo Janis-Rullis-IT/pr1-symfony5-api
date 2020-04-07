@@ -1,10 +1,10 @@
 <?php
-namespace App\v2;
+namespace App\Order;
 
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Validation;
-use \App\Entity\v2\OrderProduct;
+use \App\Entity\OrderProduct;
 
 class OrderProductValidator
 {

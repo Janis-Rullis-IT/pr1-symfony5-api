@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests;
+namespace App\Tests\Product;
 
 use App\Entity\Product;
 use App\Validators\ProductValidators\ProductTypeValidator;

@@ -3,7 +3,7 @@
 
 namespace App\Validators\AddressValidators;
 
-use App\Entity\v2\Order;
+use App\Entity\Order;
 use App\ErrorsLoader;
 use App\Validators\UserValidators\NameSurnameValidator;
 use App\Validators\AddressValidators\Modules\CountryValidator;

@@ -1,12 +1,12 @@
 <?php
-namespace App\Entity\v2;
+namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use \App\Helper\EnumType;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\v2\OrderProductRepository")
+ * @ORM\Entity(repositoryClass="App\Repository\OrderProductRepository")
  * @ORM\Table(name="v2_order_product")
  */
 class OrderProduct

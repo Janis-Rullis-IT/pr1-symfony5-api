@@ -2,7 +2,7 @@
 /**
  * #40 Doc Annotations https://symfony.com/doc/current/bundles/NelmioApiDocBundle/faq.html
  */
-namespace App\Controller\v2;
+namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -10,12 +10,12 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Swagger\Annotations as SWG;
-use \App\v2\OrderShippingService;
-use \App\v2\OrderService;
+use \App\Order\OrderShippingService;
+use \App\Order\OrderService;
 use \App\Exception\UidValidatorException;
 use \App\Exception\OrderValidatorException;
-use \App\Repository\v2\OrderRepository;
-use \App\Entity\v2\Order;
+use \App\Repository\OrderRepository;
+use \App\Entity\Order;
 
 class OrderController extends AbstractController
 {
@@ -24,7 +24,7 @@ class OrderController extends AbstractController
 	 * #40 Set order's shipping.
 	 * #45 TODO: Replace this with Order schema.
 	 * 
-	 * @Route("/users/v2/{customerId}/order/shipping", methods={"PUT"})
+	 * @Route("/users/{customerId}/order/shipping", methods={"PUT"})
 	 * @SWG\Tag(name="4. shipping")
 	 * 
 	 * @SWG\Parameter(
@@ -89,7 +89,7 @@ class OrderController extends AbstractController
 	 * #40 Complete the order.
 	 * #40 TODO: Replace this with Order schema.
 	 * 
-	 * @Route("/users/v2/{customerId}/order/complete", methods={"PUT"})
+	 * @Route("/users/{customerId}/order/complete", methods={"PUT"})
 	 * @SWG\Tag(name="5. complete order")
 	 * @SWG\Response(
 	 *   response=200, description="Saved.",

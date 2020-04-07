@@ -1,5 +1,5 @@
 <?php
-namespace App\Tests;
+namespace App\Tests\Order;
 
 use \App\Entity\User;
 use App\Entity\Product;
@@ -7,7 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * #40 PUT /users/v2/{customerId}/order/shipping .
+ * #40 PUT /users/{customerId}/order/shipping .
  */
 class OrderShippingTest extends WebTestCase
 {
@@ -33,7 +33,7 @@ class OrderShippingTest extends WebTestCase
 		$client = static::createClient();
 
 		$customerId = $this->impossibleInt;
-		$uri = '/users/v2/' . $customerId . '/order/shipping';
+		$uri = '/users/' . $customerId . '/order/shipping';
 		$data = $this->ship_to_address;
 		$client->request('PUT', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
 		$this->assertEquals(Response::HTTP_NOT_FOUND, $client->getResponse()->getStatusCode());
@@ -49,12 +49,12 @@ class OrderShippingTest extends WebTestCase
 		$client = static::createClient();
 
 		$customerId = $this->impossibleInt;
-		$uri = '/users/v2/' . $customerId . '/order/shipping';
+		$uri = '/users/' . $customerId . '/order/shipping';
 		$data = [];
 		$client->request('PUT', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
 		$this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
 		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
-		foreach (\App\Entity\v2\Order::$requireds as $key => $val) {
+		foreach (\App\Entity\Order::$requireds as $key => $val) {
 			$this->assertEquals(["'" . $val . "' field is missing."], $responseBody[$val]);
 		}
 	}
@@ -67,7 +67,7 @@ class OrderShippingTest extends WebTestCase
 		$client = static::createClient();
 
 		$customerId = $this->impossibleInt;
-		$uri = '/users/v2/' . $customerId . '/order/shipping';
+		$uri = '/users/' . $customerId . '/order/shipping';
 		$data = $this->ship_to_address;
 		unset($data['is_express']);
 		$client->request('PUT', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
@@ -86,9 +86,9 @@ class OrderShippingTest extends WebTestCase
 
 		$customerId = $user->getId();
 		$productId = $user->products[0]->getId();
-		$client->request('POST', '/users/v2/' . $customerId . '/cart/' . $productId);
+		$client->request('POST', '/users/' . $customerId . '/cart/' . $productId);
 
-		$uri = '/users/v2/' . $customerId . '/order/shipping';
+		$uri = '/users/' . $customerId . '/order/shipping';
 		$data = $this->ship_to_address;
 		$client->request('PUT', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
 		$this->assertEquals(Response::HTTP_OK, $client->getResponse()->getStatusCode());

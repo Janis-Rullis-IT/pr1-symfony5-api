@@ -1,9 +1,9 @@
 <?php
-namespace App\Repository\v2;
+namespace App\Repository;
 
-use \App\Entity\v2\OrderProduct;
-use \App\Entity\v2\Order;
-use \App\Interfaces\v2\IOrderProductRepo;
+use \App\Entity\OrderProduct;
+use \App\Entity\Order;
+use \App\Interfaces\IOrderProductRepo;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManagerInterface;

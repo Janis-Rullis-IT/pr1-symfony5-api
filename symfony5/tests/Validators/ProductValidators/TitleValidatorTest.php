@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests;
+namespace App\Tests\Validators\ProductValidators;
 
 use App\Validators\ProductValidators\TitleValidator;
 use PHPUnit\Framework\TestCase;

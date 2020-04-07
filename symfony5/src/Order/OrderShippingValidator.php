@@ -1,5 +1,5 @@
 <?php
-namespace App\v2;
+namespace App\Order;
 
 /**
  * #40 Validation method conventions:
@@ -9,7 +9,7 @@ namespace App\v2;
  * - Action methods. Returns void. Relies on the class' method and variables. Throws exceptions.
  * Named in a manner that implies action - `validate()`, `handle()`.
  */
-use \App\Entity\v2\Order;
+use \App\Entity\Order;
 use App\Validators\AddressValidators\AddressValidator;
 use App\Validators\AddressValidators\ShipmentType;
 use App\ErrorsLoader;

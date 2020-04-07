@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests;
+namespace App\Tests\Validators\AddressValidators\Modules;
 
 use App\Validators\AddressValidators\Modules\PhoneValidator;
 use PHPUnit\Framework\TestCase;

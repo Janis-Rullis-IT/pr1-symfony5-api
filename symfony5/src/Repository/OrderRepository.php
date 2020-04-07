@@ -1,11 +1,11 @@
 <?php
-namespace App\Repository\v2;
+namespace App\Repository;
 
-use App\Entity\v2\Order;
-use App\Entity\v2\OrderProduct;
+use App\Entity\Order;
+use App\Entity\OrderProduct;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use \App\Interfaces\v2\IOrderRepo;
+use \App\Interfaces\IOrderRepo;
 use Doctrine\ORM\EntityManagerInterface;
 use \App\Exception\OrderValidatorException;
 use \Doctrine\ORM\Query;

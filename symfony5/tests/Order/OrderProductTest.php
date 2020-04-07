@@ -1,5 +1,5 @@
 <?php
-namespace App\Tests;
+namespace App\Tests\Order;
 
 use \App\Entity\User;
 use App\Entity\Product;
@@ -7,7 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * #40 POST ​/users​/{customerId}​/v2​/cart​/{productId}
+ * #40 POST ​/users​/{customerId}​/cart​/{productId}
  */
 class OrderProductTest extends WebTestCase
 {
@@ -24,7 +24,7 @@ class OrderProductTest extends WebTestCase
 
 		$customerId = $this->impossibleInt;
 		$productId = $this->impossibleInt;
-		$uri = '/users/v2/' . $customerId . '/cart/' . $productId;
+		$uri = '/users/' . $customerId . '/cart/' . $productId;
 
 		$client->request('POST', $uri);
 		$this->assertEquals(Response::HTTP_NOT_FOUND, $client->getResponse()->getStatusCode());
@@ -42,7 +42,7 @@ class OrderProductTest extends WebTestCase
 
 		$customerId = $this->impossibleInt;
 		$productId = $user->products[0]->getId();
-		$uri = '/users/v2/' . $customerId . '/cart/' . $productId;
+		$uri = '/users/' . $customerId . '/cart/' . $productId;
 
 		$client->request('POST', $uri);
 		$this->assertEquals(Response::HTTP_NOT_FOUND, $client->getResponse()->getStatusCode());
@@ -60,7 +60,7 @@ class OrderProductTest extends WebTestCase
 
 		$customerId = $user->getId();
 		$productId = $this->impossibleInt;
-		$uri = '/users/v2/' . $customerId . '/cart/' . $productId;
+		$uri = '/users/' . $customerId . '/cart/' . $productId;
 
 		$client->request('POST', $uri);
 		$this->assertEquals(Response::HTTP_NOT_FOUND, $client->getResponse()->getStatusCode());
@@ -78,7 +78,7 @@ class OrderProductTest extends WebTestCase
 
 		$customerId = $user->getId();
 		$productId = $user->products[0]->getId();
-		$uri = '/users/v2/' . $customerId . '/cart/' . $productId;
+		$uri = '/users/' . $customerId . '/cart/' . $productId;
 
 		$client->request('POST', $uri);
 		$this->assertEquals(Response::HTTP_CREATED, $client->getResponse()->getStatusCode());

@@ -1,5 +1,5 @@
 <?php
-namespace App\Controller\v2;
+namespace App\Controller;
 
 /**
  * #40 HTTP codes: https://github.com/symfony/http-foundation/blob/master/Response.php
@@ -8,9 +8,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Swagger\Annotations as SWG;
-use \App\v2\OrderProductCreator;
+use \App\Order\OrderProductCreator;
 use \App\Exception\UidValidatorException;
 use \App\Exception\ProductIdValidatorException;
+
 
 class OrderProductController extends AbstractController
 {
@@ -19,7 +20,7 @@ class OrderProductController extends AbstractController
 	 * #40 #38 Add a product to customer's cart (draft order).
 	 * #40 TODO: Should return bool for ENUM insteaf of y,n?.
 	 * 
-	 * @Route("/users/v2/{customerId}/cart/{productId}", methods={"POST"})   
+	 * @Route("/users/{customerId}/cart/{productId}", methods={"POST"})   
 	 * @SWG\Tag(name="3. cart")
 	 * @SWG\Response(
 	 *   response=201, description="Created.",

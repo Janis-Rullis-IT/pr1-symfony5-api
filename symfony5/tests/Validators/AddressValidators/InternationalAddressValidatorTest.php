@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests;
+namespace App\Tests\Validators\AddressValidators;
 
 use App\ErrorsLoader;
 use App\Validators\AddressValidators\AddressValidatorInternational;

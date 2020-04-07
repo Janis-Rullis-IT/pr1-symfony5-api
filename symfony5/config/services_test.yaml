@@ -45,25 +45,25 @@ services:
 
     # #38 Make v2 services accessible for tests via aliase). https://symfony.com/doc/current/service_container/alias_private.html#aliasing 
     # #38 This creates a public alias: even though the original service is private. https://symfonycasts.com/screencast/phpunit/integration-tests
-    test.App\v2\OrderProductCreator:
-        alias: App\v2\OrderProductCreator
+    test.App\Order\OrderProductCreator:
+        alias: App\Order\OrderProductCreator
         public: true
         
     # 40
-    test.App\v2\OrderShippingService:
-        alias: App\v2\OrderShippingService
+    test.App\Order\OrderShippingService:
+        alias: App\Order\OrderShippingService
         public: true
      
-    test.App\v2\OrderShippingValidator:
-        alias: App\v2\OrderShippingValidator
+    test.App\Order\OrderShippingValidator:
+        alias: App\Order\OrderShippingValidator
         public: true
     
     # #36 #38
-    test.App\Interfaces\v2\IOrderRepo:
-        alias: App\Interfaces\v2\IOrderRepo
+    test.App\Interfaces\IOrderRepo:
+        alias: App\Interfaces\IOrderRepo
         public: true
         
     # #36 #38
-    test.App\Interfaces\v2\IOrderProductRepo:
-        alias: App\Interfaces\v2\IOrderProductRepo
+    test.App\Interfaces\IOrderProductRepo:
+        alias: App\Interfaces\IOrderProductRepo
         public: true

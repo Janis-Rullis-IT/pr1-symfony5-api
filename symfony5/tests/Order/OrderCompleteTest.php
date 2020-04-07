@@ -1,15 +1,15 @@
 <?php
-namespace App\Tests;
+namespace App\Tests\Order;
 
 use \App\Entity\User;
 use App\Entity\Product;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
-use \App\Entity\v2\Order;
-use \App\Entity\v2\OrderProduct;
+use \App\Entity\Order;
+use \App\Entity\OrderProduct;
 
 /**
- * #40 PUT /users/v2/{customerId}/order/complete
+ * #40 PUT /users/{customerId}/order/complete
  */
 class OrderCompleteTest extends WebTestCase
 {
@@ -35,7 +35,7 @@ class OrderCompleteTest extends WebTestCase
 		$client = static::createClient();
 
 		$customerId = $this->impossibleInt;
-		$uri = '/users/v2/' . $customerId . '/order/complete';
+		$uri = '/users/' . $customerId . '/order/complete';
 		$client->request('PUT', $uri);
 		$this->assertEquals(Response::HTTP_NOT_FOUND, $client->getResponse()->getStatusCode());
 		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
@@ -52,9 +52,9 @@ class OrderCompleteTest extends WebTestCase
 
 		$customerId = $user->getId();
 		$productId = $user->products[0]->getId();
-		$client->request('POST', '/users/v2/' . $customerId . '/cart/' . $productId);
+		$client->request('POST', '/users/' . $customerId . '/cart/' . $productId);
 
-		$uri = '/users/v2/' . $customerId . '/order/complete';
+		$uri = '/users/' . $customerId . '/order/complete';
 		$client->request('PUT', $uri);
 		$this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
 		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
@@ -72,11 +72,11 @@ class OrderCompleteTest extends WebTestCase
 		$customerId = $user->getId();
 		$productId = $user->products[0]->getId();
 
-		$uri = '/users/v2/' . $customerId . '/order/shipping';
+		$uri = '/users/' . $customerId . '/order/shipping';
 		$data = $this->ship_to_address;
 		$client->request('PUT', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
 
-		$uri = '/users/v2/' . $customerId . '/order/complete';
+		$uri = '/users/' . $customerId . '/order/complete';
 		$client->request('PUT', $uri);
 		$this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
 		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
@@ -94,13 +94,13 @@ class OrderCompleteTest extends WebTestCase
 
 		$customerId = $user->getId();
 		$productId = $user->products[0]->getId();
-		$client->request('POST', '/users/v2/' . $customerId . '/cart/' . $productId);
+		$client->request('POST', '/users/' . $customerId . '/cart/' . $productId);
 
-		$uri = '/users/v2/' . $customerId . '/order/shipping';
+		$uri = '/users/' . $customerId . '/order/shipping';
 		$data = $this->ship_to_address;
 		$client->request('PUT', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
 
-		$uri = '/users/v2/' . $customerId . '/order/complete';
+		$uri = '/users/' . $customerId . '/order/complete';
 		$client->request('PUT', $uri);
 		$this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
 		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
@@ -118,13 +118,13 @@ class OrderCompleteTest extends WebTestCase
 
 		$customerId = $user->getId();
 		$productId = $user->products[0]->getId();
-		$client->request('POST', '/users/v2/' . $customerId . '/cart/' . $productId);
+		$client->request('POST', '/users/' . $customerId . '/cart/' . $productId);
 
-		$uri = '/users/v2/' . $customerId . '/order/shipping';
+		$uri = '/users/' . $customerId . '/order/shipping';
 		$data = $this->ship_to_address;
 		$client->request('PUT', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
 
-		$uri = '/users/v2/' . $customerId . '/order/complete';
+		$uri = '/users/' . $customerId . '/order/complete';
 		$client->request('PUT', $uri);
 		$this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
 		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
@@ -142,9 +142,9 @@ class OrderCompleteTest extends WebTestCase
 		$customerId = $user->getId();
 		$product = $user->products[0];
 		$productId = $product->getId();
-		$client->request('POST', '/users/v2/' . $customerId . '/cart/' . $productId);
-		$client->request('PUT', '/users/v2/' . $customerId . '/order/shipping', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($this->ship_to_address));
-		$client->request('PUT', '/users/v2/' . $customerId . '/order/complete');
+		$client->request('POST', '/users/' . $customerId . '/cart/' . $productId);
+		$client->request('PUT', '/users/' . $customerId . '/order/shipping', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($this->ship_to_address));
+		$client->request('PUT', '/users/' . $customerId . '/order/complete');
 		$this->assertEquals(Response::HTTP_OK, $client->getResponse()->getStatusCode());
 		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
 		$this->assertEquals(Order::COMPLETED, $responseBody[Order::STATUS]);
@@ -157,8 +157,8 @@ class OrderCompleteTest extends WebTestCase
 
 		$data = $this->ship_to_address;
 		$data['name'] = 'Hue';
-		$client->request('POST', '/users/v2/' . $customerId . '/cart/' . $productId);
-		$client->request('PUT', '/users/v2/' . $customerId . '/order/shipping', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
+		$client->request('POST', '/users/' . $customerId . '/cart/' . $productId);
+		$client->request('PUT', '/users/' . $customerId . '/order/shipping', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
 		$responseBody2 = json_decode($client->getResponse()->getContent(), TRUE);
 		$this->assertGreaterThan($responseBody[Order::ID], $responseBody2[Order::ID], '#40 Add a new product to the cart and make sure that the order\'s ID is different');
 

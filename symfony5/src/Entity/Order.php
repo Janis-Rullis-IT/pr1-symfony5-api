@@ -1,13 +1,13 @@
 <?php
-namespace App\Entity\v2;
+namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use \App\Helper\EnumType;
 use \App\Exception\OrderShippingValidatorException;
-use \App\Entity\v2\OrderProduct;
+use \App\Entity\OrderProduct;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\v2\OrderRepository")
+ * @ORM\Entity(repositoryClass="App\Repository\OrderRepository")
  * @ORM\Table(name="v2_order")
  */
 class Order

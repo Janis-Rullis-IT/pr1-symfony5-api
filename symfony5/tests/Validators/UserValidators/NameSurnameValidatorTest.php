@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests;
+namespace App\Tests\Validators\UserValidators;
 
 use App\Validators\UserValidators\NameSurnameValidator;
 use PHPUnit\Framework\TestCase;

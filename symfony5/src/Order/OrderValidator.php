@@ -1,12 +1,12 @@
 <?php
-namespace App\v2;
+namespace App\Order;
 
-use \App\Entity\v2\Order;
+use \App\Entity\Order;
 use App\ErrorsLoader;
 use \App\Exception\OrderValidatorException;
 use \App\Entity\User;
 use \App\User\UserValidator;
-use \App\v2\OrderShippingValidator;
+use \App\Order\OrderShippingValidator;
 
 class OrderValidator
 {

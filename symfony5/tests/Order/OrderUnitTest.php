@@ -1,24 +1,24 @@
 <?php
-namespace App\Tests\OrderProduct;
+namespace App\Tests\Order;
 
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use \App\Entity\User;
 use \App\Entity\Product;
-use \App\Entity\v2\Order;
-use \App\Entity\v2\OrderProduct;
-use \App\v2\OrderProductCreator;
-use \App\v2\OrderShippingService;
-use \App\Interfaces\v2\IOrderRepo;
-use \App\Interfaces\v2\IOrderProductRepo;
+use \App\Entity\Order;
+use \App\Entity\OrderProduct;
+use \App\Order\OrderProductCreator;
+use \App\Order\OrderShippingService;
+use \App\Interfaces\IOrderRepo;
+use \App\Interfaces\IOrderProductRepo;
 use \App\Exception\OrderValidatorException;
 use \App\Exception\OrderShippingValidatorException;
-use \App\v2\OrderShippingValidator;
+use \App\Order\OrderShippingValidator;
 use \App\Exception\UidValidatorException;
 use \App\Exception\ProductIdValidatorException;
 
 /**
  * #38 Test that the order product data is stored in the database correctly.
- * Test v2 functionality: `vendor/bin/phpunit tests/v2/`
+ * Test v2 functionality: `vendor/bin/phpunit tests/`
  */
 class OrderUnitTest extends KernelTestCase
 {

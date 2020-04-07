@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests;
+namespace App\Tests\RequestBody;
 
 use App\RequestBody\JsonToArray;
 use App\RequestBody\RequestBodyStandardizer;

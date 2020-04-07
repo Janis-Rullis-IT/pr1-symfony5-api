@@ -3,7 +3,7 @@
 
 namespace App\Validators\AddressValidators;
 
-use App\Entity\v2\Order;
+use App\Entity\Order;
 
 class ShipmentType
 {

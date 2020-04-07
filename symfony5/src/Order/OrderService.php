@@ -1,11 +1,11 @@
 <?php
-namespace App\v2;
+namespace App\Order;
 
 use \App\Interfaces\IProductRepo;
 use \App\Interfaces\IUserRepo;
-use \App\Interfaces\v2\IOrderRepo;
-use \App\Interfaces\v2\IOrderProductRepo;
-use App\Entity\v2\Order;
+use \App\Interfaces\IOrderRepo;
+use \App\Interfaces\IOrderProductRepo;
+use App\Entity\Order;
 
 class OrderService
 {

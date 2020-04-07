@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Interfaces\v2;
+namespace App\Interfaces;
 
 interface IOrderRepo
 {
