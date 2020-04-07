@@ -11,40 +11,24 @@ use Swagger\Annotations as SWG;
 use \App\Order\OrderProductCreator;
 use \App\Exception\UidValidatorException;
 use \App\Exception\ProductIdValidatorException;
-
+use App\Entity\OrderProduct;
+use Nelmio\ApiDocBundle\Annotation\Model;
 
 class OrderProductController extends AbstractController
 {
 
 	/**
-	 * #40 #38 Add a product to customer's cart (draft order).
+	 * Add a product to customer's cart (draft order).
 	 * #40 TODO: Should return bool for ENUM insteaf of y,n?.
+	 * #49 TODO: Handle 404 return value.
 	 * 
 	 * @Route("/users/{customerId}/cart/{productId}", methods={"POST"})   
 	 * @SWG\Tag(name="3. cart")
-	 * @SWG\Response(
-	 *   response=201, description="Created.",
-	 *   @SWG\Schema(
-	 *    @SWG\Property(property="id", type="integer", example=1),
-	 *    @SWG\Property(property="customer_id", type="integer", example=1),
-	 *    @SWG\Property(property="order_id", type="integer", example=1),
-	 *    @SWG\Property(property="seller_id", type="integer", example=1),
-	 *    @SWG\Property(property="seller_title", type="string", example="John Doe"),
-	 *    @SWG\Property(property="product_id", type="integer", example=1),
-	 *    @SWG\Property(property="product_cost", type="integer", example=1000),
-	 *    @SWG\Property(property="product_type", type="string", example="t-shirt"),
-	 *    @SWG\Property(property="is_domestic", type="string", example="null"),
-	 *    @SWG\Property(property="is_additional", type="string", example="null"),
-	 *    @SWG\Property(property="is_express", type="string", example="null"),
-	 *    @SWG\Property(property="shipping_cost", type="integer", example="null"),
-	 *   )
-	 * )
-	 * @SWG\Response(
-	 *   response=404, description="Not found.",
-	 *   @SWG\Schema(
-	 *    @SWG\Property(property="id", type="string", example="Invalid product."),
-	 *   )
-	 * )
+	 * 
+	 * @SWG\Response(response=200, description="Created.", @Model(type=OrderProduct::class, groups={"CREATE"}))
+	 * 
+	 * @SWG\Response(response=404, description="Not found.", @Model(type=OrderProduct::class, groups={"ID_ERROR"}))
+	 * 
 	 * @param OrderProductCreator $orderProductCreator
 	 * @param int $customerId
 	 * @param int $productId

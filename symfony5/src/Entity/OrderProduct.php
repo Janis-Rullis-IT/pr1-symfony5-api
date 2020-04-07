@@ -4,6 +4,8 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use \App\Helper\EnumType;
+use Swagger\Annotations as SWG;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\OrderProductRepository")
@@ -41,11 +43,16 @@ class OrderProduct
 	 * @ORM\Id()
 	 * @ORM\GeneratedValue()
 	 * @ORM\Column(type="integer")
+	 * #45 Schema annotations implemented.
+	 * @SWG\Property(property="id", type="integer", example="1")
+	 * @Groups({"CREATE", "PUB", "ID_ERROR"})
 	 */
 	private $id;
 
 	/**
 	 * @ORM\Column(type="integer")
+	 * @SWG\Property(property="order_id", type="integer", example=1)
+	 * @Groups({"CREATE", "PUB"})
 	 */
 	private $order_id;
 
@@ -53,6 +60,8 @@ class OrderProduct
 	 * @ORM\Column(type="integer")
 	 * @Assert\NotBlank
 	 * @Assert\Type("integer")
+	 * @SWG\Property(property="customer_id", type="integer", example=1)
+	 * @Groups({"CREATE", "PUB"})
 	 */
 	private $customer_id;
 
@@ -60,16 +69,22 @@ class OrderProduct
 	 * @ORM\Column(type="integer")
 	 * @Assert\NotBlank
 	 * @Assert\Type("integer")
+	 * @SWG\Property(property="seller_id", type="integer", example=1)
+	 * @Groups({"CREATE", "PUB"})	 
 	 */
 	private $seller_id;
 
 	/**
 	 * @ORM\Column(type="string", length=250)
+	 * @SWG\Property(property="seller_title", type="string", example="John Doe")
+	 * @Groups({"CREATE", "PUB"})
 	 */
 	private $seller_title;
 
 	/**
 	 * @ORM\Column(type="integer")
+	 * @SWG\Property(property="product_id", type="integer", example=1)
+	 * @Groups({"CREATE", "PUB"})
 	 */
 	private $product_id;
 
@@ -80,31 +95,43 @@ class OrderProduct
 
 	/**
 	 * @ORM\Column(type="smallint")
+	 * @SWG\Property(property="product_cost", type="integer", example=1000)
+	 * @Groups({"CREATE", "PUB"})
 	 */
 	private $product_cost;
 
 	/**
 	 * @ORM\Column(type="string", length=20)
+	 * @SWG\Property(property="product_type", type="string", example="t-shirt")
+	 * @Groups({"CREATE", "PUB"})
 	 */
 	private $product_type;
 
 	/**
 	 * @ORM\Column(type="string", length=1, nullable=true)
+	 * @SWG\Property(property="is_domestic", type="string", example="null")
+	 * @Groups({"CREATE", "PUB"})
 	 */
 	private $is_domestic;
 
 	/**
 	 * @ORM\Column(type="string", length=1, nullable=true)
+	 * @SWG\Property(property="is_additional", type="string", example="null")
+	 * @Groups({"CREATE", "PUB"})
 	 */
 	private $is_additional;
 
 	/**
 	 * @ORM\Column(type="string", length=1, nullable=true)
+	 * @SWG\Property(property="is_express", type="string", example="null")
+	 * @Groups({"CREATE", "PUB"})
 	 */
 	private $is_express;
 
 	/**
 	 * @ORM\Column(type="smallint", nullable=true)
+	 * @SWG\Property(property="shipping_cost", type="integer", example="null")
+	 * @Groups({"CREATE", "PUB"})
 	 */
 	private $shipping_cost;
 
