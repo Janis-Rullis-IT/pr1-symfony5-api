@@ -5,6 +5,9 @@ use Doctrine\ORM\Mapping as ORM;
 use \App\Helper\EnumType;
 use \App\Exception\OrderShippingValidatorException;
 use \App\Entity\OrderProduct;
+use Swagger\Annotations as SWG;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\OrderRepository")
@@ -87,41 +90,57 @@ class Order
 	 * @ORM\Id()
 	 * @ORM\GeneratedValue()
 	 * @ORM\Column(type="integer")
+	 * @SWG\Property(property="id", type="integer", example=1)
+	 * @Groups({"PUB"})
 	 */
 	private $id;
 
 	/**
 	 * @ORM\Column(type="string", length=20, nullable=true)
+	 * @SWG\Property(property="status", type="string", example="draft")
+	 * @Groups({"PUB"})
 	 */
 	private $status;
 
 	/**
 	 * @ORM\Column(type="integer")
+	 * @SWG\Property(property="status", type="customer_id", example=1)
+	 * @Groups({"PUB"})
 	 */
 	private $customer_id;
 
 	/**
 	 * @ORM\Column(type="integer")
+	 * @SWG\Property(property="product_cost", type="integer", example=1000)
+	 * @Groups({"PUB"})
 	 */
 	private $product_cost;
 
 	/**
 	 * @ORM\Column(type="string", length=1, nullable=true)
+	 * @SWG\Property(property="is_domestic", type="boolean", example=true)
+	 * @Groups({"PUB"})
 	 */
 	private $is_domestic;
 
 	/**
 	 * @ORM\Column(type="string", length=1, nullable=true)
+	 * @SWG\Property(property="is_express", type="boolean", example=true)
+	 * @Groups({"CREATE", "PUB"})
 	 */
 	private $is_express;
 
 	/**
 	 * @ORM\Column(type="integer", nullable=true)
+	 * @SWG\Property(property="shipping_cost", type="integer", example=1000)
+	 * @Groups({"PUB"})
 	 */
 	private $shipping_cost;
 
 	/**
 	 * @ORM\Column(type="integer", nullable=true)
+	 * @SWG\Property(property="total_cost", type="integer", example=2000)
+	 * @Groups({"PUB"})
 	 */
 	private $total_cost;
 
@@ -147,36 +166,50 @@ class Order
 
 	/**
 	 * @ORM\Column(type="string", length=30)
+	 * @SWG\Property(property="name", type="string", example="John")
+	 * @Groups({"CREATE", "PUB"})
 	 */
 	private $name;
 
 	/**
 	 * @ORM\Column(type="string", length=30)
+	 * @SWG\Property(property="surname", type="string", example="Doe")
+	 * @Groups({"CREATE", "PUB"})
 	 */
 	private $surname;
 
 	/**
 	 * @ORM\Column(type="string", length=50)
+	 * @SWG\Property(property="street", type="string", example="Palm street 25-7")
+	 * @Groups({"CREATE", "PUB"})
 	 */
 	private $street;
 
 	/**
 	 * @ORM\Column(type="string", length=40)
+	 * @SWG\Property(property="country", type="string", example="US")
+	 * @Groups({"CREATE", "PUB"})
 	 */
 	private $country;
 
 	/**
 	 * @ORM\Column(type="string", length=30)
+	 * @SWG\Property(property="phone", type="string", example="+1 123 123 123")
+	 * @Groups({"CREATE", "PUB"})
 	 */
 	private $phone;
 
 	/**
 	 * @ORM\Column(type="string", length=30, nullable=true)
+	 * @SWG\Property(property="state", type="string", example="California")
+	 * @Groups({"PUB"})
 	 */
 	private $state;
 
 	/**
 	 * @ORM\Column(type="string", length=20, nullable=true)
+	 * @SWG\Property(property="zip", type="string", example="60744")
+	 * @Groups({"PUB"})
 	 */
 	private $zip;
 
@@ -192,6 +225,8 @@ class Order
 	 *      joinColumns={@ORM\JoinColumn(name="order_id", referencedColumnName="id")},
 	 *      inverseJoinColumns={@ORM\JoinColumn(name="id", referencedColumnName="id", unique=true)}
 	 * )
+	   @SWG\Property(property="products", type="array", @SWG\Items(@Model(type=OrderProduct::class)))
+	 * @Groups({"PUB"})
 	 */
 	private $products;
 

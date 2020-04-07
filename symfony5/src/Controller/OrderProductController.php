@@ -26,7 +26,6 @@ class OrderProductController extends AbstractController
 	 * @SWG\Tag(name="3. cart")
 	 * 
 	 * @SWG\Response(response=200, description="Created.", @Model(type=OrderProduct::class, groups={"CREATE"}))
-	 * 
 	 * @SWG\Response(response=404, description="Not found.", @Model(type=OrderProduct::class, groups={"ID_ERROR"}))
 	 * 
 	 * @param OrderProductCreator $orderProductCreator

@@ -74,7 +74,7 @@ class ProductController extends AbstractController
 	 * @Route("/users/{id_user}/products", name="getProducts", methods={"GET"})
 	 * @SWG\Tag(name="2. product")
 	 *
-	 * @SWG\Response(response=200, description="",@SWG\Schema(type="array", @SWG\Items(@Model(type=Product::class))))
+	 * @SWG\Response(response=200, description="", @SWG\Schema(type="array", @SWG\Items(@Model(type=Product::class))))
 	 * 
 	 * @param IProductRepo $repo
 	 * @param int $id_user

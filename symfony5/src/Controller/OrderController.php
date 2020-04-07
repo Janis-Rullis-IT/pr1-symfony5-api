@@ -15,58 +15,24 @@ use \App\Order\OrderService;
 use \App\Exception\UidValidatorException;
 use \App\Exception\OrderValidatorException;
 use \App\Repository\OrderRepository;
-use \App\Entity\Order;
+use App\Entity\Order;
+use Nelmio\ApiDocBundle\Annotation\Model;
 
 class OrderController extends AbstractController
 {
 
 	/**
-	 * #40 Set order's shipping.
-	 * #45 TODO: Replace this with Order schema.
+	 * Set order's shipping.
 	 * 
 	 * @Route("/users/{customerId}/order/shipping", methods={"PUT"})
 	 * @SWG\Tag(name="4. shipping")
 	 * 
-	 * @SWG\Parameter(
-	 *   name="body",
-	 *   in="body",
-	 *   required=true,
-	 *   @SWG\Schema(
-	 *    required={"name", "surname", "street", "country", "phone", "is_express"},
-	 *    @SWG\Property(property="name", type="string", example="John"),
-	 *    @SWG\Property(property="surname", type="string", example="Doe"),
-	 *    @SWG\Property(property="street", type="string", example="Palm street 25-7"),
-	 *    @SWG\Property(property="state", type="string", example="California"),
-	 *    @SWG\Property(property="zip", type="string", example="60744"),
-	 *    @SWG\Property(property="country", type="string", example="US"),
-	 *    @SWG\Property(property="phone", type="string", example="+1 123 123 123"),
-	 *    @SWG\Property(property="is_express", type="boolean", example=true)
-	 *   )
+	 * @SWG\Parameter(name="body", in="body", required=true,
+	 *   @SWG\Schema(required={"name", "surname", "street", "country", "phone", "is_express"}, @Model(type=Order::class, groups={"CREATE"}))
 	 * )
-	 * @SWG\Response(
-	 *   response=200, description="Saved.",
-	 *   @SWG\Schema(
-	 *    @SWG\Property(property="id", type="integer", example=1),
-	 *    @SWG\Property(property="is_domestic", type="string", example="y"),
-	 *    @SWG\Property(property="is_express", type="string", example="y"),
-	 *    @SWG\Property(property="shipping_cost", type="integer", example=1000),
-	 *    @SWG\Property(property="product_cost", type="integer", example=1000),
-	 *    @SWG\Property(property="total_cost", type="integer", example=2000),
-	 *    @SWG\Property(property="name", type="string", example="John"),
-	 *    @SWG\Property(property="surname", type="string", example="Doe"),
-	 *    @SWG\Property(property="street", type="string", example="Palm street 25-7"),
-	 *    @SWG\Property(property="state", type="string", example="California"),
-	 *    @SWG\Property(property="zip", type="string", example="60744"),
-	 *    @SWG\Property(property="country", type="string", example="US"),
-	 *    @SWG\Property(property="phone", type="string", example="+1 123 123 123")
-	 *   )
-	 * )
-	 * @SWG\Response(
-	 *   response=404, description="Not found.",
-	 *   @SWG\Schema(
-	 *    @SWG\Property(property="id", type="string", example="invalid user"),
-	 *   )
-	 * )
+	 * 
+	 * @SWG\Response(response=200, description="Saved.", @Model(type=Order::class, groups={"PUB"}))
+	 * @SWG\Response(response=404, description="Not found.", @Model(type=Order::class, groups={"ID_ERROR"}))
 	 * 
 	 * @param Request $request
 	 * @param OrderShippingService $orderShippingService
@@ -86,36 +52,18 @@ class OrderController extends AbstractController
 	}
 
 	/**
-	 * #40 Complete the order.
-	 * #40 TODO: Replace this with Order schema.
+	 * Complete the order.
 	 * 
 	 * @Route("/users/{customerId}/order/complete", methods={"PUT"})
 	 * @SWG\Tag(name="5. complete order")
-	 * @SWG\Response(
-	 *   response=200, description="Saved.",
-	 *   @SWG\Schema(
-	 *    @SWG\Property(property="id", type="integer", example=1),
-	 *    @SWG\Property(property="customer_id", type="integer", example=1),
-	 *    @SWG\Property(property="is_domestic", type="string", example="y"),
-	 *    @SWG\Property(property="is_express", type="string", example="y"),
-	 *    @SWG\Property(property="shipping_cost", type="integer", example=1000),
-	 *    @SWG\Property(property="product_cost", type="integer", example=1000),
-	 *    @SWG\Property(property="total_cost", type="integer", example=2000),
-	 *    @SWG\Property(property="name", type="string", example="John"),
-	 *    @SWG\Property(property="surname", type="string", example="Doe"),
-	 *    @SWG\Property(property="street", type="string", example="Palm street 25-7"),
-	 *    @SWG\Property(property="state", type="string", example="California"),
-	 *    @SWG\Property(property="zip", type="string", example="60744"),
-	 *    @SWG\Property(property="country", type="string", example="US"),
-	 *    @SWG\Property(property="phone", type="string", example="+1 123 123 123"),
-	 *   )
-	 * )
-	 * @SWG\Response(
-	 *   response=404, description="Not found.",
-	 *   @SWG\Schema(
-	 *    @SWG\Property(property="id", type="string", example="invalid user"),
-	 *   )
-	 * )
+	 * 
+	 * @SWG\Response(response=200, description="Saved.", @Model(type=Order::class, groups={"PUB"}))
+	 * @SWG\Response(response=404, description="Not found.", @Model(type=Order::class, groups={"ID_ERROR"}))
+	 * 
+	 * @param Request $request
+	 * @param OrderService $orderService
+	 * @param int $customerId
+	 * @return JsonResponse
 	 */
 	public function complete(Request $request, OrderService $orderService, int $customerId): JsonResponse
 	{
@@ -138,51 +86,9 @@ class OrderController extends AbstractController
 	 * 
 	 * @Route("/users/{id_user}/orders/{id}", methods={"GET"})
 	 * @SWG\Tag(name="6. order")
-	 * @SWG\Response(
-	 *   response=200, description="Saved.",
-	 *   @SWG\Schema(
-	 *    @SWG\Property(property="id", type="integer", example=1),
-	 *    @SWG\Property(property="customer_id", type="integer", example=1),
-	 *    @SWG\Property(property="is_domestic", type="string", example="y"),
-	 *    @SWG\Property(property="is_express", type="string", example="y"),
-	 *    @SWG\Property(property="shipping_cost", type="integer", example=1000),
-	 *    @SWG\Property(property="product_cost", type="integer", example=1000),
-	 *    @SWG\Property(property="total_cost", type="integer", example=2000),
-	 *    @SWG\Property(property="name", type="string", example="John"),
-	 *    @SWG\Property(property="surname", type="string", example="Doe"),
-	 *    @SWG\Property(property="street", type="string", example="Palm street 25-7"),
-	 *    @SWG\Property(property="state", type="string", example="California"),
-	 *    @SWG\Property(property="zip", type="string", example="60744"),
-	 *    @SWG\Property(property="country", type="string", example="US"),
-	 *    @SWG\Property(property="phone", type="string", example="+1 123 123 123"),
-	 *    @SWG\Property(
-	 *      property="products",
-	 *      type="array",
-	 *      @SWG\Items(
-	 * 		type="object",
-	 *        @SWG\Property(property="id", type="integer", example=1),
-	 *        @SWG\Property(property="customer_id", type="integer", example=1),
-	 *        @SWG\Property(property="order_id", type="integer", example=1),
-	 *        @SWG\Property(property="seller_id", type="integer", example=1),
-	 *        @SWG\Property(property="seller_title", type="string", example="John Doe"),
-	 *        @SWG\Property(property="product_id", type="integer", example=1),
-	 *        @SWG\Property(property="product_cost", type="integer", example=1000),
-	 *        @SWG\Property(property="product_type", type="string", example="t-shirt"),
-	 *        @SWG\Property(property="is_domestic", type="string", example="null"),
-	 *        @SWG\Property(property="is_additional", type="string", example="null"),
-	 *        @SWG\Property(property="is_express", type="string", example="null"),
-	 *        @SWG\Property(property="shipping_cost", type="integer", example="null"),
-	 *       ),
-	 *     )
-	 *   )
-	 * )
-	 * 
-	 * @SWG\Response(
-	 *   response=404, description="Not found.",
-	 *   @SWG\Schema(
-	 *    @SWG\Property(property="id", type="string", example="Invalid order."),
-	 *   )
-	 * )
+	 *
+	 * @SWG\Response(response=200, description="", @Model(type=Order::class, groups={"PUB"}))
+	 * @SWG\Response(response=404, description="Not found.", @Model(type=Order::class, groups={"ID_ERROR"}))
 	 * 
 	 * @param OrderRepository $repo
 	 * @param int $id_user
@@ -206,59 +112,13 @@ class OrderController extends AbstractController
 	}
 
 	/**
-	 * View user's order.
-	 * #40 TODO: Replace this with Order schema.
+	 * View all user's orders.
 	 * 
 	 * @Route("/users/{id_user}/orders", methods={"GET"})
 	 * @SWG\Tag(name="6. order")
-	 * @SWG\Response(
-	 *   response=200, description="Saved.",
-	 *   @SWG\Schema(
-	 *      @SWG\Items(
-	 * 		type="object",
-	 *      @SWG\Property(property="id", type="integer", example=1),
-	 *      @SWG\Property(property="customer_id", type="integer", example=1),
-	 *      @SWG\Property(property="is_domestic", type="string", example="y"),
-	 *      @SWG\Property(property="is_express", type="string", example="y"),
-	 *      @SWG\Property(property="shipping_cost", type="integer", example=1000),
-	 *      @SWG\Property(property="product_cost", type="integer", example=1000),
-	 *      @SWG\Property(property="total_cost", type="integer", example=2000),
-	 *      @SWG\Property(property="name", type="string", example="John"),
-	 *      @SWG\Property(property="surname", type="string", example="Doe"),
-	 *      @SWG\Property(property="street", type="string", example="Palm street 25-7"),
-	 *      @SWG\Property(property="state", type="string", example="California"),
-	 *      @SWG\Property(property="zip", type="string", example="60744"),
-	 *      @SWG\Property(property="country", type="string", example="US"),
-	 *      @SWG\Property(property="phone", type="string", example="+1 123 123 123"),
-	 *      @SWG\Property(
-	 *        property="products",
-	 *        type="array",
-	 *        @SWG\Items(
-	 * 		  type="object",
-	 *          @SWG\Property(property="id", type="integer", example=1),
-	 *          @SWG\Property(property="customer_id", type="integer", example=1),
-	 *          @SWG\Property(property="order_id", type="integer", example=1),
-	 *          @SWG\Property(property="seller_id", type="integer", example=1),
-	 *          @SWG\Property(property="seller_title", type="string", example="John Doe"),
-	 *          @SWG\Property(property="product_id", type="integer", example=1),
-	 *          @SWG\Property(property="product_cost", type="integer", example=1000),
-	 *          @SWG\Property(property="product_type", type="string", example="t-shirt"),
-	 *          @SWG\Property(property="is_domestic", type="string", example="null"),
-	 *          @SWG\Property(property="is_additional", type="string", example="null"),
-	 *          @SWG\Property(property="is_express", type="string", example="null"),
-	 *          @SWG\Property(property="shipping_cost", type="integer", example="null"),
-	 *       ),
-	 *     )
-	 *     )
-	 *   )
-	 * )
 	 * 
-	 * @SWG\Response(
-	 *   response=404, description="Not found.",
-	 *   @SWG\Schema(
-	 *    @SWG\Property(property="id", type="string", example="Invalid order."),
-	 *   )
-	 * )
+	 * @SWG\Response(response=200, description="", @SWG\Schema(type="array", @SWG\Items(@Model(type=Order::class, groups={"PUB"}))))
+	 * @SWG\Response(response=404, description="Not found.", @Model(type=Order::class, groups={"ID_ERROR"}))
 	 * 
 	 * @param OrderRepository $repo
 	 * @param int $id_user
