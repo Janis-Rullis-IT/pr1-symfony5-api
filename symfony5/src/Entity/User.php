@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Swagger\Annotations as SWG;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass="UserRepo")
@@ -25,21 +27,30 @@ class User
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+	 * #45 Schema annotations implemented.
+	 * @SWG\Property(property="id", type="integer", example="1"),
+	 * @Groups({ "PUB"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=30)
+	 * @SWG\Property(property="name", type="string", example="John", description="accepts upper and lowercase letters, spaces, dot (.) , comma (,) , apostrophe (') and dash (-)."),
+	 * @Groups({ "PUB", "CREATE" })
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=30)
+	 * @SWG\Property(property="surname", type="string", example="Doe", description="accepts upper and lowercase letters, spaces, dot (.) , comma (,) , apostrophe (') and dash (-).")
+	 * @Groups({ "PUB", "CREATE" })
      */
     private $surname;
 
     /**
      * @ORM\Column(type="integer")
+	 * @SWG\Property(property="balance", type="integer", example=10000, description="Each user is assigned 100$ or 10000 cents as a starting balance.")
+	 * @Groups({ "PUB" })
      */
     private $balance;
 

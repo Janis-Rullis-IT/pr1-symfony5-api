@@ -9,6 +9,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Response;
 use Swagger\Annotations as SWG;
+use App\Entity\User;
+use Nelmio\ApiDocBundle\Annotation\Model;
 
 class UserController extends AbstractController
 {
@@ -16,32 +18,15 @@ class UserController extends AbstractController
 	/**
 	 * Create a new user.
 	 *
-	 * Each user is assigned 100$ or 10000 cents as a starting balance to make orders later on.      
-	 * - "name" : accepts upper and lowercase letters, spaces, dot (.) , comma (,) , apostrophe (') and dash (-).
-	 * - "surname" : accepts upper and lowercase letters, spaces, dot (.) , comma (,) , apostrophe (') and dash (-).
-	 *
 	 * @Route("/users", name="createUser", methods={"POST"})
 	 * @SWG\Tag(name="1. user")
 	 *
-	 * @SWG\Parameter(
-	 *   name="body",
-	 *   in="body",
-	 *   required=true,
-	 *   @SWG\Schema(
-	 *    required={"name", "surname"},
-	 *    @SWG\Property(property="name", type="string", example="John", description="accepts upper and lowercase letters, spaces, dot (.) , comma (,) , apostrophe (') and dash (-)."),
-	 *    @SWG\Property(property="surname", type="string", example="Doe", description="accepts upper and lowercase letters, spaces, dot (.) , comma (,) , apostrophe (') and dash (-).")
-	 *   )
+	 * @SWG\Parameter(name="body", in="body", required=true,
+	 *   @SWG\Schema(required={"name", "surname"}, @Model(type=User::class, groups={"CREATE"}))
 	 * )
-	 * @SWG\Response(
-	 *   response=200, description="",
-	 *   @SWG\Schema(
-	 *    @SWG\Property(property="id", type="integer", example=1),
-	 *    @SWG\Property(property="name", type="string", example="John"),
-	 *    @SWG\Property(property="surname", type="string", example="Doe"),
-	 *    @SWG\Property(property="balance", type="integer", example=10000),
-	 *   )
-	 * )       
+	 *	
+	 * @SWG\Response(response=200, description="", @Model(type=User::class))
+	 * 
 	 * @param UserCreator $createUserService
 	 * @return JsonResponse
 	 */
@@ -61,15 +46,8 @@ class UserController extends AbstractController
 	 * @Route("/users/{id}", name="getUserById", methods={"GET"})
 	 * @SWG\Tag(name="1. user")
 	 * 
-	 * @SWG\Response(
-	 *   response=200, description="",
-	 *   @SWG\Schema(
-	 *    @SWG\Property(property="id", type="integer", example="1"),
-	 *    @SWG\Property(property="name", type="string", example="John"),
-	 *    @SWG\Property(property="surname", type="string", example="Doe"),
-	 *    @SWG\Property(property="balance", type="integer", example=10000),
-	 *   )
-	 * )       
+	 * @SWG\Response(response=200, description="", @Model(type=User::class))
+	 * 
 	 * @param IUserRepo $repo
 	 * @param int $id
 	 * @return JsonResponse|Response
@@ -88,23 +66,7 @@ class UserController extends AbstractController
 	 * @Route("/users", name="getUsers", methods={"GET"})
 	 * @SWG\Tag(name="1. user")
 	 * 
-	 * @SWG\Response(
-	 *   response=200, description="",
-	 *     @SWG\Schema(
-	 *       type="array",
-	 *       @SWG\Items(
-	 *         type="object",
-	 *         example = {
-	 *           {"id": "1", "name": "John", "surname": "Doe", "balance": 10000},
-	 *           {"id": "2", "name": "Alice", "surname": "Doe  ", "balance": 10000}
-	 *         },
-	 *         @SWG\Property(property="id", type="integer", example=1),
-	 *         @SWG\Property(property="name", type="string", example="John"),
-	 *         @SWG\Property(property="surname", type="string", example="Doe"),
-	 *         @SWG\Property(property="balance", type="integer", example=10000),
-	 *       )
-	 *    )
-	 * )   
+	 * @SWG\Response(response=200, description="",@SWG\Schema(type="array", @SWG\Items(@Model(type=User::class))))
 	 * 
 	 * @param IUserRepo $repo
 	 * @return JsonResponse
