@@ -5,6 +5,7 @@ use \App\Entity\User;
 use App\Entity\Product;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
+use App\Interfaces\IUserRepo;
 
 /**
  * #40 POST ​/users​/{customerId}​/cart​/{productId}
@@ -41,7 +42,7 @@ class OrderProductTest extends WebTestCase
 		$user = $this->insertUsersAndProds($client)[0];
 
 		$customerId = $this->impossibleInt;
-		$productId = $user->products[0]->getId();
+		$productId = $user->getProducts()[0]->getId();
 		$uri = '/users/' . $customerId . '/cart/' . $productId;
 
 		$client->request('POST', $uri);
@@ -77,7 +78,7 @@ class OrderProductTest extends WebTestCase
 		$user = $this->insertUsersAndProds($client)[0];
 
 		$customerId = $user->getId();
-		$productId = $user->products[0]->getId();
+		$productId = $user->getProducts()[0]->getId();
 		$uri = '/users/' . $customerId . '/cart/' . $productId;
 
 		$client->request('POST', $uri);
@@ -102,6 +103,8 @@ class OrderProductTest extends WebTestCase
 	{
 		$this->c = $client->getContainer();
 		$this->entityManager = $this->c->get('doctrine')->getManager();
+		$this->userRepo = $this->c->get('test.' . IUserRepo::class);
+		return $this->userRepo->createQueryBuilder('a')->orderBy('a.id', 'DESC')->setMaxResults(3)->getQuery()->getResult();
 
 		// #38 Create 3 users.
 		$users = [];

@@ -35,10 +35,9 @@ class UsersWithProductsFixture extends Fixture
 			$users[$i] = $user = $this->createUser($i);
 
 			// #38 Create 1 mug and 1 shirt for each user.
-			$user->products = [];
 			$productTypes = ['t-shirt', 'mug'];
 			foreach ($productTypes as $productType) {
-				$user->products[] = $this->createUserProduct($user, $productType);
+				$this->createUserProduct($user, $productType);
 			}
 		}
 		return $users;
@@ -55,7 +54,7 @@ class UsersWithProductsFixture extends Fixture
 		$user = new User();
 		$user->setName(rand());
 		$user->setSurname($i + 1);
-		$user->setBalance(1000);
+		$user->setBalance(10000);
 		$this->entityManager->persist($user);
 		$this->entityManager->flush();
 		return $user;
