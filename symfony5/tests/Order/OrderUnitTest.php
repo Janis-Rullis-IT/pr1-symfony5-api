@@ -8,6 +8,8 @@ use \App\Entity\Order;
 use \App\Entity\OrderProduct;
 use \App\Order\OrderProductCreator;
 use \App\Order\OrderShippingService;
+use App\Interfaces\IUserRepo;
+use App\Interfaces\IProductRepo;
 use \App\Interfaces\IOrderRepo;
 use \App\Interfaces\IOrderProductRepo;
 use \App\Exception\OrderValidatorException;
@@ -29,6 +31,7 @@ class OrderUnitTest extends KernelTestCase
 	private $orderShippingService;
 	private $orderShippingValidator;
 	private $orderRepo;
+	private $userRepo;
 	private $orderProductRepo;
 	private $impossibleInt = 3147483648;
 
@@ -41,15 +44,17 @@ class OrderUnitTest extends KernelTestCase
 		$this->c = $kernel->getContainer();
 
 		$this->orderProductCreator = $this->c->get('test.' . OrderProductCreator::class);
+
+		// #54 Maybe group this into an array.
 		$this->orderRepo = $this->c->get('test.' . IOrderRepo::class);
+		$this->userRepo = $this->c->get('test.' . IUserRepo::class);
+		$this->productrRepo = $this->c->get('test.' . IProductRepo::class);
 		$this->orderProductRepo = $this->c->get('test.' . IOrderProductRepo::class);
 		$this->orderShippingService = $this->c->get('test.' . OrderShippingService::class);
 		$this->orderShippingValidator = $this->c->get('test.' . OrderShippingValidator::class);
 
 		// Using database in tests https://stackoverflow.com/a/52014145 https://symfony.com/doc/master/testing/database.html#functional-testing-of-a-doctrine-repository
 		$this->entityManager = $this->c->get('doctrine')->getManager();
-
-		// TODO: Truncate specific tables before each run.
 	}
 
 	/**
@@ -186,6 +191,7 @@ class OrderUnitTest extends KernelTestCase
 	public function testOrderProductCreatorExceptions1()
 	{
 		$user = $this->insertUsersAndProds()[0];
+		
 		$this->expectException(UidValidatorException::class);
 		$this->expectExceptionCode(1);
 		$this->orderProductCreator->handle($this->impossibleInt, $user->products[0]->getId());

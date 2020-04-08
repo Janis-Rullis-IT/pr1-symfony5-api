@@ -22,19 +22,6 @@ services:
     App\Controller\:
         resource: '../src/Controller'
         tags: ['controller.service_arguments']
-        
-    # mapping interface to production repositories
-    App\Interfaces\IUserRepo: '@UserRepo'
-    App\Interfaces\IProductRepo: '@ProductRepo'
-
-    # -------- repositories pointed to by interface --------
-    UserRepo:
-        class: App\Repository\Prod\UserRepo
-
-    ProductRepo:
-        class: App\Repository\Prod\ProductRepo
-    # -------- services --------
-
     App\EventListener\ExceptionListener:
         tags:
             - {name: kernel.event_listener, event: kernel.exception}
@@ -66,4 +53,12 @@ services:
     # #36 #38
     test.App\Interfaces\IOrderProductRepo:
         alias: App\Interfaces\IOrderProductRepo
+        public: true
+    
+    #54
+    test.App\Interfaces\IUserRepo:
+        alias: App\Interfaces\IUserRepo
+        public: true
+    test.App\Interfaces\IProductRepo:
+        alias: App\Interfaces\IProductRepo
         public: true

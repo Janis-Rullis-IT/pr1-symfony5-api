@@ -225,7 +225,7 @@ class Order
 	 *      joinColumns={@ORM\JoinColumn(name="order_id", referencedColumnName="id")},
 	 *      inverseJoinColumns={@ORM\JoinColumn(name="id", referencedColumnName="id", unique=true)}
 	 * )
-	   @SWG\Property(property="products", type="array", @SWG\Items(@Model(type=OrderProduct::class)))
+	 * @SWG\Property(property="products", type="array", @SWG\Items(@Model(type=OrderProduct::class)))
 	 * @Groups({"PUB"})
 	 */
 	private $products;
