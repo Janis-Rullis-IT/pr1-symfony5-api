@@ -62,3 +62,6 @@ services:
     test.App\Interfaces\IProductRepo:
         alias: App\Interfaces\IProductRepo
         public: true
+    test.App\User\UserWihProductsGenerator:
+        alias: App\User\UserWihProductsGenerator
+        public: true

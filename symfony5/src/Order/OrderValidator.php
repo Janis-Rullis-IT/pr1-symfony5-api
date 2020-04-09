@@ -1,6 +1,8 @@
 <?php
 namespace App\Order;
-
+/**
+ * #40 Validate the order and store errors.
+ */
 use \App\Entity\Order;
 use App\ErrorsLoader;
 use \App\Exception\OrderValidatorException;

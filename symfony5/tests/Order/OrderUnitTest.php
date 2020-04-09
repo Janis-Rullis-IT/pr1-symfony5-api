@@ -17,6 +17,7 @@ use \App\Exception\OrderShippingValidatorException;
 use \App\Order\OrderShippingValidator;
 use \App\Exception\UidValidatorException;
 use \App\Exception\ProductIdValidatorException;
+use App\User\UserWihProductsGenerator;
 
 /**
  * #38 Test that the order product data is stored in the database correctly.
@@ -28,6 +29,7 @@ class OrderUnitTest extends KernelTestCase
 	private $c;
 	private $entityManager;
 	private $orderProductCreator;
+	private $userWithProductsGenerator;
 	private $orderShippingService;
 	private $orderShippingValidator;
 	private $orderRepo;
@@ -44,6 +46,8 @@ class OrderUnitTest extends KernelTestCase
 		$this->c = $kernel->getContainer();
 
 		$this->orderProductCreator = $this->c->get('test.' . OrderProductCreator::class);
+		$this->userWithProductsGenerator = $this->c->get('test.' . UserWihProductsGenerator::class);
+		dd($this->userWithProductsGenerator);
 
 		// #54 Maybe group this into an array.
 		$this->orderRepo = $this->c->get('test.' . IOrderRepo::class);
@@ -269,7 +273,7 @@ class OrderUnitTest extends KernelTestCase
 		$this->assertEquals($validProduct3->getProductId(), $productId);
 		$this->assertEquals($validProduct3->getProductTitle(), $users[1]->getProducts()[0]->getTitle());
 		$this->assertEquals($validProduct3->getProductCost(), $users[1]->getProducts()[0]->getCost());
-		$this->assertEquals($validProduct3->getProductType(), $users[1]->getProducts()[0]->getType());	
+		$this->assertEquals($validProduct3->getProductType(), $users[1]->getProducts()[0]->getType());
 		$this->assertTrue($validProduct3->getId() > 0);
 		$this->assertEquals($validProduct3->getOrderId(), $draftOrder->getId());
 		$this->assertNotEquals($validProduct2->getId(), $validProduct3->getId());

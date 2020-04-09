@@ -2,12 +2,7 @@
 namespace App\Order;
 
 /**
- * #40 Validation method conventions:
- * - Collection methods. Doesn't store anything in class variables. `getMissingKeys()`
- * - Boolean methods. May rely on calc. methods.  Doesn't store anything in class  variables. 
- * Named in a manner that responds with a bool - `hasRequiredKeys()`, `isValidExpressShipping()`.
- * - Action methods. Returns void. Relies on the class' method and variables. Throws exceptions.
- * Named in a manner that implies action - `validate()`, `handle()`.
+ * #40 Validate order's shipping and store errors.
  */
 use \App\Entity\Order;
 use App\Validators\AddressValidators\AddressValidator;
@@ -19,6 +14,14 @@ use \App\Helper\EnumType;
 class OrderShippingValidator
 {
 
+	/**
+	 * #40 Validation method conventions:
+	 * - Collection methods. Doesn't store anything in class variables. `getMissingKeys()`
+	 * - Boolean methods. May rely on calc. methods.  Doesn't store anything in class  variables. 
+	 * Named in a manner that responds with a bool - `hasRequiredKeys()`, `isValidExpressShipping()`.
+	 * - Action methods. Returns void. Relies on the class' method and variables. Throws exceptions.
+	 * Named in a manner that implies action - `validate()`, `handle()`.
+	 */
 	private $errors;
 	private $addressValidator;
 	private $shipmentType;

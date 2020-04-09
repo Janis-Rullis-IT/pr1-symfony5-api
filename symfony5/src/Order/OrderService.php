@@ -1,6 +1,9 @@
 <?php
 namespace App\Order;
 
+/**
+ * Complete or re-calculate the order.
+ */
 use \App\Interfaces\IProductRepo;
 use \App\Interfaces\IUserRepo;
 use \App\Interfaces\IOrderRepo;
@@ -47,7 +50,13 @@ class OrderService
 		return $this->orderRepo->findOneBy(["id" => $order->getId()]);
 	}
 
-	public function recalculateOrder($order): void
+	/**
+	 * Recalculate the shipping and product costs.
+	 * 
+	 * @param Order $order
+	 * @return void
+	 */
+	public function recalculateOrder(Order $order): void
 	{
 		$this->orderValidator->mustHaveShippingSet($order);
 		$this->orderProductRepo->setShippingValues($order);

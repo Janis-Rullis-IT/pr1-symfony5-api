@@ -30,7 +30,7 @@ class UserRepo extends ServiceEntityRepository implements IUserRepo
 		$user = new User();
 		$user->setName($requestBody[User::NAME]);
 		$user->setSurname($requestBody[User::SURNAME]);
-		$user->setBalance(10000);
+		$user->setBalance(empty($requestBody[User::BALANCE]) ? 10000 : $requestBody[User::BALANCE]);
 		$this->em->persist($user);
 		$this->em->flush();
 		return $user;
@@ -85,5 +85,16 @@ class UserRepo extends ServiceEntityRepository implements IUserRepo
 		$this->em->flush();
 
 		return $user;
+	}
+
+	/**
+	 * #53 Generate a dummy user. Used in fixtures and tests.
+	 * 
+	 * @param type $i
+	 * @return User
+	 */
+	public function generateDummyUser($i): User
+	{
+		return $this->create([User::NAME => rand(), User::SURNAME => $i + 1]);
 	}
 }
