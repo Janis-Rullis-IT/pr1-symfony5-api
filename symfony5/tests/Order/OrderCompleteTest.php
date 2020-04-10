@@ -19,16 +19,6 @@ class OrderCompleteTest extends WebTestCase
 	private $entityManager;
 	private $userWithProductsGenerator;
 	private $userRepo;
-	private $ship_to_address = [
-			"name" => "John",
-			"surname" => "Doe",
-			"street" => "Palm street 25-7",
-			"state" => "California",
-			"zip" => "60744",
-			"country" => "US",
-			"phone" => "+1 123 123 123",
-			"is_express" => true
-	];
 
 	protected function setUp(): void
 	{
@@ -80,7 +70,7 @@ class OrderCompleteTest extends WebTestCase
 		$productId = $user->getProducts()[0]->getId();
 
 		$uri = '/users/' . $customerId . '/order/shipping';
-		$data = $this->ship_to_address;
+		$data = Order::VALID_SHIPPING_EXAMPLE;
 		$this->client->request('PUT', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
 
 		$uri = '/users/' . $customerId . '/order/complete';
@@ -103,7 +93,7 @@ class OrderCompleteTest extends WebTestCase
 		$this->client->request('POST', '/users/' . $customerId . '/cart/' . $productId);
 
 		$uri = '/users/' . $customerId . '/order/shipping';
-		$data = $this->ship_to_address;
+		$data = Order::VALID_SHIPPING_EXAMPLE;
 		$this->client->request('PUT', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
 
 		$uri = '/users/' . $customerId . '/order/complete';
@@ -126,7 +116,7 @@ class OrderCompleteTest extends WebTestCase
 		$this->client->request('POST', '/users/' . $customerId . '/cart/' . $productId);
 
 		$uri = '/users/' . $customerId . '/order/shipping';
-		$data = $this->ship_to_address;
+		$data = Order::VALID_SHIPPING_EXAMPLE;
 		$this->client->request('PUT', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
 
 		$uri = '/users/' . $customerId . '/order/complete';
@@ -147,7 +137,7 @@ class OrderCompleteTest extends WebTestCase
 		$product = $user->getProducts()[0];
 		$productId = $product->getId();
 		$this->client->request('POST', '/users/' . $customerId . '/cart/' . $productId);
-		$this->client->request('PUT', '/users/' . $customerId . '/order/shipping', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($this->ship_to_address));
+		$this->client->request('PUT', '/users/' . $customerId . '/order/shipping', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode(Order::VALID_SHIPPING_EXAMPLE));
 		$this->client->request('PUT', '/users/' . $customerId . '/order/complete');
 		$this->assertEquals(Response::HTTP_OK, $this->client->getResponse()->getStatusCode());
 		$responseBody = json_decode($this->client->getResponse()->getContent(), TRUE);
@@ -159,7 +149,7 @@ class OrderCompleteTest extends WebTestCase
 		$userUpdated = $this->entityManager->find(User::class, $customerId);
 		$this->assertEquals($user->getBalance() - $totalCost, $userUpdated->getBalance(), '#40 User\'s balance must be reduced correctly.');
 
-		$data = $this->ship_to_address;
+		$data = Order::VALID_SHIPPING_EXAMPLE;
 		$data['name'] = 'Hue';
 		$this->client->request('POST', '/users/' . $customerId . '/cart/' . $productId);
 		$this->client->request('PUT', '/users/' . $customerId . '/order/shipping', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));

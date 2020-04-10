@@ -2,8 +2,6 @@
 namespace App\Tests\Order;
 
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use \App\Entity\User;
-use \App\Entity\Product;
 use \App\Entity\Order;
 use \App\Entity\OrderProduct;
 use \App\Order\OrderProductCreator;
@@ -12,7 +10,6 @@ use App\Interfaces\IUserRepo;
 use App\Interfaces\IProductRepo;
 use \App\Interfaces\IOrderRepo;
 use \App\Interfaces\IOrderProductRepo;
-use \App\Exception\OrderValidatorException;
 use \App\Exception\OrderShippingValidatorException;
 use \App\Order\OrderShippingValidator;
 use \App\Exception\UidValidatorException;
@@ -79,17 +76,7 @@ class OrderUnitTest extends KernelTestCase
 		$order = new Order();
 		$this->expectException(UidValidatorException::class);
 		$this->expectExceptionCode(1);
-		$ship_to_address = [
-				"name" => "John",
-				"surname" => "Doe",
-				"street" => "Palm street 25-7",
-				"state" => "California",
-				"zip" => "60744",
-				"country" => "US",
-				"phone" => "+1 123 123 123",
-				"is_express" => true
-		];
-		$this->orderShippingService->set(0, $ship_to_address);
+		$this->orderShippingService->set(0, Order::VALID_SHIPPING_EXAMPLE);
 	}
 
 	/**
@@ -117,24 +104,17 @@ class OrderUnitTest extends KernelTestCase
 	 */
 	public function testOrderValidation()
 	{
-		$ship_to_address = [
-				"name" => "John",
-				"surname" => "Doe",
-				"street" => "Palm street 25-7",
-				"state" => "California",
-				"zip" => "60744",
-				"country" => "US",
-				"phone" => "+1 123 123 123",
-		];
+		$ship_to_address = Order::VALID_SHIPPING_EXAMPLE;
+		unset($ship_to_address[Order::IS_EXPRESS]);
 		$this->assertFalse($this->orderShippingValidator->hasRequiredKeys($ship_to_address));
-		$this->assertEquals(['is_express' => 'is_express'], $this->orderShippingValidator->getMissingKeys($ship_to_address));
-		$ship_to_address['is_express'] = true;
+		$this->assertEquals([Order::IS_EXPRESS => Order::IS_EXPRESS], $this->orderShippingValidator->getMissingKeys($ship_to_address));
+		$ship_to_address[Order::IS_EXPRESS] = true;
 		$this->assertTrue($this->orderShippingValidator->hasRequiredKeys($ship_to_address));
 
 		$this->assertTrue($this->orderShippingValidator->isAddressValid($ship_to_address));
 		$this->assertTrue($this->orderShippingValidator->isExpressShippingAllowed($ship_to_address));
 		$this->assertTrue($this->orderShippingValidator->isValid($ship_to_address));
-		$ship_to_address['country'] = 'Latvia';
+		$ship_to_address[Order::COUNTRY] = 'Latvia';
 		$this->assertTrue($this->orderShippingValidator->isAddressValid($ship_to_address));
 		$this->assertFalse($this->orderShippingValidator->isExpressShippingAllowed($ship_to_address));
 		$this->assertFalse($this->orderShippingValidator->isValid($ship_to_address));
@@ -466,24 +446,15 @@ class OrderUnitTest extends KernelTestCase
 		$this->assertEmpty($draftOrder->getCountry());
 		$this->assertEmpty($draftOrder->getPhone());
 
-		$ship_to_address = [
-				"name" => "John",
-				"surname" => "Doe",
-				"street" => "Palm street 25-7",
-				"state" => "California",
-				"zip" => "60744",
-				"country" => "US",
-				"phone" => "+1 123 123 123",
-				"is_express" => true
-		];
+		$ship_to_address = Order::VALID_SHIPPING_EXAMPLE;
 		$draftOrder = $this->orderShippingService->set($draftOrder->getCustomerId(), $ship_to_address);
-		$this->assertEquals($ship_to_address['name'], $draftOrder->getName());
-		$this->assertEquals($ship_to_address['surname'], $draftOrder->getSurname());
-		$this->assertEquals($ship_to_address['street'], $draftOrder->getStreet());
-		$this->assertEquals($ship_to_address['state'], $draftOrder->getState());
-		$this->assertEquals($ship_to_address['zip'], $draftOrder->getZip());
-		$this->assertEquals($ship_to_address['country'], $draftOrder->getCountry());
-		$this->assertEquals($ship_to_address['phone'], $draftOrder->getPhone());
+		$this->assertEquals($ship_to_address[Order::OWNER_NAME], $draftOrder->getName());
+		$this->assertEquals($ship_to_address[Order::OWNER_SURNAME], $draftOrder->getSurname());
+		$this->assertEquals($ship_to_address[Order::STREET], $draftOrder->getStreet());
+		$this->assertEquals($ship_to_address[Order::STATE], $draftOrder->getState());
+		$this->assertEquals($ship_to_address[Order::ZIP], $draftOrder->getZip());
+		$this->assertEquals($ship_to_address[Order::COUNTRY], $draftOrder->getCountry());
+		$this->assertEquals($ship_to_address[Order::PHONE], $draftOrder->getPhone());
 		$this->assertEquals('y', $draftOrder->getIsDomestic());
 		$this->assertEquals('y', $draftOrder->getIsExpress());
 
