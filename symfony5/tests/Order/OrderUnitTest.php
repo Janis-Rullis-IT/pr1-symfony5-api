@@ -193,7 +193,7 @@ class OrderUnitTest extends KernelTestCase
 	 */
 	public function testOrderProductCreatorExceptions1()
 	{
-		$user = $this->userRepo->getUsersWithProducts(1)[0];
+		$user = $this->userRepo->getUserWithProducts();
 
 		$this->expectException(UidValidatorException::class);
 		$this->expectExceptionCode(1);
@@ -205,7 +205,7 @@ class OrderUnitTest extends KernelTestCase
 	 */
 	public function testOrderProductCreatorExceptions2()
 	{
-		$user = $this->userRepo->getUsersWithProducts(1)[0];
+		$user = $this->userRepo->getUserWithProducts();
 		$this->expectException(ProductIdValidatorException::class);
 		$this->expectExceptionCode(1);
 		$this->orderProductCreator->handle($user->getId(), $this->impossibleInt);

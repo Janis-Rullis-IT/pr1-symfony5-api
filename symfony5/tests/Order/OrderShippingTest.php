@@ -1,11 +1,8 @@
 <?php
 namespace App\Tests\Order;
 
-use \App\Entity\User;
-use App\Entity\Product;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
-use App\Interfaces\IUserRepo;
 use App\User\UserWihProductsGenerator;
 
 /**
@@ -16,6 +13,8 @@ class OrderShippingTest extends WebTestCase
 
 	private $impossibleInt = 3147483648;
 	private $entityManager;
+	private $client;
+	private $userWithProductsGenerator;
 	private $ship_to_address = [
 			"name" => "John",
 			"surname" => "Doe",
@@ -27,19 +26,25 @@ class OrderShippingTest extends WebTestCase
 			"is_express" => true
 	];
 
+	protected function setUp(): void
+	{
+		$this->client = static::createClient();
+		$this->c = $this->client->getContainer();
+		$this->entityManager = $this->c->get('doctrine')->getManager();
+		$this->userWithProductsGenerator = $this->c->get('test.' . UserWihProductsGenerator::class);
+	}
+
 	/**
 	 * #40 Invalid customer.
 	 */
 	public function testInvalidCustomer()
 	{
-		$client = static::createClient();
-
 		$customerId = $this->impossibleInt;
 		$uri = '/users/' . $customerId . '/order/shipping';
 		$data = $this->ship_to_address;
-		$client->request('PUT', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
-		$this->assertEquals(Response::HTTP_NOT_FOUND, $client->getResponse()->getStatusCode());
-		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
+		$this->client->request('PUT', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
+		$this->assertEquals(Response::HTTP_NOT_FOUND, $this->client->getResponse()->getStatusCode());
+		$responseBody = json_decode($this->client->getResponse()->getContent(), TRUE);
 		$this->assertEquals(['id' => "invalid user"], $responseBody);
 	}
 
@@ -48,14 +53,12 @@ class OrderShippingTest extends WebTestCase
 	 */
 	public function testMissingData()
 	{
-		$client = static::createClient();
-
 		$customerId = $this->impossibleInt;
 		$uri = '/users/' . $customerId . '/order/shipping';
 		$data = [];
-		$client->request('PUT', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
-		$this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
-		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
+		$this->client->request('PUT', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
+		$this->assertEquals(Response::HTTP_BAD_REQUEST, $this->client->getResponse()->getStatusCode());
+		$responseBody = json_decode($this->client->getResponse()->getContent(), TRUE);
 		foreach (\App\Entity\Order::$requireds as $key => $val) {
 			$this->assertEquals(["'" . $val . "' field is missing."], $responseBody[$val]);
 		}
@@ -66,15 +69,13 @@ class OrderShippingTest extends WebTestCase
 	 */
 	public function testMissingField()
 	{
-		$client = static::createClient();
-
 		$customerId = $this->impossibleInt;
 		$uri = '/users/' . $customerId . '/order/shipping';
 		$data = $this->ship_to_address;
 		unset($data['is_express']);
-		$client->request('PUT', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
-		$this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
-		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
+		$this->client->request('PUT', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
+		$this->assertEquals(Response::HTTP_BAD_REQUEST, $this->client->getResponse()->getStatusCode());
+		$responseBody = json_decode($this->client->getResponse()->getContent(), TRUE);
 		$this->assertEquals(['is_express' => ["'is_express' field is missing."]], $responseBody);
 	}
 
@@ -83,21 +84,17 @@ class OrderShippingTest extends WebTestCase
 	 */
 	public function testValidRequest()
 	{
-		$client = static::createClient();
-		$this->c = $client->getContainer();
-		$this->entityManager = $this->c->get('doctrine')->getManager();
-		$this->userWithProductsGenerator = $this->c->get('test.' . UserWihProductsGenerator::class);
 		$user = $this->userWithProductsGenerator->generate(1)[0];
 
 		$customerId = $user->getId();
 		$productId = $user->getProducts()[0]->getId();
-		$client->request('POST', '/users/' . $customerId . '/cart/' . $productId);
+		$this->client->request('POST', '/users/' . $customerId . '/cart/' . $productId);
 
 		$uri = '/users/' . $customerId . '/order/shipping';
 		$data = $this->ship_to_address;
-		$client->request('PUT', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
-		$this->assertEquals(Response::HTTP_OK, $client->getResponse()->getStatusCode());
-		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
+		$this->client->request('PUT', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
+		$this->assertEquals(Response::HTTP_OK, $this->client->getResponse()->getStatusCode());
+		$responseBody = json_decode($this->client->getResponse()->getContent(), TRUE);
 
 		$this->assertEquals('y', $responseBody['is_domestic']);
 		$this->assertEquals('y', $responseBody['is_express']);

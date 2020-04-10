@@ -1,11 +1,10 @@
 <?php
 namespace App\Tests\Order;
 
-use \App\Entity\User;
-use App\Entity\Product;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 use App\Interfaces\IUserRepo;
+use App\User\UserWihProductsGenerator;
 
 /**
  * #40 POST ​/users​/{customerId}​/cart​/{productId}
@@ -15,21 +14,31 @@ class OrderProductTest extends WebTestCase
 
 	private $impossibleInt = 3147483648;
 	private $entityManager;
+	private $client;
+	private $userWithProductsGenerator;
+	private $userRepo;
+
+	protected function setUp(): void
+	{
+		$this->client = static::createClient();
+		$this->c = $this->client->getContainer();
+		$this->entityManager = $this->c->get('doctrine')->getManager();
+		$this->userWithProductsGenerator = $this->c->get('test.' . UserWihProductsGenerator::class);
+		$this->userRepo = $this->c->get('test.' . IUserRepo::class);
+	}
 
 	/**
 	 * #40 Invalid parameters.
 	 */
 	public function testInvalidequest()
 	{
-		$client = static::createClient();
-
 		$customerId = $this->impossibleInt;
 		$productId = $this->impossibleInt;
 		$uri = '/users/' . $customerId . '/cart/' . $productId;
 
-		$client->request('POST', $uri);
-		$this->assertEquals(Response::HTTP_NOT_FOUND, $client->getResponse()->getStatusCode());
-		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
+		$this->client->request('POST', $uri);
+		$this->assertEquals(Response::HTTP_NOT_FOUND, $this->client->getResponse()->getStatusCode());
+		$responseBody = json_decode($this->client->getResponse()->getContent(), TRUE);
 		$this->assertEquals(['id' => 'invalid user'], $responseBody);
 	}
 
@@ -38,16 +47,15 @@ class OrderProductTest extends WebTestCase
 	 */
 	public function testInvalidUser()
 	{
-		$client = static::createClient();
-		$user = $this->insertUsersAndProds($client)[0];
+		$user = $this->userRepo->getUserWithProducts();
 
 		$customerId = $this->impossibleInt;
 		$productId = $user->getProducts()[0]->getId();
 		$uri = '/users/' . $customerId . '/cart/' . $productId;
 
-		$client->request('POST', $uri);
-		$this->assertEquals(Response::HTTP_NOT_FOUND, $client->getResponse()->getStatusCode());
-		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
+		$this->client->request('POST', $uri);
+		$this->assertEquals(Response::HTTP_NOT_FOUND, $this->client->getResponse()->getStatusCode());
+		$responseBody = json_decode($this->client->getResponse()->getContent(), TRUE);
 		$this->assertEquals(['id' => 'invalid user'], $responseBody);
 	}
 
@@ -56,16 +64,15 @@ class OrderProductTest extends WebTestCase
 	 */
 	public function testInvalidProduct()
 	{
-		$client = static::createClient();
-		$user = $this->insertUsersAndProds($client)[0];
+		$user = $this->userRepo->getUserWithProducts();
 
 		$customerId = $user->getId();
 		$productId = $this->impossibleInt;
 		$uri = '/users/' . $customerId . '/cart/' . $productId;
 
-		$client->request('POST', $uri);
-		$this->assertEquals(Response::HTTP_NOT_FOUND, $client->getResponse()->getStatusCode());
-		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
+		$this->client->request('POST', $uri);
+		$this->assertEquals(Response::HTTP_NOT_FOUND, $this->client->getResponse()->getStatusCode());
+		$responseBody = json_decode($this->client->getResponse()->getContent(), TRUE);
 		$this->assertEquals(['id' => 'Invalid product.'], $responseBody);
 	}
 
@@ -74,88 +81,20 @@ class OrderProductTest extends WebTestCase
 	 */
 	public function testValidRequest()
 	{
-		$client = static::createClient();
-		$user = $this->insertUsersAndProds($client)[0];
+		$user = $this->userRepo->getUserWithProducts();
 
 		$customerId = $user->getId();
 		$productId = $user->getProducts()[0]->getId();
 		$uri = '/users/' . $customerId . '/cart/' . $productId;
 
-		$client->request('POST', $uri);
-		$this->assertEquals(Response::HTTP_CREATED, $client->getResponse()->getStatusCode());
+		$this->client->request('POST', $uri);
+		$this->assertEquals(Response::HTTP_CREATED, $this->client->getResponse()->getStatusCode());
 
-		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
+		$responseBody = json_decode($this->client->getResponse()->getContent(), TRUE);
 		$this->assertNotEmpty($responseBody['id']);
 		$this->assertEquals($productId, $responseBody['product_id']);
 		$this->assertEquals($customerId, $responseBody['customer_id']);
 
 		// #40 More thorough tests regarding this are located in OrderProductUnitTest.
-	}
-
-	/**
-	 * #38 Create 3 users with 1 mug and 1 shirt.
-	 * 
-	 * TODO: Replace this approach with fixtures or creators that are designed not just for access from controllers.
-	 * 
-	 * @return User array
-	 */
-	private function insertUsersAndProds($client, int $count = 1)
-	{
-		$this->c = $client->getContainer();
-		$this->entityManager = $this->c->get('doctrine')->getManager();
-		$this->userRepo = $this->c->get('test.' . IUserRepo::class);
-		return $this->userRepo->createQueryBuilder('a')->orderBy('a.id', 'DESC')->setMaxResults(3)->getQuery()->getResult();
-
-		// #38 Create 3 users.
-		$users = [];
-		for ($i = 0; $i < $count; $i++) {
-
-			$users[$i] = $user = $this->createUser($i);
-
-			// #38 Create 1 mug and 1 shirt for each user.
-			$user->products = [];
-			$productTypes = ['t-shirt', 'mug'];
-			foreach ($productTypes as $productType) {
-				$user->products[] = $this->createUserProduct($user, $productType);
-			}
-		}
-		return $users;
-	}
-
-	/**
-	 * #40 Create a user.
-	 * 
-	 * @param type $i
-	 * @return User
-	 */
-	private function createUser($i): User
-	{
-		$user = new User();
-		$user->setName(rand());
-		$user->setSurname($i + 1);
-		$user->setBalance(1000);
-		$this->entityManager->persist($user);
-		$this->entityManager->flush();
-		return $user;
-	}
-
-	/**
-	 * #40 Create a product.
-	 * 
-	 * @param User $user
-	 * @param string $productType
-	 * @return Product
-	 */
-	private function createUserProduct(User $user, string $productType): Product
-	{
-		$product = new Product();
-		$product->setOwnerId($user->getId());
-		$product->setType($productType);
-		$product->setTitle($user->getName() . ' ' . $user->getSurname() . ' ' . $productType);
-		$product->setSku($user->getName() . ' ' . $user->getSurname() . ' ' . $productType);
-		$product->setCost(100);
-		$this->entityManager->persist($product);
-		$this->entityManager->flush();
-		return $product;
 	}
 }

@@ -150,6 +150,17 @@ class UserRepo extends ServiceEntityRepository implements IUserRepo
 	}
 
 	/**
+	 * #53 Get a user that has any product.
+	 * Necessary for testing purposes.
+	 * 
+	 * @return User
+	 */
+	public function getUserWithProducts(): User
+	{
+		return $this->getUsersWithProducts(1)[0];
+	}
+
+	/**
 	 * #53 Get a set amount of users without any product.
 	 * Necessary for testing purposes.
 	 * 
@@ -160,5 +171,16 @@ class UserRepo extends ServiceEntityRepository implements IUserRepo
 	{
 		$q = $this->getUsersQuery($count)->where('Product.id IS NULL')->getQuery();
 		return $q->getResult();
+	}
+
+	/**
+	 * #53 Get a user without any product.
+	 * Necessary for testing purposes.
+	 * 
+	 * @return User
+	 */
+	public function getUserWithoutProducts(): User
+	{
+		return $this->getUsersWithoutProducts(1)[0];
 	}
 }
