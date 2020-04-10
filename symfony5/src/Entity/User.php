@@ -5,6 +5,8 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Swagger\Annotations as SWG;
 use Symfony\Component\Serializer\Annotation\Groups;
+use \App\Entity\Product;
+use Nelmio\ApiDocBundle\Annotation\Model;
 
 /**
  * @ORM\Entity(repositoryClass="UserRepo")
@@ -53,6 +55,31 @@ class User
 	 * @Groups({ "PUB" })
      */
     private $balance;
+	
+	/**
+	 * #54 Store user's products when called `getProducts()`.
+	 * #40 Annotation based ManyToMany relation that collects order's products.
+	 * https://www.doctrine-project.org/projects/doctrine-orm/en/2.7/cookbook/aggregate-fields.html
+	 * https://www.doctrine-project.org/projects/doctrine-orm/en/2.7/reference/annotations-reference.html#annref_joincolumns
+	 * https://www.doctrine-project.org/projects/doctrine-orm/en/2.6/reference/association-mapping.html#one-to-many-unidirectional-with-join-table
+	 * https://www.doctrine-project.org/api/collections/latest/Doctrine/Common/Collections/ArrayCollection.html
+	 * @ORM\ManyToMany(targetEntity="Product")
+	 * @ORM\JoinTable(name="product",
+	 *      joinColumns={@ORM\JoinColumn(name="owner_id", referencedColumnName="id")},
+	 *      inverseJoinColumns={@ORM\JoinColumn(name="id", referencedColumnName="id", unique=true)}
+	 * )
+	 * @SWG\Property(property="products", type="array", @SWG\Items(@Model(type=Product::class)))
+	 * @Groups({"PUB"})
+	 */
+	private $products;
+	/**
+	 * #54 Collect user's products.
+	 * Collected using annotation JOIN. See `$products`.	 
+	 */
+	public function getProducts()
+	{
+		return $this->products;
+	}
 
     public function getId(): ?int
     {

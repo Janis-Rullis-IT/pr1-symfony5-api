@@ -1,6 +1,10 @@
 <?php
 namespace App\Order;
 
+/**
+ * #40 #38 Add a product to customer's cart (draft order).
+ */
+
 use \App\Interfaces\IProductRepo;
 use \App\Interfaces\IUserRepo;
 use \App\Interfaces\IOrderRepo;

@@ -1,6 +1,9 @@
 <?php
 namespace App\Order;
 
+/**
+ * #38 Validate and set order's shipping.
+ */
 use \App\Interfaces\IProductRepo;
 use \App\Interfaces\IUserRepo;
 use \App\Interfaces\IOrderRepo;
@@ -29,11 +32,11 @@ class OrderShippingService
 	}
 
 	/**
-	 * #38 Set order's shipping.
+	 * #38 Validate and set order's shipping.
 	 * 
 	 * @param int $customerId
 	 * @param array $data
-	 * @return array
+	 * @return Order
 	 */
 	public function set(int $customerId, array $data): Order
 	{
@@ -50,7 +53,7 @@ class OrderShippingService
 	 * 
 	 * @param int $customerId
 	 * @param array $data
-	 * @return array
+	 * @return Order
 	 */
 	public function prepare(int $customerId, array $data): Order
 	{

@@ -2,11 +2,13 @@
 namespace App\Repository\Prod;
 
 use App\Entity\User;
+use App\Entity\Product;
 use App\Interfaces\IUserRepo;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManagerInterface;
 use \App\Exception\UidValidatorException;
+use Doctrine\ORM\QueryBuilder;
 
 /**
  * @method User|null find($id, $lockMode = null, $lockVersion = null)
@@ -30,7 +32,8 @@ class UserRepo extends ServiceEntityRepository implements IUserRepo
 		$user = new User();
 		$user->setName($requestBody[User::NAME]);
 		$user->setSurname($requestBody[User::SURNAME]);
-		$user->setBalance(10000);
+		
+		$user->setBalance(isset($requestBody[User::BALANCE]) ? $requestBody[User::BALANCE]: 10000);
 		$this->em->persist($user);
 		$this->em->flush();
 		return $user;
@@ -39,7 +42,7 @@ class UserRepo extends ServiceEntityRepository implements IUserRepo
 	public function getById(int $id)
 	{
 		return $this->findOneBy([
-				"id" => $id
+						"id" => $id
 		]);
 	}
 
@@ -85,5 +88,101 @@ class UserRepo extends ServiceEntityRepository implements IUserRepo
 		$this->em->flush();
 
 		return $user;
+	}
+
+	/**
+	 * #53 Generate a dummy user. Used in fixtures and tests.
+	 * 
+	 * @param type $i
+	 * @param int $balance
+	 * @return User
+	 */
+	public function generateDummyUser($i, int $balance = 10000): User
+	{
+		return $this->create([User::NAME => rand(), User::SURNAME => $i + 1, User::BALANCE => $balance]);
+	}
+
+	/**
+	 * #53 Get a QueryBuilder with a LEFT JOIN to Product, Order By and LIMIT.
+	 * 
+	 * @param int $count
+	 * @return QueryBuilder
+	 */
+	public function getUsersQuery(int $count = 3): QueryBuilder
+	{
+		return $this->createQueryBuilder('User')->select('User')
+						->leftJoin(Product::class, 'Product', 'WITH', 'User.id = Product.ownerId')
+						->orderBy('User.id', 'DESC')->setMaxResults($count);
+	}
+
+	/**
+	 * #53 Get a set amount of users with products ordered by user.id DESC.
+	 * 
+	 * @param int $count
+	 * @return array
+	 */
+	public function getUsers(int $count = 3): array
+	{
+		$q = $this->getUsersQuery($count)->getQuery();
+		return $q->getResult();
+	}
+
+	/**
+	 * #53 Get a QueryBuilder based on getUsersQuery + where.
+	 * 
+	 * @param int $count
+	 * @return QueryBuilder
+	 */
+	public function getUsersWithProductsQuery(int $count = 3): QueryBuilder
+	{
+		return $this->getUsersQuery($count)->where('Product.id IS NOT NULL');
+	}
+
+	/**
+	 * #53 Get a set amount of users that has any product.
+	 * Necessary for testing purposes.
+	 * 
+	 * @param int $count
+	 * @return array
+	 */
+	public function getUsersWithProducts(int $count = 3): array
+	{
+		$q = $this->getUsersWithProductsQuery($count)->getQuery();
+		return $q->getResult();
+	}
+
+	/**
+	 * #53 Get a user that has any product.
+	 * Necessary for testing purposes.
+	 * 
+	 * @return User
+	 */
+	public function getUserWithProducts(): User
+	{
+		return $this->getUsersWithProducts(1)[0];
+	}
+
+	/**
+	 * #53 Get a set amount of users without any product.
+	 * Necessary for testing purposes.
+	 * 
+	 * @param int $count
+	 * @return array
+	 */
+	public function getUsersWithoutProducts(int $count = 3): array
+	{
+		$q = $this->getUsersQuery($count)->where('Product.id IS NULL')->getQuery();
+		return $q->getResult();
+	}
+
+	/**
+	 * #53 Get a user without any product.
+	 * Necessary for testing purposes.
+	 * 
+	 * @return User
+	 */
+	public function getUserWithoutProducts(): User
+	{
+		return $this->getUsersWithoutProducts(1)[0];
 	}
 }

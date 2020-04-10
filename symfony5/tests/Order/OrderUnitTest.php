@@ -8,6 +8,8 @@ use \App\Entity\Order;
 use \App\Entity\OrderProduct;
 use \App\Order\OrderProductCreator;
 use \App\Order\OrderShippingService;
+use App\Interfaces\IUserRepo;
+use App\Interfaces\IProductRepo;
 use \App\Interfaces\IOrderRepo;
 use \App\Interfaces\IOrderProductRepo;
 use \App\Exception\OrderValidatorException;
@@ -15,6 +17,7 @@ use \App\Exception\OrderShippingValidatorException;
 use \App\Order\OrderShippingValidator;
 use \App\Exception\UidValidatorException;
 use \App\Exception\ProductIdValidatorException;
+use App\User\UserWihProductsGenerator;
 
 /**
  * #38 Test that the order product data is stored in the database correctly.
@@ -26,9 +29,11 @@ class OrderUnitTest extends KernelTestCase
 	private $c;
 	private $entityManager;
 	private $orderProductCreator;
+	private $userWithProductsGenerator;
 	private $orderShippingService;
 	private $orderShippingValidator;
 	private $orderRepo;
+	private $userRepo;
 	private $orderProductRepo;
 	private $impossibleInt = 3147483648;
 
@@ -41,15 +46,18 @@ class OrderUnitTest extends KernelTestCase
 		$this->c = $kernel->getContainer();
 
 		$this->orderProductCreator = $this->c->get('test.' . OrderProductCreator::class);
+		$this->userWithProductsGenerator = $this->c->get('test.' . UserWihProductsGenerator::class);
+
+		// #54 Maybe group this into an array.
 		$this->orderRepo = $this->c->get('test.' . IOrderRepo::class);
+		$this->userRepo = $this->c->get('test.' . IUserRepo::class);
+		$this->productrRepo = $this->c->get('test.' . IProductRepo::class);
 		$this->orderProductRepo = $this->c->get('test.' . IOrderProductRepo::class);
 		$this->orderShippingService = $this->c->get('test.' . OrderShippingService::class);
 		$this->orderShippingValidator = $this->c->get('test.' . OrderShippingValidator::class);
 
 		// Using database in tests https://stackoverflow.com/a/52014145 https://symfony.com/doc/master/testing/database.html#functional-testing-of-a-doctrine-repository
 		$this->entityManager = $this->c->get('doctrine')->getManager();
-
-		// TODO: Truncate specific tables before each run.
 	}
 
 	/**
@@ -72,14 +80,14 @@ class OrderUnitTest extends KernelTestCase
 		$this->expectException(UidValidatorException::class);
 		$this->expectExceptionCode(1);
 		$ship_to_address = [
-			"name" => "John",
-			"surname" => "Doe",
-			"street" => "Palm street 25-7",
-			"state" => "California",
-			"zip" => "60744",
-			"country" => "US",
-			"phone" => "+1 123 123 123",
-			"is_express" => true
+				"name" => "John",
+				"surname" => "Doe",
+				"street" => "Palm street 25-7",
+				"state" => "California",
+				"zip" => "60744",
+				"country" => "US",
+				"phone" => "+1 123 123 123",
+				"is_express" => true
 		];
 		$this->orderShippingService->set(0, $ship_to_address);
 	}
@@ -110,13 +118,13 @@ class OrderUnitTest extends KernelTestCase
 	public function testOrderValidation()
 	{
 		$ship_to_address = [
-			"name" => "John",
-			"surname" => "Doe",
-			"street" => "Palm street 25-7",
-			"state" => "California",
-			"zip" => "60744",
-			"country" => "US",
-			"phone" => "+1 123 123 123",
+				"name" => "John",
+				"surname" => "Doe",
+				"street" => "Palm street 25-7",
+				"state" => "California",
+				"zip" => "60744",
+				"country" => "US",
+				"phone" => "+1 123 123 123",
 		];
 		$this->assertFalse($this->orderShippingValidator->hasRequiredKeys($ship_to_address));
 		$this->assertEquals(['is_express' => 'is_express'], $this->orderShippingValidator->getMissingKeys($ship_to_address));
@@ -185,10 +193,11 @@ class OrderUnitTest extends KernelTestCase
 	 */
 	public function testOrderProductCreatorExceptions1()
 	{
-		$user = $this->insertUsersAndProds()[0];
+		$user = $this->userRepo->getUserWithProducts();
+
 		$this->expectException(UidValidatorException::class);
 		$this->expectExceptionCode(1);
-		$this->orderProductCreator->handle($this->impossibleInt, $user->products[0]->getId());
+		$this->orderProductCreator->handle($this->impossibleInt, $user->getProducts()[0]->getId());
 	}
 
 	/**
@@ -196,7 +205,7 @@ class OrderUnitTest extends KernelTestCase
 	 */
 	public function testOrderProductCreatorExceptions2()
 	{
-		$user = $this->insertUsersAndProds()[0];
+		$user = $this->userRepo->getUserWithProducts();
 		$this->expectException(ProductIdValidatorException::class);
 		$this->expectExceptionCode(1);
 		$this->orderProductCreator->handle($user->getId(), $this->impossibleInt);
@@ -207,7 +216,7 @@ class OrderUnitTest extends KernelTestCase
 	 */
 	public function testAddProductsToCart()
 	{
-		$users = $this->insertUsersAndProds(3);
+		$users = $this->userWithProductsGenerator->generate(3);
 
 		// #38 #36 Create and get customer's draft order.
 		// TODO: This probably should be moved to a separate test file.
@@ -227,7 +236,7 @@ class OrderUnitTest extends KernelTestCase
 		$this->assertEquals($this->orderRepo->getCurrentDraft($users[2]->getId())->getId(), $this->orderRepo->insertIfNotExist($users[2]->getId())->getId(), "#36 #38 A new draft order shouldnt be created if there is already one.");
 
 		$customerId = $users[2]->getId();
-		$productId = $users[1]->products[0]->getId();
+		$productId = $users[1]->getProducts()[0]->getId();
 
 		// #39 #33 #34 TODO: MAybe this should be optimized.
 		$validProduct = $this->orderProductCreator->handle($customerId, $productId);
@@ -235,9 +244,9 @@ class OrderUnitTest extends KernelTestCase
 		$this->assertEquals($validProduct->getSellerId(), $users[1]->getId());
 		$this->assertEquals($validProduct->getSellerTitle(), $users[1]->getName() . ' ' . $users[1]->getSurname());
 		$this->assertEquals($validProduct->getProductId(), $productId);
-		$this->assertEquals($validProduct->getProductTitle(), $users[1]->products[0]->getTitle());
-		$this->assertEquals($validProduct->getProductCost(), $users[1]->products[0]->getCost());
-		$this->assertEquals($validProduct->getProductType(), $users[1]->products[0]->getType());
+		$this->assertEquals($validProduct->getProductTitle(), $users[1]->getProducts()[0]->getTitle());
+		$this->assertEquals($validProduct->getProductCost(), $users[1]->getProducts()[0]->getCost());
+		$this->assertEquals($validProduct->getProductType(), $users[1]->getProducts()[0]->getType());
 		$this->assertTrue($validProduct->getId() > 0);
 		$this->assertEquals($validProduct->getOrderId(), $draftOrder->getId());
 		$this->assertEquals($validProduct->getIsAdditional(), NULL);
@@ -248,9 +257,9 @@ class OrderUnitTest extends KernelTestCase
 		$this->assertEquals($validProduct2->getSellerId(), $users[1]->getId());
 		$this->assertEquals($validProduct2->getSellerTitle(), $users[1]->getName() . ' ' . $users[1]->getSurname());
 		$this->assertEquals($validProduct2->getProductId(), $productId);
-		$this->assertEquals($validProduct2->getProductTitle(), $users[1]->products[0]->getTitle());
-		$this->assertEquals($validProduct2->getProductCost(), $users[1]->products[0]->getCost());
-		$this->assertEquals($validProduct2->getProductType(), $users[1]->products[0]->getType());
+		$this->assertEquals($validProduct2->getProductTitle(), $users[1]->getProducts()[0]->getTitle());
+		$this->assertEquals($validProduct2->getProductCost(), $users[1]->getProducts()[0]->getCost());
+		$this->assertEquals($validProduct2->getProductType(), $users[1]->getProducts()[0]->getType());
 		$this->assertTrue($validProduct2->getId() > 0);
 		$this->assertEquals($validProduct2->getOrderId(), $draftOrder->getId());
 		$this->assertNotEquals($validProduct->getId(), $validProduct2->getId());
@@ -261,9 +270,9 @@ class OrderUnitTest extends KernelTestCase
 		$this->assertEquals($validProduct3->getSellerId(), $users[1]->getId());
 		$this->assertEquals($validProduct3->getSellerTitle(), $users[1]->getName() . ' ' . $users[1]->getSurname());
 		$this->assertEquals($validProduct3->getProductId(), $productId);
-		$this->assertEquals($validProduct3->getProductTitle(), $users[1]->products[0]->getTitle());
-		$this->assertEquals($validProduct3->getProductCost(), $users[1]->products[0]->getCost());
-		$this->assertEquals($validProduct3->getProductType(), $users[1]->products[0]->getType());
+		$this->assertEquals($validProduct3->getProductTitle(), $users[1]->getProducts()[0]->getTitle());
+		$this->assertEquals($validProduct3->getProductCost(), $users[1]->getProducts()[0]->getCost());
+		$this->assertEquals($validProduct3->getProductType(), $users[1]->getProducts()[0]->getType());
 		$this->assertTrue($validProduct3->getId() > 0);
 		$this->assertEquals($validProduct3->getOrderId(), $draftOrder->getId());
 		$this->assertNotEquals($validProduct2->getId(), $validProduct3->getId());
@@ -458,14 +467,14 @@ class OrderUnitTest extends KernelTestCase
 		$this->assertEmpty($draftOrder->getPhone());
 
 		$ship_to_address = [
-			"name" => "John",
-			"surname" => "Doe",
-			"street" => "Palm street 25-7",
-			"state" => "California",
-			"zip" => "60744",
-			"country" => "US",
-			"phone" => "+1 123 123 123",
-			"is_express" => true
+				"name" => "John",
+				"surname" => "Doe",
+				"street" => "Palm street 25-7",
+				"state" => "California",
+				"zip" => "60744",
+				"country" => "US",
+				"phone" => "+1 123 123 123",
+				"is_express" => true
 		];
 		$draftOrder = $this->orderShippingService->set($draftOrder->getCustomerId(), $ship_to_address);
 		$this->assertEquals($ship_to_address['name'], $draftOrder->getName());
@@ -499,67 +508,5 @@ class OrderUnitTest extends KernelTestCase
 		// doing this is recommended to avoid memory leaks
 		$this->entityManager->close();
 		$this->entityManager = null;
-	}
-
-	/**
-	 * #38 Create 3 users with 1 mug and 1 shirt.
-	 * 
-	 * TODO: Replace this approach with fixtures or creators that are designed not just for access from controllers.
-	 * 
-	 * @return User array
-	 */
-	private function insertUsersAndProds(int $count = 1)
-	{
-		// #38 Create 3 users.
-		$users = [];
-		for ($i = 0; $i < $count; $i++) {
-
-			$users[$i] = $user = $this->createUser($i);
-
-			// #38 Create 1 mug and 1 shirt for each user.
-			$user->products = [];
-			$productTypes = ['t-shirt', 'mug'];
-			foreach ($productTypes as $productType) {
-				$user->products[] = $this->createUserProduct($user, $productType);
-			}
-		}
-		return $users;
-	}
-
-	/**
-	 * #40 Create a user.
-	 * 
-	 * @param type $i
-	 * @return User
-	 */
-	private function createUser($i): User
-	{
-		$user = new User();
-		$user->setName(rand());
-		$user->setSurname($i + 1);
-		$user->setBalance(1000);
-		$this->entityManager->persist($user);
-		$this->entityManager->flush();
-		return $user;
-	}
-
-	/**
-	 * #40 Create a product.
-	 * 
-	 * @param User $user
-	 * @param string $productType
-	 * @return Product
-	 */
-	private function createUserProduct(User $user, string $productType): Product
-	{
-		$product = new Product();
-		$product->setOwnerId($user->getId());
-		$product->setType($productType);
-		$product->setTitle($user->getName() . ' ' . $user->getSurname() . ' ' . $productType);
-		$product->setSku($user->getName() . ' ' . $user->getSurname() . ' ' . $productType);
-		$product->setCost(100);
-		$this->entityManager->persist($product);
-		$this->entityManager->flush();
-		return $product;
 	}
 }

@@ -2,6 +2,7 @@
 namespace App\Repository\Prod;
 
 use App\Entity\Product;
+use App\Entity\User;
 use App\Interfaces\IProductRepo;
 use App\Validators\UserValidators\UidValidator;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -76,5 +77,22 @@ class ProductRepo extends ServiceEntityRepository implements IProductRepo
 			throw new ProductIdValidatorException([Product::ID => Product::INVALID], 1);
 		}
 		return $item;
+	}
+
+	/**
+	 * #53 Generate a dummy a product for a user. Used in fixtures and tests.
+	 * 
+	 * @param User $user
+	 * @param string $productType
+	 * @return Product
+	 */
+	public function generateDummyUserProduct(User $user, string $productType): Product
+	{
+		return $this->create($user->getId(), [
+				Product::TYPE => $productType,
+				Product::TITLE => $user->getName() . ' ' . $user->getSurname() . ' ' . $productType,
+				Product::SKU => $user->getName() . ' ' . $user->getSurname() . ' ' . $productType,
+				Product::COST => 100
+		]);
 	}
 }
