@@ -47,7 +47,6 @@ class OrderUnitTest extends KernelTestCase
 
 		$this->orderProductCreator = $this->c->get('test.' . OrderProductCreator::class);
 		$this->userWithProductsGenerator = $this->c->get('test.' . UserWihProductsGenerator::class);
-		dd($this->userWithProductsGenerator);
 
 		// #54 Maybe group this into an array.
 		$this->orderRepo = $this->c->get('test.' . IOrderRepo::class);
@@ -81,14 +80,14 @@ class OrderUnitTest extends KernelTestCase
 		$this->expectException(UidValidatorException::class);
 		$this->expectExceptionCode(1);
 		$ship_to_address = [
-			"name" => "John",
-			"surname" => "Doe",
-			"street" => "Palm street 25-7",
-			"state" => "California",
-			"zip" => "60744",
-			"country" => "US",
-			"phone" => "+1 123 123 123",
-			"is_express" => true
+				"name" => "John",
+				"surname" => "Doe",
+				"street" => "Palm street 25-7",
+				"state" => "California",
+				"zip" => "60744",
+				"country" => "US",
+				"phone" => "+1 123 123 123",
+				"is_express" => true
 		];
 		$this->orderShippingService->set(0, $ship_to_address);
 	}
@@ -119,13 +118,13 @@ class OrderUnitTest extends KernelTestCase
 	public function testOrderValidation()
 	{
 		$ship_to_address = [
-			"name" => "John",
-			"surname" => "Doe",
-			"street" => "Palm street 25-7",
-			"state" => "California",
-			"zip" => "60744",
-			"country" => "US",
-			"phone" => "+1 123 123 123",
+				"name" => "John",
+				"surname" => "Doe",
+				"street" => "Palm street 25-7",
+				"state" => "California",
+				"zip" => "60744",
+				"country" => "US",
+				"phone" => "+1 123 123 123",
 		];
 		$this->assertFalse($this->orderShippingValidator->hasRequiredKeys($ship_to_address));
 		$this->assertEquals(['is_express' => 'is_express'], $this->orderShippingValidator->getMissingKeys($ship_to_address));
@@ -194,7 +193,7 @@ class OrderUnitTest extends KernelTestCase
 	 */
 	public function testOrderProductCreatorExceptions1()
 	{
-		$user = $this->insertUsersAndProds()[0];
+		$user = $this->userRepo->getUsersWithProducts(1)[0];
 
 		$this->expectException(UidValidatorException::class);
 		$this->expectExceptionCode(1);
@@ -206,7 +205,7 @@ class OrderUnitTest extends KernelTestCase
 	 */
 	public function testOrderProductCreatorExceptions2()
 	{
-		$user = $this->insertUsersAndProds()[0];
+		$user = $this->userRepo->getUsersWithProducts(1)[0];
 		$this->expectException(ProductIdValidatorException::class);
 		$this->expectExceptionCode(1);
 		$this->orderProductCreator->handle($user->getId(), $this->impossibleInt);
@@ -215,9 +214,9 @@ class OrderUnitTest extends KernelTestCase
 	/**
 	 * #38 Test that the customer can add products to a cart (`order_product`).
 	 */
-	public function todoTestAddProductsToCart()
+	public function testAddProductsToCart()
 	{
-		$users = $this->insertUsersAndProds(3);
+		$users = $this->userWithProductsGenerator->generate(3);
 
 		// #38 #36 Create and get customer's draft order.
 		// TODO: This probably should be moved to a separate test file.
@@ -468,14 +467,14 @@ class OrderUnitTest extends KernelTestCase
 		$this->assertEmpty($draftOrder->getPhone());
 
 		$ship_to_address = [
-			"name" => "John",
-			"surname" => "Doe",
-			"street" => "Palm street 25-7",
-			"state" => "California",
-			"zip" => "60744",
-			"country" => "US",
-			"phone" => "+1 123 123 123",
-			"is_express" => true
+				"name" => "John",
+				"surname" => "Doe",
+				"street" => "Palm street 25-7",
+				"state" => "California",
+				"zip" => "60744",
+				"country" => "US",
+				"phone" => "+1 123 123 123",
+				"is_express" => true
 		];
 		$draftOrder = $this->orderShippingService->set($draftOrder->getCustomerId(), $ship_to_address);
 		$this->assertEquals($ship_to_address['name'], $draftOrder->getName());
@@ -509,54 +508,5 @@ class OrderUnitTest extends KernelTestCase
 		// doing this is recommended to avoid memory leaks
 		$this->entityManager->close();
 		$this->entityManager = null;
-	}
-
-	/**
-	 * #38 Create 3 users with 1 mug and 1 shirt.
-	 * 
-	 * TODO: Replace this approach with fixtures or creators that are designed not just for access from controllers.
-	 * 
-	 * @return User array
-	 */
-	private function insertUsersAndProds(int $count = 1)
-	{
-		return $this->userRepo->createQueryBuilder('a')->orderBy('a.id', 'DESC')->setMaxResults(3)->getQuery()->getResult();
-	}
-
-	/**
-	 * #40 Create a user.
-	 * 
-	 * @param type $i
-	 * @return User
-	 */
-	private function createUser($i): User
-	{
-		$user = new User();
-		$user->setName(rand());
-		$user->setSurname($i + 1);
-		$user->setBalance(1000);
-		$this->entityManager->persist($user);
-		$this->entityManager->flush();
-		return $user;
-	}
-
-	/**
-	 * #40 Create a product.
-	 * 
-	 * @param User $user
-	 * @param string $productType
-	 * @return Product
-	 */
-	private function createUserProduct(User $user, string $productType): Product
-	{
-		$product = new Product();
-		$product->setOwnerId($user->getId());
-		$product->setType($productType);
-		$product->setTitle($user->getName() . ' ' . $user->getSurname() . ' ' . $productType);
-		$product->setSku($user->getName() . ' ' . $user->getSurname() . ' ' . $productType);
-		$product->setCost(100);
-		$this->entityManager->persist($product);
-		$this->entityManager->flush();
-		return $product;
 	}
 }

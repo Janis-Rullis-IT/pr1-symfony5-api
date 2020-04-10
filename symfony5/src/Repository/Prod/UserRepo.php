@@ -126,6 +126,30 @@ class UserRepo extends ServiceEntityRepository implements IUserRepo
 	}
 
 	/**
+	 * #53 Get a QueryBuilder based on getUsersQuery + where.
+	 * 
+	 * @param int $count
+	 * @return QueryBuilder
+	 */
+	public function getUsersWithProductsQuery(int $count = 3): QueryBuilder
+	{
+		return $this->getUsersQuery($count)->where('Product.id IS NOT NULL');
+	}
+
+	/**
+	 * #53 Get a set amount of users that has any product.
+	 * Necessary for testing purposes.
+	 * 
+	 * @param int $count
+	 * @return array
+	 */
+	public function getUsersWithProducts(int $count = 3): array
+	{
+		$q = $this->getUsersWithProductsQuery($count)->getQuery();
+		return $q->getResult();
+	}
+
+	/**
 	 * #53 Get a set amount of users without any product.
 	 * Necessary for testing purposes.
 	 * 
