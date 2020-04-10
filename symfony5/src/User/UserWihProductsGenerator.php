@@ -31,14 +31,15 @@ class UserWihProductsGenerator
 	 * #53 Generate dummy users with products. Used in fixtures and tests.
 	 * 
 	 * @param int $count
+	 * @param int $balance
 	 * @return type
 	 */
-	public function generate(int $count = 1)
+	public function generate(int $count = 1, int $balance = 10000)
 	{
 		$userIds = [];
 		for ($i = 0; $i < $count; $i++) {
-
-			$user = $this->userRepo->generateDummyUser($i);
+			
+			$user = $this->userRepo->generateDummyUser($i, $balance);
 			$userIds[] = $user->getId();
 
 			// #38 Create 1 mug and 1 shirt for each user.
