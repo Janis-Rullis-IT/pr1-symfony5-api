@@ -28,7 +28,8 @@
         "doctrine/doctrine-fixtures-bundle": "^3.3",
         "symfony/browser-kit": "5.0.*",
         "symfony/css-selector": "5.0.*",
-        "symfony/maker-bundle": "^1.14"
+        "symfony/maker-bundle": "^1.14",
+        "theofidry/psysh-bundle": "^4.3"
     },
     "config": {
         "preferred-install": {
