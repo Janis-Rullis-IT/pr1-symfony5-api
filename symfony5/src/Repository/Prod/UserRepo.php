@@ -2,11 +2,13 @@
 namespace App\Repository\Prod;
 
 use App\Entity\User;
+use App\Entity\Product;
 use App\Interfaces\IUserRepo;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManagerInterface;
 use \App\Exception\UidValidatorException;
+use Doctrine\ORM\QueryBuilder;
 
 /**
  * @method User|null find($id, $lockMode = null, $lockVersion = null)
@@ -39,7 +41,7 @@ class UserRepo extends ServiceEntityRepository implements IUserRepo
 	public function getById(int $id)
 	{
 		return $this->findOneBy([
-				"id" => $id
+						"id" => $id
 		]);
 	}
 
@@ -96,5 +98,43 @@ class UserRepo extends ServiceEntityRepository implements IUserRepo
 	public function generateDummyUser($i): User
 	{
 		return $this->create([User::NAME => rand(), User::SURNAME => $i + 1]);
+	}
+
+	/**
+	 * #53 Get a QueryBuilder with a LEFT JOIN to Product, Order By and LIMIT.
+	 * 
+	 * @param int $count
+	 * @return QueryBuilder
+	 */
+	public function getUsersQuery(int $count = 3): QueryBuilder
+	{
+		return $this->createQueryBuilder('User')->select('User')
+						->leftJoin(Product::class, 'Product', 'WITH', 'User.id = Product.ownerId')
+						->orderBy('User.id', 'DESC')->setMaxResults($count);
+	}
+
+	/**
+	 * #53 Get a set amount of users with products ordered by user.id DESC.
+	 * 
+	 * @param int $count
+	 * @return array
+	 */
+	public function getUsers(int $count = 3): array
+	{
+		$q = $this->getUsersQuery($count)->getQuery();
+		return $q->getResult();
+	}
+
+	/**
+	 * #53 Get a set amount of users without any product.
+	 * Necessary for testing purposes.
+	 * 
+	 * @param int $count
+	 * @return array
+	 */
+	public function getUsersWithoutProducts(int $count = 3): array
+	{
+		$q = $this->getUsersQuery($count)->where('Product.id IS NULL')->getQuery();
+		return $q->getResult();
 	}
 }
