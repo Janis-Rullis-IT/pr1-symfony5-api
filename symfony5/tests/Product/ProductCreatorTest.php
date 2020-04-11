@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Tests\Product;
 
 use App\Entity\Product;
@@ -7,279 +6,208 @@ use App\Validators\ProductValidators\ProductTypeValidator;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 
-
 class ProductCreatorTest extends WebTestCase
 {
-    public function test_valid_request_body()
-    {
-        $client = static::createClient();
-		
-        // #40 Prepare a user and a product.
+
+	private $impossibleInt = 3147483648;
+
+	public function test_valid_request_body()
+	{
+		$client = static::createClient();
+
+		// #40 Prepare a user and a product.
 		$client->request('POST', '/users', [], [], ['CONTENT_TYPE' => 'application/json'], '{"name":"John","surname":"Doe"}');
 		$responseUser = json_decode($client->getResponse()->getContent(), TRUE);
 		$client->request('POST', '/users/' . $responseUser['id'] . '/products', [], [], ['CONTENT_TYPE' => 'application/json'], '{"type":"t-shirt","title":"aware-wolf", "sku":"100-abc-1000-' . $responseUser['id'] . '", "cost":1000}');
-		
-        $this->assertEquals(Response::HTTP_CREATED, $client->getResponse()->getStatusCode());
 
-        $responseBody = json_decode($client->getResponse()->getContent(), TRUE);
-        /* see if keys exists */
-        $this->assertArrayHasKey(Product::ID, $responseBody);
-        $this->assertArrayHasKey(Product::OWNER_ID, $responseBody);
-        $this->assertArrayHasKey(Product::TYPE, $responseBody);
-        $this->assertArrayHasKey(Product::TITLE, $responseBody);
-        $this->assertArrayHasKey(Product::SKU, $responseBody);
-        $this->assertArrayHasKey(Product::COST, $responseBody);
-        /* test key values */
-        $this->assertEquals($responseBody[Product::ID], $responseBody['id']);
+		$this->assertEquals(Response::HTTP_CREATED, $client->getResponse()->getStatusCode());
+
+		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
+		/* see if keys exists */
+		$this->assertArrayHasKey(Product::ID, $responseBody);
+		$this->assertArrayHasKey(Product::OWNER_ID, $responseBody);
+		$this->assertArrayHasKey(Product::TYPE, $responseBody);
+		$this->assertArrayHasKey(Product::TITLE, $responseBody);
+		$this->assertArrayHasKey(Product::SKU, $responseBody);
+		$this->assertArrayHasKey(Product::COST, $responseBody);
+		/* test key values */
+		$this->assertEquals($responseBody[Product::ID], $responseBody['id']);
 		$this->assertEquals($responseBody[Product::OWNER_ID], $responseBody['ownerId']);
 		$this->assertEquals($responseBody[Product::TYPE], $responseBody['type']);
 		$this->assertEquals($responseBody[Product::TITLE], $responseBody['title']);
 		$this->assertEquals($responseBody[Product::SKU], $responseBody['sku']);
 		$this->assertEquals($responseBody[Product::COST], $responseBody['cost']);
-        /* test value types */
-        $this->assertIsInt($responseBody[Product::ID]);
-        $this->assertIsInt($responseBody[Product::OWNER_ID]);
-        $this->assertIsString($responseBody[Product::TYPE]);
-        $this->assertIsString($responseBody[Product::TITLE]);
-        $this->assertIsString($responseBody[Product::SKU]);
-        $this->assertIsInt($responseBody[Product::COST]);
-    }
+		/* test value types */
+		$this->assertIsInt($responseBody[Product::ID]);
+		$this->assertIsInt($responseBody[Product::OWNER_ID]);
+		$this->assertIsString($responseBody[Product::TYPE]);
+		$this->assertIsString($responseBody[Product::TITLE]);
+		$this->assertIsString($responseBody[Product::SKU]);
+		$this->assertIsInt($responseBody[Product::COST]);
+	}
 
-    public function test_invalid_json_body()
-    {
-        $client = static::createClient();
+	public function test_invalid_json_body()
+	{
+		$client = static::createClient();
 
-        $client->request(
-            'POST',
-            '/users/1/products',
-            array(),
-            array(),
-            array('CONTENT_TYPE' => 'application/json'),
-            '{"type":"t-shirt",,,,,,,,,"title":"aware-wolf", "sku":"100-abc-1000", "cost":1000}'
-        );
+		// #40 Prepare a user and a product.
+		$client->request('POST', '/users', [], [], ['CONTENT_TYPE' => 'application/json'], '{"name":"John","surname":"Doe"}');
+		$responseUser = json_decode($client->getResponse()->getContent(), TRUE);
 
-        $this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
+		$client->request(
+				'POST',
+				'/users/' . $responseUser['id'] . '/products',
+				array(),
+				array(),
+				array('CONTENT_TYPE' => 'application/json'),
+				'{"type":"t-shirt",,,,,,,,,"title":"aware-wolf", "sku":"100-abc-1000", "cost":1000}'
+		);
 
-        $responseBody = json_decode($client->getResponse()->getContent(), TRUE);
-        $this->assertArrayHasKey('json', $responseBody);
-        $this->assertEquals($responseBody['json'], 'Syntax error');
-    }
+		$this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
 
-    public function test_empty_body()
-    {
-        $client = static::createClient();
+		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
+		$this->assertArrayHasKey('json', $responseBody);
+		$this->assertEquals($responseBody['json'], 'Syntax error');
+	}
 
-        $client->request(
-            'POST',
-            '/users/1/products',
-            array(),
-            array(),
-            array('CONTENT_TYPE' => 'application/json'),
-            ''
-        );
+	public function test_empty_body()
+	{
+		$client = static::createClient();
 
-        $this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
+		// #40 Prepare a user and a product.
+		$client->request('POST', '/users', [], [], ['CONTENT_TYPE' => 'application/json'], '{"name":"John","surname":"Doe"}');
+		$responseUser = json_decode($client->getResponse()->getContent(), TRUE);
 
-        $responseBody = json_decode($client->getResponse()->getContent(), TRUE);
-        $this->assertArrayHasKey('json', $responseBody);
-        $this->assertEquals($responseBody['json'], 'Syntax error');
-    }
+		$client->request(
+				'POST',
+				'/users/' . $responseUser['id'] . '/products',
+				array(),
+				array(),
+				array('CONTENT_TYPE' => 'application/json'),
+				''
+		);
 
-    public function test_empty_json_object()
-    {
-        $client = static::createClient();
+		$this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
 
-        $client->request(
-            'POST',
-            '/users/1/products',
-            array(),
-            array(),
-            array('CONTENT_TYPE' => 'application/json'),
-            '{}'
-        );
+		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
+		$this->assertArrayHasKey('json', $responseBody);
+		$this->assertEquals($responseBody['json'], 'Syntax error');
+	}
 
-        $this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
+	public function test_empty_json_object()
+	{
+		$client = static::createClient();
 
-        $responseBody = json_decode($client->getResponse()->getContent(), TRUE);
-        $this->assertArrayHasKey(Product::TYPE, $responseBody);
-        $this->assertEquals($responseBody[Product::TYPE][0], "type key not set");
-        $this->assertArrayHasKey(Product::TITLE, $responseBody);
-        $this->assertEquals($responseBody[Product::TITLE][0], "title key not set");
-        $this->assertArrayHasKey(Product::SKU, $responseBody);
-        $this->assertEquals($responseBody[Product::SKU][0], "sku key not set");
-        $this->assertArrayHasKey(Product::COST, $responseBody);
-        $this->assertEquals($responseBody[Product::COST][0], "cost key not set");
-    }
+		// #40 Prepare a user and a product.
+		$client->request('POST', '/users', [], [], ['CONTENT_TYPE' => 'application/json'], '{"name":"John","surname":"Doe"}');
+		$responseUser = json_decode($client->getResponse()->getContent(), TRUE);
 
-    public function test_missing_type_key()
-    {
-        $client = static::createClient();
+		$client->request(
+				'POST',
+				'/users/' . $responseUser['id'] . '/products',
+				array(),
+				array(),
+				array('CONTENT_TYPE' => 'application/json'),
+				'{}'
+		);
 
-        $client->request(
-            'POST',
-            '/users/1/products',
-            array(),
-            array(),
-            array('CONTENT_TYPE' => 'application/json'),
-            '{"xxxx":"t-shirt","title":"aware-wolf", "sku":"100-abc-1000", "cost":1000}'
-        );
+		$this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
 
-        $this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
-        $responseBody = json_decode($client->getResponse()->getContent(), TRUE);
-        $this->assertArrayHasKey(Product::TYPE, $responseBody);
-        $this->assertEquals($responseBody[Product::TYPE][0], "type key not set");
-    }
+		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
+		$this->assertArrayHasKey(Product::TYPE, $responseBody);
+		$this->assertEquals($responseBody[Product::TYPE][0], "type key not set");
+		$this->assertArrayHasKey(Product::TITLE, $responseBody);
+		$this->assertEquals($responseBody[Product::TITLE][0], "title key not set");
+		$this->assertArrayHasKey(Product::SKU, $responseBody);
+		$this->assertEquals($responseBody[Product::SKU][0], "sku key not set");
+		$this->assertArrayHasKey(Product::COST, $responseBody);
+		$this->assertEquals($responseBody[Product::COST][0], "cost key not set");
+	}
 
-    public function test_invalid_type_key()
-    {
-        $client = static::createClient();
+	public function test_missing_type_key()
+	{
+		$client = static::createClient();
 
-        $client->request(
-            'POST',
-            '/users/1/products',
-            array(),
-            array(),
-            array('CONTENT_TYPE' => 'application/json'),
-            '{"type":"invalidproduct","title":"aware-wolf", "sku":"100-abc-1000", "cost":1000}'
-        );
+		// #40 Prepare a user and a product.
+		$client->request('POST', '/users', [], [], ['CONTENT_TYPE' => 'application/json'], '{"name":"John","surname":"Doe"}');
+		$responseUser = json_decode($client->getResponse()->getContent(), TRUE);
 
-        $this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
-        $responseBody = json_decode($client->getResponse()->getContent(), TRUE);
-        $this->assertArrayHasKey(Product::TYPE, $responseBody);
+		$client->request(
+				'POST',
+				'/users/' . $responseUser['id'] . '/products',
+				array(),
+				array(),
+				array('CONTENT_TYPE' => 'application/json'),
+				'{"xxxx":"t-shirt","title":"aware-wolf", "sku":"100-abc-1000", "cost":1000}'
+		);
 
-        $productTypeValidator = new ProductTypeValidator();
-        $this->assertEquals($responseBody[Product::TYPE][0], 'Invalid type');
-    }
+		$this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
+		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
+		$this->assertArrayHasKey(Product::TYPE, $responseBody);
+		$this->assertEquals($responseBody[Product::TYPE][0], "type key not set");
+	}
 
-    public function test_missing_title_key()
-    {
-        $client = static::createClient();
+	public function test_invalid_type_key()
+	{
+		$client = static::createClient();
 
-        $client->request(
-            'POST',
-            '/users/1/products',
-            array(),
-            array(),
-            array('CONTENT_TYPE' => 'application/json'),
-            '{"type":"t-shirt","xxxxx":"aware-wolf", "sku":"100-abc-1000", "cost":1000}'
-        );
+		// #40 Prepare a user and a product.
+		$client->request('POST', '/users', [], [], ['CONTENT_TYPE' => 'application/json'], '{"name":"John","surname":"Doe"}');
+		$responseUser = json_decode($client->getResponse()->getContent(), TRUE);
 
-        $this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
-        $responseBody = json_decode($client->getResponse()->getContent(), TRUE);
-        $this->assertArrayHasKey(Product::TITLE, $responseBody);
-        $this->assertEquals($responseBody[Product::TITLE][0], "title key not set");
-    }
+		$client->request(
+				'POST',
+				'/users/' . $responseUser['id'] . '/products',
+				array(),
+				array(),
+				array('CONTENT_TYPE' => 'application/json'),
+				'{"type":"invalidproduct","title":"aware-wolf", "sku":"100-abc-1000", "cost":1000}'
+		);
 
-    public function test_invalid_title_key()
-    {
-        $client = static::createClient();
+		$this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
+		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
+		$this->assertArrayHasKey(Product::TYPE, $responseBody);
 
-        $client->request(
-            'POST',
-            '/users/1/products',
-            array(),
-            array(),
-            array('CONTENT_TYPE' => 'application/json'),
-            '{"type":"t-shirt","title":"^^^aware-wolf^^^", "sku":"100-abc-1000", "cost":1000}'
-        );
+		$productTypeValidator = new ProductTypeValidator();
+		$this->assertEquals($responseBody[Product::TYPE][0], 'Invalid type');
+	}
 
-        $this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
-        $responseBody = json_decode($client->getResponse()->getContent(), TRUE);
-        $this->assertArrayHasKey(Product::TITLE, $responseBody);
-        $this->assertEquals($responseBody[Product::TITLE][0], Product::INVALID_TITLE);
-    }
+	public function test_missing_title_key()
+	{
+		$client = static::createClient();
 
-    public function test_missing_sku_key()
-    {
-        $client = static::createClient();
+		// #40 Prepare a user and a product.
+		$client->request('POST', '/users', [], [], ['CONTENT_TYPE' => 'application/json'], '{"name":"John","surname":"Doe"}');
+		$responseUser = json_decode($client->getResponse()->getContent(), TRUE);
 
-        $client->request(
-            'POST',
-            '/users/1/products',
-            array(),
-            array(),
-            array('CONTENT_TYPE' => 'application/json'),
-            '{"type":"t-shirt","title":"aware-wolf", "xxx":"100-abc-1000", "cost":1000}'
-        );
+		$client->request(
+				'POST',
+				'/users/' . $responseUser['id'] . '/products',
+				array(),
+				array(),
+				array('CONTENT_TYPE' => 'application/json'),
+				'{"type":"t-shirt","xxxxx":"aware-wolf", "sku":"100-abc-1000", "cost":1000}'
+		);
 
-        $this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
-        $responseBody = json_decode($client->getResponse()->getContent(), TRUE);
-        $this->assertArrayHasKey(Product::SKU, $responseBody);
-        $this->assertEquals($responseBody[Product::SKU][0], "sku key not set");
-    }
+		$this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
+		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
+		$this->assertArrayHasKey(Product::TITLE, $responseBody);
+		$this->assertEquals($responseBody[Product::TITLE][0], "title key not set");
+	}
 
-    public function test_duplicate_sku_key()
-    {
-        $client = static::createClient();
+	public function test_duplicate_sku_key()
+	{
+		$client = static::createClient();
 
-        // #40 Prepare a user and a product.
+		// #40 Prepare a user and a product.
 		$client->request('POST', '/users', [], [], ['CONTENT_TYPE' => 'application/json'], '{"name":"John","surname":"Doe"}');
 		$responseUser = json_decode($client->getResponse()->getContent(), TRUE);
 		$client->request('POST', '/users/' . $responseUser['id'] . '/products', [], [], ['CONTENT_TYPE' => 'application/json'], '{"type":"t-shirt","title":"aware-wolf", "sku":"100-abc-1000-' . $responseUser['id'] . '", "cost":1000}');
 		$client->request('POST', '/users/' . $responseUser['id'] . '/products', [], [], ['CONTENT_TYPE' => 'application/json'], '{"type":"t-shirt","title":"aware-wolf", "sku":"100-abc-1000-' . $responseUser['id'] . '", "cost":1000}');
 
-        $this->assertEquals(Response::HTTP_CONFLICT, $client->getResponse()->getStatusCode());
-        $responseBody = json_decode($client->getResponse()->getContent(), TRUE);
-        $this->assertArrayHasKey(Product::SKU, $responseBody);
-        $this->assertEquals($responseBody[Product::SKU][0], Product::INVALID_SKU);
-    }
-
-    public function test_missing_cost_key()
-    {
-        $client = static::createClient();
-
-        $client->request(
-            'POST',
-            '/users/1/products',
-            array(),
-            array(),
-            array('CONTENT_TYPE' => 'application/json'),
-            '{"type":"t-shirt","title":"aware-wolf", "sku":"100-abc-1000", "xxxx":1000}'
-        );
-
-        $this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
-        $responseBody = json_decode($client->getResponse()->getContent(), TRUE);
-        $this->assertArrayHasKey(Product::COST, $responseBody);
-        $this->assertEquals($responseBody[Product::COST][0], "cost key not set");
-    }
-
-    public function test_invalid_cost_key()
-    {
-        $client = static::createClient();
-
-        $client->request(
-            'POST',
-            '/users/1/products',
-            array(),
-            array(),
-            array('CONTENT_TYPE' => 'application/json'),
-            '{"type":"t-shirt","title":"aware-wolf", "sku":"100-abc-1000", "cost":1000.00}'
-        );
-
-        $this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
-        $responseBody = json_decode($client->getResponse()->getContent(), TRUE);
-        $this->assertArrayHasKey(Product::COST, $responseBody);
-        $this->assertEquals($responseBody[Product::COST][0], "Invalid cost. It must be an integer describing price with smallest money unit");
-    }
-
-    public function test_multiple_errors_missing_type_key_and_invalid_title()
-    {
-        $client = static::createClient();
-
-        $client->request(
-            'POST',
-            '/users/1/products',
-            array(),
-            array(),
-            array('CONTENT_TYPE' => 'application/json'),
-            '{"xxxx":"t-shirt","title":"$$$$$$$$$aware-wolf", "sku":"100-abc-999", "cost":1000}'
-        );
-
-        $this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
-        $responseBody = json_decode($client->getResponse()->getContent(), TRUE);
-        $this->assertArrayHasKey(Product::TYPE, $responseBody);
-        $this->assertEquals($responseBody[Product::TYPE][0], "type key not set");
-        $this->assertArrayHasKey(Product::TITLE, $responseBody);
-        $this->assertEquals($responseBody[Product::TITLE][0], Product::INVALID_TITLE);
-    }
+		$this->assertEquals(Response::HTTP_CONFLICT, $client->getResponse()->getStatusCode());
+		$responseBody = json_decode($client->getResponse()->getContent(), TRUE);
+		$this->assertArrayHasKey(Product::SKU, $responseBody);
+		$this->assertEquals($responseBody[Product::SKU][0], Product::INVALID_SKU);
+	}
 }

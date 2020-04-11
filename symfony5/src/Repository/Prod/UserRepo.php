@@ -48,7 +48,7 @@ class UserRepo extends ServiceEntityRepository implements IUserRepo
 
 	public function getAll(): array
 	{
-		return $this->findAll();
+		return $this->findBy([], ['id' => 'DESC'], 100);
 	}
 
 	/**
