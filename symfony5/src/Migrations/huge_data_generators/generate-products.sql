@@ -1,5 +1,5 @@
 DROP PROCEDURE IF EXISTS generate_products;
-DELIMITER $$
+DELIMITER $$ 
 CREATE PROCEDURE generate_products()
 BEGIN
   DECLARE i INT DEFAULT 0;

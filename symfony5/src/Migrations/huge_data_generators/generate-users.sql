@@ -20,4 +20,4 @@ DELIMITER ;
 
 TRUNCATE `user`;
 CALL generate_users();
-SELECT * FROM `user` ORDER BY `user`.`id` DESC;
+SELECT * FROM `user` ORDER BY `user`.`id` DESC; 
