@@ -26,6 +26,14 @@ class HugeUsersWithProductsFixture extends Fixture implements FixtureGroupInterf
 
 	public function load(ObjectManager $manager)
 	{
-		$this->userWithProductsGenerator->generate(100000);
+		
+		// #57 Fill tables using a stored procedure.
+		//TRUNCATE `user`;
+		//TRUNCATE `product`;
+		//TRUNCATE `order`;
+		//TRUNCATE `order_product`;
+		//
+		//CALL generate_data();
+//		$this->userWithProductsGenerator->generate(100000);
 	}
 }
