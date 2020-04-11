@@ -16,7 +16,7 @@ BEGIN
   END WHILE;
   
   WHILE j < 16  DO
-  	INSERT INTO `product` (`owner_id`, `type`, `title`, `sku`, `cost`) SELECT `owner_id` * 2, `type`, `title`, SHA1(CONCAT(`sku`, '-', `id`, '-',j)), `cost` fROM `product`;
+  	INSERT INTO `product` (`owner_id`, `type`, `title`, `sku`, `cost`) SELECT `owner_id` * 2, `type`, `title`, SHA1(CONCAT(`sku`, '-', `id`, '-',j)), `cost` FROM `product`;
     SET j = j + 1;
   END WHILE;
 
@@ -27,9 +27,9 @@ BEGIN
 END$$
 DELIMITER ;
 
-TRUNCATE `product`;
-CALL generate_products();
-SELECT * FROM `product` ORDER BY `product`.`id` DESC;
+# TRUNCATE `product`;
+# CALL generate_products();
+# SELECT * FROM `product` ORDER BY `product`.`id` DESC;
 
 
 # No index 98s NO SHA1.

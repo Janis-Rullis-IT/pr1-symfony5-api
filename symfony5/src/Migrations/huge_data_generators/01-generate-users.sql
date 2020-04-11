@@ -12,12 +12,12 @@ BEGIN
   END WHILE;
   
   WHILE j < 18  DO
-  	INSERT INTO `user` (`name`, `surname`, `balance`) SELECT `name`, `surname`, `balance` fROM `user`;
+  	INSERT INTO `user` (`name`, `surname`, `balance`) SELECT `name`, `surname`, `balance` FROM `user`;
     SET j = j + 1;
   END WHILE;
 END$$
 DELIMITER ;
 
-TRUNCATE `user`;
-CALL generate_users();
-SELECT * FROM `user` ORDER BY `user`.`id` DESC; 
+# TRUNCATE `user`;
+# CALL generate_users();
+# SELECT * FROM `user` ORDER BY `user`.`id` DESC; 
