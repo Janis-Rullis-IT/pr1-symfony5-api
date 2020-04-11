@@ -32,8 +32,8 @@ class UserRepo extends ServiceEntityRepository implements IUserRepo
 		$user = new User();
 		$user->setName($requestBody[User::NAME]);
 		$user->setSurname($requestBody[User::SURNAME]);
-		
-		$user->setBalance(isset($requestBody[User::BALANCE]) ? $requestBody[User::BALANCE]: 10000);
+
+		$user->setBalance(isset($requestBody[User::BALANCE]) ? $requestBody[User::BALANCE] : 10000);
 		$this->em->persist($user);
 		$this->em->flush();
 		return $user;
@@ -112,7 +112,7 @@ class UserRepo extends ServiceEntityRepository implements IUserRepo
 	{
 		return $this->createQueryBuilder('User')->select('User')
 						->leftJoin(Product::class, 'Product', 'WITH', 'User.id = Product.ownerId')
-						->orderBy('User.id', 'DESC')->setMaxResults($count);
+						->orderBy('Product.ownerId', 'DESC')->setMaxResults($count);
 	}
 
 	/**
@@ -128,14 +128,16 @@ class UserRepo extends ServiceEntityRepository implements IUserRepo
 	}
 
 	/**
-	 * #53 Get a QueryBuilder based on getUsersQuery + where.
+	 * #44 #53 Get a QueryBuilder based on getUsersQuery + where.
 	 * 
 	 * @param int $count
 	 * @return QueryBuilder
 	 */
 	public function getUsersWithProductsQuery(int $count = 3): QueryBuilder
 	{
-		return $this->getUsersQuery($count)->where('Product.id IS NOT NULL');
+		return $this->createQueryBuilder('User')->select('User')
+						->innerJoin(Product::class, 'Product', 'WITH', 'User.id = Product.ownerId')
+						->orderBy('Product.ownerId', 'DESC')->setMaxResults($count);
 	}
 
 	/**
