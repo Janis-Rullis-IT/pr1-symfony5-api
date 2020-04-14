@@ -8,3 +8,6 @@ find tests/. -type f -name '*.php' -print0 | xargs -0 -n1 -P4 php -l -n | (! gre
 
 # #58 YAML check
 php bin/console lint:yaml config/
+
+# #58 PHPMD - advisor.
+vendor/bin/phpmd src,tests html cleancode, codesize, controversial, design, naming, unusedcode  --reportfile var/log/lint-phpmd.html
