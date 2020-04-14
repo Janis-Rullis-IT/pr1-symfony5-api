@@ -14,8 +14,8 @@ class ValidateUserTest extends TestCase
     public function test_valid_keys_and_values()
     {
         $json_body = [
-            User::NAME => "John",
-            User::SURNAME => "Doe"
+            User::NAME => 'John',
+            User::SURNAME => 'Doe',
         ];
 
         $errors = [];
@@ -32,8 +32,8 @@ class ValidateUserTest extends TestCase
     public function test_name_key_not_set()
     {
         $json_body = [
-            "nameblablabla" => "John",
-            User::SURNAME => "Doe"
+            'nameblablabla' => 'John',
+            User::SURNAME => 'Doe',
         ];
 
         $errors = [];
@@ -42,7 +42,7 @@ class ValidateUserTest extends TestCase
 
         try {
             $validator->validate($json_body);
-        } catch (UserValidatorException $e){
+        } catch (UserValidatorException $e) {
             $errors = $validator->getErrors();
             $this->assertArrayHasKey(User::NAME, $errors);
             $this->assertEquals($errors[User::NAME][0], 'name key not set');
@@ -52,8 +52,8 @@ class ValidateUserTest extends TestCase
     public function test_name_key_invalid()
     {
         $json_body = [
-            User::NAME => "John55",
-            User::SURNAME => "Doe"
+            User::NAME => 'John55',
+            User::SURNAME => 'Doe',
         ];
 
         $errors = [];
@@ -62,7 +62,7 @@ class ValidateUserTest extends TestCase
 
         try {
             $validator->validate($json_body);
-        } catch (UserValidatorException $e){
+        } catch (UserValidatorException $e) {
             $errors = $validator->getErrors();
             $this->assertArrayHasKey(User::NAME, $errors);
             $this->assertEquals($errors[User::NAME][0], User::INVALID_NAME);
@@ -72,8 +72,8 @@ class ValidateUserTest extends TestCase
     public function test_surname_key_not_set()
     {
         $json_body = [
-            User::NAME => "John",
-            "surnameblablabla" => "Doe"
+            User::NAME => 'John',
+            'surnameblablabla' => 'Doe',
         ];
 
         $errors = [];
@@ -82,7 +82,7 @@ class ValidateUserTest extends TestCase
 
         try {
             $validator->validate($json_body);
-        } catch (UserValidatorException $e){
+        } catch (UserValidatorException $e) {
             $errors = $validator->getErrors();
             $this->assertArrayHasKey(User::SURNAME, $errors);
             $this->assertEquals($errors[User::SURNAME][0], 'surname key not set');
@@ -92,8 +92,8 @@ class ValidateUserTest extends TestCase
     public function test_surname_key_invalid()
     {
         $json_body = [
-            User::NAME => "John",
-            User::SURNAME => "Doe55"
+            User::NAME => 'John',
+            User::SURNAME => 'Doe55',
         ];
 
         $errors = [];
@@ -102,7 +102,7 @@ class ValidateUserTest extends TestCase
 
         try {
             $validator->validate($json_body);
-        } catch (UserValidatorException $e){
+        } catch (UserValidatorException $e) {
             $errors = $validator->getErrors();
             $this->assertArrayHasKey(User::SURNAME, $errors);
             $this->assertEquals($errors[User::SURNAME][0], User::INVALID_SURNAME);
@@ -112,8 +112,8 @@ class ValidateUserTest extends TestCase
     public function test_name_key_empty()
     {
         $json_body = [
-            User::NAME => "",
-            User::SURNAME => "Doe"
+            User::NAME => '',
+            User::SURNAME => 'Doe',
         ];
 
         $errors = [];
@@ -122,7 +122,7 @@ class ValidateUserTest extends TestCase
 
         try {
             $validator->validate($json_body);
-        } catch (UserValidatorException $e){
+        } catch (UserValidatorException $e) {
             $errors = $validator->getErrors();
             $this->assertArrayHasKey(User::NAME, $errors);
             $this->assertEquals($errors[User::NAME][0], User::INVALID_NAME);
@@ -132,8 +132,8 @@ class ValidateUserTest extends TestCase
     public function test_surname_key_empty()
     {
         $json_body = [
-            User::NAME => "John",
-            User::SURNAME => ""
+            User::NAME => 'John',
+            User::SURNAME => '',
         ];
 
         $errors = [];
@@ -142,7 +142,7 @@ class ValidateUserTest extends TestCase
 
         try {
             $validator->validate($json_body);
-        } catch (UserValidatorException $e){
+        } catch (UserValidatorException $e) {
             $errors = $validator->getErrors();
             $this->assertArrayHasKey(User::SURNAME, $errors);
             $this->assertEquals($errors[User::SURNAME][0], User::INVALID_SURNAME);
@@ -152,7 +152,6 @@ class ValidateUserTest extends TestCase
     public function test_no_keys()
     {
         $json_body = [
-
         ];
 
         $errors = [];
@@ -161,7 +160,7 @@ class ValidateUserTest extends TestCase
 
         try {
             $validator->validate($json_body);
-        } catch (UserValidatorException $e){
+        } catch (UserValidatorException $e) {
             $errors = $validator->getErrors();
             $this->assertArrayHasKey(User::NAME, $errors);
             $this->assertArrayHasKey(User::SURNAME, $errors);

@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Validators\AddressValidators;
 
 use App\Entity\Order;
@@ -23,17 +22,21 @@ class AddressValidator
     public function validate(array $ship_to_address): bool
     {
         $shipmentType = $this->shipmentType->getType($ship_to_address);
-        if ($shipmentType === null)
+        if (null === $shipmentType) {
             $this->errors = $this->shipmentType->getErrors();
+        }
 
-        if ($shipmentType === Order::INTERNATIONAL_ORDER && !$this->internationalShipmentValidator->validate($ship_to_address))
+        if (Order::INTERNATIONAL_ORDER === $shipmentType && !$this->internationalShipmentValidator->validate($ship_to_address)) {
             $this->errors = $this->internationalShipmentValidator->getErrors();
-        elseif ($shipmentType === Order::DOMESTIC_ORDER && !$this->domesticShipmentValidator->validate($ship_to_address))
+        } elseif (Order::DOMESTIC_ORDER === $shipmentType && !$this->domesticShipmentValidator->validate($ship_to_address)) {
             $this->errors = $this->domesticShipmentValidator->getErrors();
+        }
 
-        if (!empty($this->errors))
-            return (false);
-        return (true);
+        if (!empty($this->errors)) {
+            return false;
+        }
+
+        return true;
     }
 
     public function getErrors(): array

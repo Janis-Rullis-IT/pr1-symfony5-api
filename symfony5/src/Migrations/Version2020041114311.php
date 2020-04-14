@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace DoctrineMigrations;
 
 use Doctrine\DBAL\Schema\Schema;
@@ -7,18 +9,17 @@ use Doctrine\Migrations\AbstractMigration;
 
 final class Version2020041114311 extends AbstractMigration
 {
+    public function getDescription(): string
+    {
+        return '#57 Create a procedure `generate_products()`.';
+    }
 
-	public function getDescription(): string
-	{
-		return "#57 Create a procedure `generate_products()`.";
-	}
+    public function up(Schema $schema): void
+    {
+        $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
-	public function up(Schema $schema): void
-	{
-		$this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
-
-		// #57 https://www.sgalinski.de/en/typo3-agency/technology/how-to-work-with-doctrine-migrations-in-symfony/
-		$this->addSql("
+        // #57 https://www.sgalinski.de/en/typo3-agency/technology/how-to-work-with-doctrine-migrations-in-symfony/
+        $this->addSql("
 			DROP PROCEDURE IF EXISTS generate_products;
 			CREATE PROCEDURE generate_products()
 			BEGIN
@@ -46,11 +47,11 @@ final class Version2020041114311 extends AbstractMigration
 				ADD KEY `owner_id` (`owner_id`);
 			END;
 			");
-	}
+    }
 
-	public function down(Schema $schema): void
-	{
-		$this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
-		$this->addSql("DROP PROCEDURE IF EXISTS generate_products;");
-	}
+    public function down(Schema $schema): void
+    {
+        $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
+        $this->addSql('DROP PROCEDURE IF EXISTS generate_products;');
+    }
 }

@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Validators\UserValidators;
 
 use App\Interfaces\IUserRepo;
@@ -16,8 +15,10 @@ class UidValidator
 
     public function validate(int $id): bool
     {
-        if ($this->repository->getById($id) != null)
-            return (true);
-        return (false);
+        if (null != $this->repository->getById($id)) {
+            return true;
+        }
+
+        return false;
     }
 }

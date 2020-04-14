@@ -9,5 +9,9 @@ find tests/. -type f -name '*.php' -print0 | xargs -0 -n1 -P4 php -l -n | (! gre
 # #58 YAML check
 php bin/console lint:yaml config/
 
-# #58 PHPMD - advisor.
+# #58 https://github.com/phpmd/phpmd - advisor.
 vendor/bin/phpmd src,tests html cleancode, codesize, controversial, design, naming, unusedcode  --reportfile var/log/lint-phpmd.html
+
+# #58 https://cs.symfony.com/ - formatter.
+vendor/bin/php-cs-fixer fix src --rules=@Symfony
+vendor/bin/php-cs-fixer fix tests --rules=@Symfony

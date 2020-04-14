@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace DoctrineMigrations;
 
 use Doctrine\DBAL\Schema\Schema;
@@ -7,18 +9,17 @@ use Doctrine\Migrations\AbstractMigration;
 
 final class Version2020041114321 extends AbstractMigration
 {
+    public function getDescription(): string
+    {
+        return '#57 Create a procedure `generate_orders()`.';
+    }
 
-	public function getDescription(): string
-	{
-		return "#57 Create a procedure `generate_orders()`.";
-	}
+    public function up(Schema $schema): void
+    {
+        $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
 
-	public function up(Schema $schema): void
-	{
-		$this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
-
-		// #57 https://www.sgalinski.de/en/typo3-agency/technology/how-to-work-with-doctrine-migrations-in-symfony/
-		$this->addSql("
+        // #57 https://www.sgalinski.de/en/typo3-agency/technology/how-to-work-with-doctrine-migrations-in-symfony/
+        $this->addSql("
 			# #57 Generate 2618646 orders in 20s.
 			DROP PROCEDURE IF EXISTS generate_orders;
 			CREATE PROCEDURE generate_orders()
@@ -37,11 +38,11 @@ final class Version2020041114321 extends AbstractMigration
 				END WHILE;
 			END;
 			");
-	}
+    }
 
-	public function down(Schema $schema): void
-	{
-		$this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
-		$this->addSql("DROP PROCEDURE IF EXISTS generate_orders;");
-	}
+    public function down(Schema $schema): void
+    {
+        $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
+        $this->addSql('DROP PROCEDURE IF EXISTS generate_orders;');
+    }
 }

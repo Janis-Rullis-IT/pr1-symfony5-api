@@ -1,5 +1,7 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
+
 namespace DoctrineMigrations;
 
 use Doctrine\DBAL\Schema\Schema;
@@ -7,16 +9,15 @@ use Doctrine\Migrations\AbstractMigration;
 
 final class Version2020030916310 extends AbstractMigration
 {
+    public function getDescription(): string
+    {
+        return '#36 #38 Create `v2_order` table.';
+    }
 
-	public function getDescription(): string
-	{
-		return "#36 #38 Create `v2_order` table.";
-	}
-
-	public function up(Schema $schema): void
-	{
-		$this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
-		$this->addSql("
+    public function up(Schema $schema): void
+    {
+        $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
+        $this->addSql("
 		CREATE TABLE IF NOT EXISTS `v2_order`(
 		  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
 		  `status` ENUM('draft', 'completed', 'other') NULL DEFAULT 'draft' COMMENT '#33 #36 #38.',
@@ -38,11 +39,11 @@ final class Version2020030916310 extends AbstractMigration
 		  PRIMARY KEY(`id`)
 	  ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Related information in #33 #36 #38.'
     ");
-	}
+    }
 
-	public function down(Schema $schema): void
-	{
-		$this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
-		$this->addSql("DROP TABLE `v2_order`;");
-	}
+    public function down(Schema $schema): void
+    {
+        $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
+        $this->addSql('DROP TABLE `v2_order`;');
+    }
 }

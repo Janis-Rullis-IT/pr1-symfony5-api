@@ -10,7 +10,7 @@ class StateValidatorTest extends TestCase
     public function test_valid_code()
     {
         $stateValidator = new StateValidator();
-        $state = "NJ";
+        $state = 'NJ';
         $valid = $stateValidator->validate($state);
         $this->assertTrue($valid);
     }
@@ -18,7 +18,7 @@ class StateValidatorTest extends TestCase
     public function test_invalid_code()
     {
         $stateValidator = new StateValidator();
-        $state = "XX";
+        $state = 'XX';
         $valid = $stateValidator->validate($state);
         $this->assertFalse($valid);
     }
@@ -26,7 +26,7 @@ class StateValidatorTest extends TestCase
     public function test_valid_name()
     {
         $stateValidator = new StateValidator();
-        $state = "New Jersey";
+        $state = 'New Jersey';
         $valid = $stateValidator->validate($state);
         $this->assertTrue($valid);
     }
@@ -34,7 +34,7 @@ class StateValidatorTest extends TestCase
     public function test_invalid_name()
     {
         $stateValidator = new StateValidator();
-        $state = "New XXXXXX";
+        $state = 'New XXXXXX';
         $valid = $stateValidator->validate($state);
         $this->assertFalse($valid);
     }

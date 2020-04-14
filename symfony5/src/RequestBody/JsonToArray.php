@@ -22,9 +22,10 @@ class JsonToArray
     {
         $requestBodyJson = $this->request->getContent();
         $requestBody = json_decode($requestBodyJson, true);
-        if (json_last_error() === JSON_ERROR_NONE) {
+        if (JSON_ERROR_NONE === json_last_error()) {
             $requestBody = $this->standardizer->standardize($requestBody);
-            return ($requestBody);
+
+            return $requestBody;
         }
         $this->errors['json'] = json_last_error_msg();
         throw new JsonToArrayException($this->errors);

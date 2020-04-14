@@ -6,7 +6,6 @@ use App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 
-
 class UserCreatorTest extends WebTestCase
 {
     public function test_valid_request_body()
@@ -16,22 +15,22 @@ class UserCreatorTest extends WebTestCase
         $client->request(
             'POST',
             '/users',
-            array(),
-            array(),
-            array('CONTENT_TYPE' => 'application/json'),
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
             '{"name":"John","surname":"Doe"}'
         );
         $this->assertEquals(Response::HTTP_CREATED, $client->getResponse()->getStatusCode());
 
-        $responseBody = json_decode($client->getResponse()->getContent(), TRUE);
+        $responseBody = json_decode($client->getResponse()->getContent(), true);
         /* see if keys exists */
         $this->assertArrayHasKey(User::ID, $responseBody);
         $this->assertArrayHasKey(User::NAME, $responseBody);
         $this->assertArrayHasKey(User::SURNAME, $responseBody);
         $this->assertArrayHasKey(User::BALANCE, $responseBody);
         /* test key values */
-        $this->assertEquals($responseBody[User::NAME], "John");
-        $this->assertEquals($responseBody[User::SURNAME], "Doe");
+        $this->assertEquals($responseBody[User::NAME], 'John');
+        $this->assertEquals($responseBody[User::SURNAME], 'Doe');
         $this->assertEquals($responseBody[User::BALANCE], 10000);
         /* test value types */
         $this->assertIsInt($responseBody[User::ID]);
@@ -47,15 +46,15 @@ class UserCreatorTest extends WebTestCase
         $client->request(
             'POST',
             '/users',
-            array(),
-            array(),
-            array('CONTENT_TYPE' => 'application/json'),
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
             '{"name":"John",,,,,,,,"surname":"Doe"}'
         );
 
         $this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
 
-        $responseBody = json_decode($client->getResponse()->getContent(), TRUE);
+        $responseBody = json_decode($client->getResponse()->getContent(), true);
         $this->assertArrayHasKey('json', $responseBody);
         $this->assertEquals($responseBody['json'], 'Syntax error');
     }
@@ -67,15 +66,15 @@ class UserCreatorTest extends WebTestCase
         $client->request(
             'POST',
             '/users',
-            array(),
-            array(),
-            array('CONTENT_TYPE' => 'application/json'),
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
             ''
         );
 
         $this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
 
-        $responseBody = json_decode($client->getResponse()->getContent(), TRUE);
+        $responseBody = json_decode($client->getResponse()->getContent(), true);
         $this->assertArrayHasKey('json', $responseBody);
         $this->assertEquals($responseBody['json'], 'Syntax error');
     }
@@ -87,19 +86,19 @@ class UserCreatorTest extends WebTestCase
         $client->request(
             'POST',
             '/users',
-            array(),
-            array(),
-            array('CONTENT_TYPE' => 'application/json'),
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
             '{}'
         );
 
         $this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
 
-        $responseBody = json_decode($client->getResponse()->getContent(), TRUE);
+        $responseBody = json_decode($client->getResponse()->getContent(), true);
         $this->assertArrayHasKey(User::NAME, $responseBody);
-        $this->assertEquals($responseBody[User::NAME][0], "name key not set");
+        $this->assertEquals($responseBody[User::NAME][0], 'name key not set');
         $this->assertArrayHasKey(User::SURNAME, $responseBody);
-        $this->assertEquals($responseBody[User::SURNAME][0], "surname key not set");
+        $this->assertEquals($responseBody[User::SURNAME][0], 'surname key not set');
     }
 
     public function test_missing_name_key()
@@ -109,16 +108,16 @@ class UserCreatorTest extends WebTestCase
         $client->request(
             'POST',
             '/users',
-            array(),
-            array(),
-            array('CONTENT_TYPE' => 'application/json'),
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
             '{"xxxx":"John","surname":"Doe"}'
         );
 
         $this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
-        $responseBody = json_decode($client->getResponse()->getContent(), TRUE);
+        $responseBody = json_decode($client->getResponse()->getContent(), true);
         $this->assertArrayHasKey(User::NAME, $responseBody);
-        $this->assertEquals($responseBody[User::NAME][0], "name key not set");
+        $this->assertEquals($responseBody[User::NAME][0], 'name key not set');
     }
 
     public function test_invalid_name_key()
@@ -128,14 +127,14 @@ class UserCreatorTest extends WebTestCase
         $client->request(
             'POST',
             '/users',
-            array(),
-            array(),
-            array('CONTENT_TYPE' => 'application/json'),
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
             '{"name":"John00000","surname":"Doe"}'
         );
 
         $this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
-        $responseBody = json_decode($client->getResponse()->getContent(), TRUE);
+        $responseBody = json_decode($client->getResponse()->getContent(), true);
         $this->assertArrayHasKey(User::NAME, $responseBody);
         $this->assertEquals($responseBody[User::NAME][0], User::INVALID_NAME);
     }
@@ -147,17 +146,17 @@ class UserCreatorTest extends WebTestCase
         $client->request(
             'POST',
             '/users',
-            array(),
-            array(),
-            array('CONTENT_TYPE' => 'application/json'),
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
             '{"name":"John","xxxxxxx":"Doe"}'
         );
 
         $this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
 
-        $responseBody = json_decode($client->getResponse()->getContent(), TRUE);
+        $responseBody = json_decode($client->getResponse()->getContent(), true);
         $this->assertArrayHasKey(User::SURNAME, $responseBody);
-        $this->assertEquals($responseBody[User::SURNAME][0], "surname key not set");
+        $this->assertEquals($responseBody[User::SURNAME][0], 'surname key not set');
     }
 
     public function test_invalid_surname_key()
@@ -167,15 +166,15 @@ class UserCreatorTest extends WebTestCase
         $client->request(
             'POST',
             '/users',
-            array(),
-            array(),
-            array('CONTENT_TYPE' => 'application/json'),
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
             '{"name":"John","surname":"Doe00000"}'
         );
 
         $this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
 
-        $responseBody = json_decode($client->getResponse()->getContent(), TRUE);
+        $responseBody = json_decode($client->getResponse()->getContent(), true);
         $this->assertArrayHasKey(User::SURNAME, $responseBody);
         $this->assertEquals($responseBody[User::SURNAME][0], User::INVALID_SURNAME);
     }
@@ -187,19 +186,19 @@ class UserCreatorTest extends WebTestCase
         $client->request(
             'POST',
             '/users',
-            array(),
-            array(),
-            array('CONTENT_TYPE' => 'application/json'),
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
             '{"xxxx":"John","xxxxxxx":"Doe"}'
         );
 
         $this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
 
-        $responseBody = json_decode($client->getResponse()->getContent(), TRUE);
+        $responseBody = json_decode($client->getResponse()->getContent(), true);
         $this->assertArrayHasKey(User::NAME, $responseBody);
         $this->assertArrayHasKey(User::SURNAME, $responseBody);
-        $this->assertEquals($responseBody[User::NAME][0], "name key not set");
-        $this->assertEquals($responseBody[User::SURNAME][0], "surname key not set");
+        $this->assertEquals($responseBody[User::NAME][0], 'name key not set');
+        $this->assertEquals($responseBody[User::SURNAME][0], 'surname key not set');
     }
 
     public function test_multiple_errors_missing_name_key_and_invalid_surname()
@@ -209,18 +208,18 @@ class UserCreatorTest extends WebTestCase
         $client->request(
             'POST',
             '/users',
-            array(),
-            array(),
-            array('CONTENT_TYPE' => 'application/json'),
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
             '{"xxxx":"John","surname":"Doe00000"}'
         );
 
         $this->assertEquals(Response::HTTP_BAD_REQUEST, $client->getResponse()->getStatusCode());
 
-        $responseBody = json_decode($client->getResponse()->getContent(), TRUE);
+        $responseBody = json_decode($client->getResponse()->getContent(), true);
         $this->assertArrayHasKey(User::NAME, $responseBody);
         $this->assertArrayHasKey(User::SURNAME, $responseBody);
-        $this->assertEquals($responseBody[User::NAME][0], "name key not set");
+        $this->assertEquals($responseBody[User::NAME][0], 'name key not set');
         $this->assertEquals($responseBody[User::SURNAME][0], User::INVALID_SURNAME);
     }
 }

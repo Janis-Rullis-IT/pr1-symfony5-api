@@ -1,12 +1,11 @@
 <?php
 
-
 namespace App\Validators\ProductValidators;
 
 class ProductTypeValidator
 {
-    const MUG = "mug";
-    const TSHIRT = "t-shirt";
+    const MUG = 'mug';
+    const TSHIRT = 't-shirt';
 
     private $allowedProducts;
 
@@ -14,14 +13,16 @@ class ProductTypeValidator
     {
         $this->allowedProducts = [
             self::MUG,
-            self::TSHIRT
+            self::TSHIRT,
         ];
     }
 
     public function validate(string $product): bool
     {
-        if (in_array($product, $this->allowedProducts))
-            return (true);
-        return (false);
+        if (in_array($product, $this->allowedProducts)) {
+            return true;
+        }
+
+        return false;
     }
 }

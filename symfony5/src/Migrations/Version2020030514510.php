@@ -1,6 +1,7 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
+
 namespace DoctrineMigrations;
 
 use Doctrine\DBAL\Schema\Schema;
@@ -8,17 +9,16 @@ use Doctrine\Migrations\AbstractMigration;
 
 final class Version2020030514510 extends AbstractMigration
 {
+    public function getDescription(): string
+    {
+        return '#34 Create `v2_order_product`.';
+    }
 
-	public function getDescription(): string
-	{
-		return "#34 Create `v2_order_product`.";
-	}
-
-	public function up(Schema $schema): void
-	{
-    $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
-    // https://github.com/janis-rullis/pr1/issues/33#issuecomment-595102860 #33 #34 #10 #8 #9'
-    $this->addSql("
+    public function up(Schema $schema): void
+    {
+        $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
+        // https://github.com/janis-rullis/pr1/issues/33#issuecomment-595102860 #33 #34 #10 #8 #9'
+        $this->addSql("
     CREATE TABLE IF NOT EXISTS `v2_order_product`(
       `id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT,
       `order_id` INT(10) UNSIGNED NOT NULL COMMENT '`order`.`id` #34 #10 #9',
@@ -45,12 +45,12 @@ final class Version2020030514510 extends AbstractMigration
       `sys_info` VARCHAR(20) DEFAULT NULL COMMENT 'In case if You need to mark/flag or just leave a comment. Like, rates used till 2018-01-01.',
       PRIMARY KEY(`id`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Related information in https://github.com/janis-rullis/pr1/issues/33#issuecomment-595102860 #33 #34 #10 #8 #9';  
-    "); 
-	}
+    ");
+    }
 
-	public function down(Schema $schema): void
-	{
-		$this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
-		$this->addSql("DROP TABLE `v2_order_product`;"); 
-	}
+    public function down(Schema $schema): void
+    {
+        $this->abortIf('mysql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'mysql\'.');
+        $this->addSql('DROP TABLE `v2_order_product`;');
+    }
 }

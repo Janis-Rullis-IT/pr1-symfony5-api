@@ -1,10 +1,6 @@
 <?php
 
-
 namespace App\Exception;
-
-
-use Throwable;
 
 class ExceptionStorage extends \Exception
 {
@@ -13,8 +9,8 @@ class ExceptionStorage extends \Exception
     public function __construct(array $errors, int $code = 0)
     {
         $this->errors = $errors;
-		$this->code = $code;
-        parent::__construct("", $code, null);
+        $this->code = $code;
+        parent::__construct('', $code, null);
     }
 
     public function getErrors()

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Interfaces;
+
 use App\Entity\Product;
 
 interface IProductRepo

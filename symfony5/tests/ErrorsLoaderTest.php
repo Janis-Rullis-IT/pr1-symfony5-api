@@ -26,7 +26,7 @@ class ErrorsLoaderTest extends TestCase
         $errors = [];
         $key = 'name';
         $error = 'name key not set';
-        $errors[$key] = array();
+        $errors[$key] = [];
         array_push($errors[$key], $error);
 
         $error2 = 'name error number 2';

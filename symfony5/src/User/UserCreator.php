@@ -1,14 +1,13 @@
 <?php
 
-
 namespace App\User;
 
 use App\Entity\User;
+use App\Exception\JsonToArrayException;
+use App\Exception\UserCreatorException;
+use App\Exception\UserValidatorException;
 use App\Interfaces\IUserRepo;
 use App\RequestBody\JsonToArray;
-use App\Exception\JsonToArrayException;
-use App\Exception\UserValidatorException;
-use App\Exception\UserCreatorException;
 
 class UserCreator
 {
@@ -34,6 +33,7 @@ class UserCreator
         } catch (UserValidatorException $e) {
             throw new UserCreatorException($e->getErrors());
         }
+
         return $newUser;
     }
 }

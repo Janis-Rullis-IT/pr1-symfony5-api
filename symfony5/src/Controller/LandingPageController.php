@@ -11,7 +11,7 @@ class LandingPageController extends AbstractController
 {
     /**
      * @Route("/", name="landing_page")
-     * @param Environment $twig
+     *
      * @return Response
      */
     public function landingPage(Environment $twig)

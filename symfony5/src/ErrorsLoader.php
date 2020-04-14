@@ -1,14 +1,14 @@
 <?php
 
-
 namespace App;
 
 class ErrorsLoader
 {
     public function load(string $key, string $error, array &$errors): void
     {
-        if (!array_key_exists($key, $errors))
-            $errors[$key] = array();
+        if (!array_key_exists($key, $errors)) {
+            $errors[$key] = [];
+        }
         array_push($errors[$key], $error);
     }
 }
