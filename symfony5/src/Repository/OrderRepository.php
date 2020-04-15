@@ -102,17 +102,8 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
         $order->setSurname($data[Order::OWNER_SURNAME]);
         $order->setStreet($data[Order::STREET]);
 
-        if (array_key_exists(Order::STATE, $data)) {
-            $order->setState($data[Order::STATE]);
-        } else {
-            $order->setState(null);
-        }
-
-        if (array_key_exists(Order::ZIP, $data)) {
-            $order->setZip($data[Order::ZIP]);
-        } else {
-            $order->setZip(null);
-        }
+        $order->setState(array_key_exists(Order::STATE, $data) ? $data[Order::STATE] : null);
+        $order->setZip(array_key_exists(Order::ZIP, $data) ? $data[Order::ZIP] : null);
 
         $order->setCountry($data[Order::COUNTRY]);
         $order->setPhone($data[Order::PHONE]);
@@ -188,11 +179,11 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
         // #40 https://www.doctrine-project.org/projects/doctrine-orm/en/2.7/reference/dql-doctrine-query-language.html#fetching-multiple-from-entities
         if (empty($list)) {
             throw new OrderValidatorException([Order::ID => Order::INVALID], 1);
-        } else {
-            // #40 This should be replaced with a relation or in worst case a built-in filtering/grouping tool.
-            foreach ($list as $item) {
-                $return[$item['order_id']][$item['order_product_id']] = $item;
-            }
+        }
+
+        // #40 This should be replaced with a relation or in worst case a built-in filtering/grouping tool.
+        foreach ($list as $item) {
+            $return[$item['order_id']][$item['order_product_id']] = $item;
         }
 
         return $return;

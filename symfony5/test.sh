@@ -33,6 +33,6 @@ else
 fi
 
 # #43 Fill test tables before executing tests.
-php bin/console -n doctrine:fixtures:load "${FIXTURE_ARGS}" -e test
+php bin/console doctrine:fixtures:load -n ${FIXTURE_ARGS} -e test
 
 ./vendor/bin/phpunit tests/

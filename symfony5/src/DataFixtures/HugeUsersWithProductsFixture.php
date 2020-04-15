@@ -5,6 +5,7 @@ namespace App\DataFixtures;
 /*
  * #43 Fill test tables, before executing tests, using `./test.sh`.`. See `UserWihProductsGenerator`.
  */
+
 use App\Interfaces\IUserRepo;
 use App\User\UserWihProductsGenerator;
 use Doctrine\Bundle\FixturesBundle\Fixture;
@@ -32,12 +33,12 @@ class HugeUsersWithProductsFixture extends Fixture implements FixtureGroupInterf
         // #57 Don't execute the data generation if there's already a huge dataset.
         if ($this->userRepo->count([]) > 1000000) {
             return;
-        } else {
-            // #57 This will take ~3min.
-            $conn = $manager->getConnection();
-            $stmt = $conn->prepare('CALL generate_data()');
-
-            return $stmt->execute();
         }
+
+        // #57 This will take ~3min.
+        $conn = $manager->getConnection();
+        $stmt = $conn->prepare('CALL generate_data()');
+
+        return $stmt->execute();
     }
 }

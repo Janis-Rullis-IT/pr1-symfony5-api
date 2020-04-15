@@ -26,13 +26,15 @@ class OrderShippingValidator
     private $addressValidator;
     private $shipmentType;
     private $errorsLoader;
+    private $enumType;
 
-    public function __construct(AddressValidator $addressValidator, ShipmentType $shipmentType, ErrorsLoader $errors)
+    public function __construct(AddressValidator $addressValidator, ShipmentType $shipmentType, ErrorsLoader $errors, EnumType $enumType)
     {
         $this->addressValidator = $addressValidator;
         $this->shipmentType = $shipmentType;
         $this->errors = [];
         $this->errorsLoader = $errors;
+        $this->enumType = $enumType;
     }
 
     /**
@@ -159,7 +161,7 @@ class OrderShippingValidator
      */
     public function IsShippingSet(Order $order): bool
     {
-        return !empty($order->getIsDomestic()) && EnumType::isValid($order->getIsDomestic());
+        return !empty($order->getIsDomestic()) && $this->enumType->isValid($order->getIsDomestic());
     }
 
     /**

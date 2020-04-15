@@ -372,11 +372,10 @@ class OrderProduct
             self::SHIPPING_COST => $this->getShippingCost(),
         ];
         if (empty($fields)) {
-            $return = $allFields;
-        } else {
-            foreach ($fields as $field) {
-                $return[$field] = isset($allFields[$field]) ? $allFields[$field] : null;
-            }
+            return $allFields;
+        }
+        foreach ($fields as $field) {
+            $return[$field] = isset($allFields[$field]) ? $allFields[$field] : null;
         }
 
         return $return;
