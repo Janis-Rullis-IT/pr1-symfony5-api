@@ -97,8 +97,8 @@ class OrderProductTest extends WebTestCase
 	public function testCreatedOrderProduct()
 	{
 		$user = $this->userWithProductsGenerator->generate(1)[0];
-		$draftOrder = $this->orderRepo->insertIfNotExist($user->getId());
-		$this->assertNull($draftOrder->getProducts());
+		$orderCreated = $this->orderRepo->insertIfNotExist($user->getId());
+		$this->assertNull($orderCreated->getProducts());
 
 		for ($i = 0; $i < 3; $i++) {
 			$validProduct = $this->orderProductCreator->handle($user->getId(), $user->getProducts()[0]->getId());
@@ -110,7 +110,7 @@ class OrderProductTest extends WebTestCase
 			$this->assertEquals($validProduct->getProductCost(), $user->getProducts()[0]->getCost());
 			$this->assertEquals($validProduct->getProductType(), $user->getProducts()[0]->getType());
 			$this->assertTrue($validProduct->getId() > 0);
-			$this->assertEquals($validProduct->getOrderId(), $draftOrder->getId());
+			$this->assertEquals($validProduct->getOrderId(), $orderCreated->getId());
 			$this->assertNull($validProduct->getIsAdditional());
 			$this->assertNull($validProduct->getIsDomestic());
 			$this->assertNull($validProduct->getIsExpress());
@@ -121,19 +121,19 @@ class OrderProductTest extends WebTestCase
 	public function testMakrCartsAdditionalProducts()
 	{
 		$user = $this->userWithProductsGenerator->generate(1)[0];
-		$draftOrder = $this->orderRepo->insertIfNotExist($user->getId());
+		$orderCreated = $this->orderRepo->insertIfNotExist($user->getId());
 
 		for ($i = 0; $i < 3; $i++) {
 			$this->orderProductCreator->handle($user->getId(), $user->getProducts()[0]->getId());
 		}
 
 		// #39 #33 #34 Mark additional products (ex., 2 pieces of the same t-shirt, 2nd is additional).
-		$this->assertTrue($this->orderProductRepo->makrCartsAdditionalProducts($draftOrder));
+		$this->assertTrue($this->orderProductRepo->makrCartsAdditionalProducts($orderCreated));
 
-		$draftOrder = $this->orderRepo->find($draftOrder->getId());
-		$this->assertEquals('n', $draftOrder->getProducts()[0]->getIsAdditional());
-		$this->assertEquals('y', $draftOrder->getProducts()[1]->getIsAdditional());
-		$this->assertEquals('y', $draftOrder->getProducts()[2]->getIsAdditional());
+		$orderCreated = $this->orderRepo->find($orderCreated->getId());
+		$this->assertEquals('n', $orderCreated->getProducts()[0]->getIsAdditional());
+		$this->assertEquals('y', $orderCreated->getProducts()[1]->getIsAdditional());
+		$this->assertEquals('y', $orderCreated->getProducts()[2]->getIsAdditional());
 	}
 
 	public function testMarkDomesticShipping()
@@ -186,6 +186,96 @@ class OrderProductTest extends WebTestCase
 				$this->assertEquals($value, $product->getIsExpress());
 			}
 		}
+	}
+
+	public function testSetOrderCostsFromCartItemsInternational()
+	{
+		$user = $this->userWithProductsGenerator->generate(1)[0];
+		$orderCreated = $this->orderRepo->insertIfNotExist($user->getId());
+
+		for ($i = 0; $i < 3; $i++) {
+			$this->orderProductCreator->handle($user->getId(), $user->getProducts()[0]->getId());
+		}
+
+		// #39 #33 #34 Mark additional products (ex., 2 pieces of the same t-shirt, 2nd is additional).
+		$this->assertTrue($this->orderProductRepo->makrCartsAdditionalProducts($orderCreated));
+		$orderCreated->setIsDomestic('n');
+		$orderCreated->setIsExpress('n');
+		$this->entityManager->flush();
+		$this->assertEquals(true, $this->orderProductRepo->markDomesticShipping($orderCreated));
+		$this->assertEquals(true, $this->orderProductRepo->markExpressShipping($orderCreated));
+		$this->assertEquals(true, $this->orderProductRepo->setShippingRates($orderCreated));
+
+		// Sum together costs from cart products and store in the order's costs.
+		$this->assertEquals(true, $this->orderRepo->setOrderCostsFromCartItems($orderCreated));
+
+		$orderCreated = $this->orderRepo->find($orderCreated->getId());
+		// T-shirt / International / Standard / First = 3$.
+		$this->assertEquals(300, $orderCreated->getProducts()[0]->getShippingCost());
+		// T-shirt / International / Standard / Additional = 1.5$.
+		$this->assertEquals(150, $orderCreated->getProducts()[1]->getShippingCost());
+		// T-shirt / International / Standard / Additional = 1.5$.
+		$this->assertEquals(150, $orderCreated->getProducts()[2]->getShippingCost());
+	}
+
+	public function testSetOrderCostsFromCartItemsDomestic()
+	{
+		$user = $this->userWithProductsGenerator->generate(1)[0];
+		$orderCreated = $this->orderRepo->insertIfNotExist($user->getId());
+
+		for ($i = 0; $i < 3; $i++) {
+			$this->orderProductCreator->handle($user->getId(), $user->getProducts()[0]->getId());
+		}
+
+		// #39 #33 #34 Mark additional products (ex., 2 pieces of the same t-shirt, 2nd is additional).
+		$this->assertTrue($this->orderProductRepo->makrCartsAdditionalProducts($orderCreated));
+		$orderCreated->setIsDomestic('y');
+		$orderCreated->setIsExpress('n');
+		$this->entityManager->flush();
+		$this->assertEquals(true, $this->orderProductRepo->markDomesticShipping($orderCreated));
+		$this->assertEquals(true, $this->orderProductRepo->markExpressShipping($orderCreated));
+		$this->assertEquals(true, $this->orderProductRepo->setShippingRates($orderCreated));
+
+		// Sum together costs from cart products and store in the order's costs.
+		$this->assertEquals(true, $this->orderRepo->setOrderCostsFromCartItems($orderCreated));
+
+		$orderCreated = $this->orderRepo->find($orderCreated->getId());
+		// T-shirt / International / Standard / First = 3$.
+		$this->assertEquals(100, $orderCreated->getProducts()[0]->getShippingCost());
+		// T-shirt / International / Standard / Additional = 1.5$.
+		$this->assertEquals(50, $orderCreated->getProducts()[1]->getShippingCost());
+		// T-shirt / International / Standard / Additional = 1.5$.
+		$this->assertEquals(50, $orderCreated->getProducts()[2]->getShippingCost());
+	}
+
+	public function testSetOrderCostsFromCartItemsExpress()
+	{
+		$user = $this->userWithProductsGenerator->generate(1)[0];
+		$orderCreated = $this->orderRepo->insertIfNotExist($user->getId());
+
+		for ($i = 0; $i < 3; $i++) {
+			$this->orderProductCreator->handle($user->getId(), $user->getProducts()[0]->getId());
+		}
+
+		// #39 #33 #34 Mark additional products (ex., 2 pieces of the same t-shirt, 2nd is additional).
+		$this->assertTrue($this->orderProductRepo->makrCartsAdditionalProducts($orderCreated));
+		$orderCreated->setIsDomestic('y');
+		$orderCreated->setIsExpress('y');
+		$this->entityManager->flush();
+		$this->assertEquals(true, $this->orderProductRepo->markDomesticShipping($orderCreated));
+		$this->assertEquals(true, $this->orderProductRepo->markExpressShipping($orderCreated));
+		$this->assertEquals(true, $this->orderProductRepo->setShippingRates($orderCreated));
+
+		// Sum together costs from cart products and store in the order's costs.
+		$this->assertEquals(true, $this->orderRepo->setOrderCostsFromCartItems($orderCreated));
+
+		$orderCreated = $this->orderRepo->find($orderCreated->getId());
+		// T-shirt / International / Standard / First = 3$.
+		$this->assertEquals(1000, $orderCreated->getProducts()[0]->getShippingCost());
+		// T-shirt / International / Standard / Additional = 1.5$.
+		$this->assertEquals(1000, $orderCreated->getProducts()[1]->getShippingCost());
+		// T-shirt / International / Standard / Additional = 1.5$.
+		$this->assertEquals(1000, $orderCreated->getProducts()[2]->getShippingCost());
 	}
 
 	/**
