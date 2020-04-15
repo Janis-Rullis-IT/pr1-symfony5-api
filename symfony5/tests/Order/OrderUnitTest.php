@@ -96,6 +96,10 @@ class OrderUnitTest extends KernelTestCase
 		$this->assertNull($this->orderRepo->getCurrentDraft($user->getId()), '#36 #38 New customer shouldnt have a draft order.');
 
 		$orderCreated = $this->orderRepo->insertIfNotExist($user->getId());
+		$this->assertNull($orderCreated->getIsExpress());
+		$this->assertNull($orderCreated->getShippingCost());
+		$this->assertNull($orderCreated->getProductCost());
+		$this->assertNull($orderCreated->getTotalCost());
 		$this->assertEquals(Order::DRAFT, $orderCreated->getStatus(), "A created order should be a draft.");
 
 		$this->orderRepo->markAsCompleted($orderCreated);
@@ -117,21 +121,6 @@ class OrderUnitTest extends KernelTestCase
 	 */
 	public function aatestAddProductsToCart()
 	{
-		// #39 #33 #34 Mark order's shipping as express or standard.
-		$this->assertEquals(null, $draftOrder->getIsExpress());
-		$this->assertEquals($validProductUpdated->getIsExpress(), null);
-		$this->assertEquals($validProductUpdated2->getIsExpress(), null);
-		$this->assertEquals($validProductUpdated3->getIsExpress(), null);
-
-		// #39 #33 #34 #37 Set order's product shipping costs based on the matching rates in the `v2_shipping_rates` table.
-		$this->assertEquals($validProductUpdated->getShippingCost(), null);
-		$this->assertEquals($validProductUpdated2->getShippingCost(), null);
-		$this->assertEquals($validProductUpdated3->getShippingCost(), null);
-
-		$this->assertEquals($draftOrder->getShippingCost(), null);
-		$this->assertEquals($draftOrder->getProductCost(), null);
-		$this->assertEquals($draftOrder->getTotalCost(), null);
-
 		// #40 Can't set this before the domestic is set and throw an execption there if they doesn't match.
 		$draftOrder->setIsExpress('n');
 		$this->entityManager->flush();
@@ -172,11 +161,6 @@ class OrderUnitTest extends KernelTestCase
 		$validProductUpdated = $this->orderProductRepo->find($validProductUpdated->getId());
 		$validProductUpdated2 = $this->orderProductRepo->find($validProductUpdated2->getId());
 		$validProductUpdated3 = $this->orderProductRepo->find($validProductUpdated3->getId());
-
-		$this->assertEquals('n', $draftOrder->getIsExpress());
-		$this->assertEquals($validProductUpdated->getIsExpress(), 'n');
-		$this->assertEquals($validProductUpdated2->getIsExpress(), 'n');
-		$this->assertEquals($validProductUpdated3->getIsExpress(), 'n');
 
 		$this->assertEquals(true, $this->orderProductRepo->setShippingRates($draftOrder));
 

@@ -113,6 +113,8 @@ class OrderProductTest extends WebTestCase
 			$this->assertEquals($validProduct->getOrderId(), $draftOrder->getId());
 			$this->assertNull($validProduct->getIsAdditional());
 			$this->assertNull($validProduct->getIsDomestic());
+			$this->assertNull($validProduct->getIsExpress());
+			$this->assertNull($validProduct->getShippingCost());
 		}
 	}
 
@@ -156,6 +158,32 @@ class OrderProductTest extends WebTestCase
 
 			foreach ($orderFound->getProducts() as $product) {
 				$this->assertEquals($value, $product->getIsDomestic());
+			}
+		}
+	}
+
+	public function markExpressShipping()
+	{
+		$user = $this->userWithProductsGenerator->generate(1)[0];
+		$orderCreated = $this->orderRepo->insertIfNotExist($user->getId());
+		$this->assertEquals(null, $orderCreated->getIsDomestic());
+
+		for ($i = 0; $i < 3; $i++) {
+			$this->orderProductCreator->handle($user->getId(), $user->getProducts()[0]->getId());
+		}
+
+		$values = ['y', 'n'];
+		foreach ($values as $value) {
+			$orderCreated->setIsExpress($value);
+			$this->entityManager->flush();
+
+			$this->assertEquals(true, $this->orderProductRepo->markExpressShipping($orderCreated));
+
+			$orderFound = $this->orderRepo->getCurrentDraft($user->getId());
+			$this->assertEquals($orderFound->getId(), $orderCreated->getId());
+
+			foreach ($orderFound->getProducts() as $product) {
+				$this->assertEquals($value, $product->getIsExpress());
 			}
 		}
 	}
