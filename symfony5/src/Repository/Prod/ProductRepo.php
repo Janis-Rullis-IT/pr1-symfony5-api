@@ -47,8 +47,8 @@ class ProductRepo extends ServiceEntityRepository implements IProductRepo
     {
         if ($this->userIdValidator->validate($id_user)) {
             return $this->findOneBy([
-                    'id' => $id,
-                    'ownerId' => $id_user,
+                'id' => $id,
+                'ownerId' => $id_user,
             ]);
         }
 
@@ -59,7 +59,7 @@ class ProductRepo extends ServiceEntityRepository implements IProductRepo
     {
         if ($this->userIdValidator->validate($id_user)) {
             return $this->findBy([
-                    'ownerId' => $id_user,
+                'ownerId' => $id_user,
             ]);
         }
 
@@ -87,10 +87,10 @@ class ProductRepo extends ServiceEntityRepository implements IProductRepo
     public function generateDummyUserProduct(User $user, string $productType): Product
     {
         return $this->create($user->getId(), [
-                Product::TYPE => $productType,
-                Product::TITLE => $user->getName().' '.$user->getSurname().' '.$productType,
-                Product::SKU => $user->getName().' '.$user->getSurname().' '.$productType,
-                Product::COST => 100,
+            Product::TYPE => $productType,
+            Product::TITLE => $user->getName().' '.$user->getSurname().' '.$productType,
+            Product::SKU => $user->getName().' '.$user->getSurname().' '.$productType,
+            Product::COST => 100,
         ]);
     }
 }

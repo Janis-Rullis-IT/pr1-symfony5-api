@@ -17,15 +17,15 @@ class HugeUsersWithProductsFixture extends Fixture implements FixtureGroupInterf
     private $userWithProductsGenerator;
     private $userRepo;
 
-    public static function getGroups(): array
-    {
-        return ['huge', 'users', 'users_with_products'];
-    }
-
     public function __construct(UserWihProductsGenerator $userWithProductsGenerator, IUserRepo $userRepo)
     {
         $this->userWithProductsGenerator = $userWithProductsGenerator;
         $this->userRepo = $userRepo;
+    }
+
+    public static function getGroups(): array
+    {
+        return ['huge', 'users', 'users_with_products'];
     }
 
     public function load(ObjectManager $manager)

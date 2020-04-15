@@ -68,7 +68,6 @@ class ProductController extends AbstractController
 
     /**
      * View user's all products.
-
      *
      * @Route("/users/{id_user}/products", name="getProducts", methods={"GET"})
      * @SWG\Tag(name="2. product")

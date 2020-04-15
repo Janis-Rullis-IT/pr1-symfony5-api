@@ -57,6 +57,15 @@ class OrderUnitTest extends KernelTestCase
         $this->entityManager = $this->c->get('doctrine')->getManager();
     }
 
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        // doing this is recommended to avoid memory leaks
+        $this->entityManager->close();
+        $this->entityManager = null;
+    }
+
     /**
      *  #40.
      */
@@ -469,14 +478,5 @@ class OrderUnitTest extends KernelTestCase
         }
         // #44 TODO: Import huge datasets using fixtures and check how current queries will react on that.
         // #39 #33 #34 #37 TODO: Add `shipping_id` to `shipping_rates`.`id`.
-    }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        // doing this is recommended to avoid memory leaks
-        $this->entityManager->close();
-        $this->entityManager = null;
     }
 }

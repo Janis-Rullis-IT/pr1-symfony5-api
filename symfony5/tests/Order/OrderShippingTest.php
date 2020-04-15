@@ -16,14 +16,14 @@ class OrderShippingTest extends WebTestCase
     private $client;
     private $userWithProductsGenerator;
     private $ship_to_address = [
-            'name' => 'John',
-            'surname' => 'Doe',
-            'street' => 'Palm street 25-7',
-            'state' => 'California',
-            'zip' => '60744',
-            'country' => 'US',
-            'phone' => '+1 123 123 123',
-            'is_express' => true,
+        'name' => 'John',
+        'surname' => 'Doe',
+        'street' => 'Palm street 25-7',
+        'state' => 'California',
+        'zip' => '60744',
+        'country' => 'US',
+        'phone' => '+1 123 123 123',
+        'is_express' => true,
     ];
 
     protected function setUp(): void

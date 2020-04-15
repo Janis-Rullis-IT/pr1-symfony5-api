@@ -43,7 +43,7 @@ class UserRepo extends ServiceEntityRepository implements IUserRepo
     public function getById(int $id)
     {
         return $this->findOneBy([
-                        'id' => $id,
+            'id' => $id,
         ]);
     }
 

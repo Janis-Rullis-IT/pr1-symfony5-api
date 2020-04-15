@@ -13,5 +13,5 @@ php bin/console lint:yaml config/
 vendor/bin/phpmd src,tests html cleancode, codesize, controversial, design, naming, unusedcode  --reportfile var/log/lint-phpmd.html
 
 # #58 https://cs.symfony.com/ - formatter.
-vendor/bin/php-cs-fixer fix src --rules=@Symfony
-vendor/bin/php-cs-fixer fix tests --rules=@Symfony
+vendor/bin/php-cs-fixer fix src --rules=@Symfony,align_multiline_comment,array_indentation,ordered_class_elements
+vendor/bin/php-cs-fixer fix tests --rules=@Symfony,align_multiline_comment,array_indentation,ordered_class_elements
