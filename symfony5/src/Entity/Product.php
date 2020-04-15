@@ -30,11 +30,6 @@ class Product
     const INVALID_SKU = 'Invalid SKU. It must be unique and cannot be empty';
     const INVALID_COST = 'Invalid cost. It must be an integer describing price with smallest money unit';
 
-    const NO_LINE_ITEM_ID = 'id field not set for line item number ';
-    const NO_LINE_ITEM_QUANTITY = 'quantity field not set for line item number ';
-    const INVALID_LINE_ITEM_ID = 'invalid product id for line item number ';
-    const INVALID_LINE_ITEM_QUANTITY = 'quantity must be at least 1 for line item number ';
-
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
@@ -81,14 +76,6 @@ class Product
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    /* for testing purposes, so that ProductTestRepo can simulate creation of a product */
-    public function setId(int $id): self
-    {
-        $this->id = $id;
-
-        return $this;
     }
 
     public function getOwnerId(): ?int

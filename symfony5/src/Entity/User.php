@@ -86,15 +86,6 @@ class User
         return $this->id;
     }
 
-    /* for testing purposes, so that UserTestRepo can simulate creation of an user */
-
-    public function setId(int $id): self
-    {
-        $this->id = $id;
-
-        return $this;
-    }
-
     public function getName(): ?string
     {
         return $this->name;
@@ -127,13 +118,6 @@ class User
     public function setBalance(int $balance): self
     {
         $this->balance = $balance;
-
-        return $this;
-    }
-
-    public function subtractBalance(int $amount): self
-    {
-        $this->balance -= $amount;
 
         return $this;
     }

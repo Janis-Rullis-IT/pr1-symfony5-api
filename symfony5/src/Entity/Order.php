@@ -46,14 +46,8 @@ class Order
     const MUST_HAVE_PRODUCTS = 'Must have at least 1 product.';
     const MUST_HAVE_SHIPPING_SET = 'The shipping must be set before completing the order.';
     const INVALID = 'Invalid order.';
-    const SHIPPING_DATA = 'shipToAddress';
-    const LINE_ITEMS = 'lineItems';
-    const INFO = 'info';
-    const PRODUCTION_COST = 'productionCost';
     const INTERNATIONAL_ORDER = 'international';
     const DOMESTIC_ORDER = 'domestic';
-    const EXPRESS_SHIPPING = 'expressShipping';
-    const NO_SHIPPING_DATA = 'shipping address not set';
     const NO_NAME = 'name key not set';
     const NO_SURNAME = 'surname key not set';
     const NO_STREET = 'street key not set';
@@ -68,8 +62,6 @@ class Order
     const INVALID_STATE = 'invalid state';
     const INVALID_COUNTRY = 'invalid country';
     const INVALID_PHONE = 'invalid phone number';
-    const NO_LINE_ITEMS = 'order does not contain any products';
-    const EMPTY_ORDER = 'empty order';
     // #40 Key collections - used for data parsing.
     // #40 Default fields to display to public. Used in repo's `getField()`.
     const PUB_FIELDS = [
@@ -82,9 +74,8 @@ class Order
         self::STATE => 'California', self::ZIP => '60744', self::COUNTRY => 'US',
         self::PHONE => '+1 123 123 123', self::IS_EXPRESS => true,
     ];
-
-    // #40 TODO: Convert to const.
-    public static $requireds = [self::OWNER_NAME, self::OWNER_SURNAME, self::STREET, self::COUNTRY, self::PHONE, self::IS_EXPRESS];
+    // #40 Required fields when creating a new item.
+    const REQUIRED_FIELDS = [self::OWNER_NAME, self::OWNER_SURNAME, self::STREET, self::COUNTRY, self::PHONE, self::IS_EXPRESS];
 
     /**
      * @ORM\Id()

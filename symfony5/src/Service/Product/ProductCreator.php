@@ -9,8 +9,8 @@ use App\Exception\JsonToArrayException;
 use App\Exception\ProductCreatorException;
 use App\Exception\ProductValidatorException;
 use App\Exception\UidValidatorException;
-use App\Interfaces\IProductRepo;
 use App\Helper\RequestBody\JsonToArray;
+use App\Interfaces\IProductRepo;
 use App\Validators\UserValidators\UidValidator;
 
 class ProductCreator

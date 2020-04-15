@@ -88,7 +88,7 @@ class OrderShippingValidator
     public function getMissingKeys(array $data): array
     {
         $return = [];
-        foreach (Order::$requireds as $requiredKey) {
+        foreach (Order::REQUIRED_FIELDS as $requiredKey) {
             if (!isset($data[$requiredKey])) {
                 $return[$requiredKey] = $requiredKey;
             }

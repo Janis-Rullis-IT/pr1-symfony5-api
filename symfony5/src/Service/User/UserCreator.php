@@ -6,8 +6,8 @@ use App\Entity\User;
 use App\Exception\JsonToArrayException;
 use App\Exception\UserCreatorException;
 use App\Exception\UserValidatorException;
-use App\Interfaces\IUserRepo;
 use App\Helper\RequestBody\JsonToArray;
+use App\Interfaces\IUserRepo;
 
 class UserCreator
 {

@@ -36,8 +36,8 @@ class OrderProduct
         self::PRODUCT_COST, self::PRODUCT_TYPE, self::IS_DOMESTIC,
         self::IS_ADDITIONAL, self::IS_EXPRESS, self::SHIPPING_COST,
     ];
-
-    public static $requireds = ['customer_id', 'product_id'];
+    // #40 Required fields when creating a new item.
+    const REQUIRED_FIELDS = [self::CUSTOMER_ID, self::PRODUCT_ID];
 
     /**
      * @ORM\Id()
@@ -355,8 +355,6 @@ class OrderProduct
     /**
      * #40 Convert the Entity to array in unified manner.
      * Will give same result in different endpoints.
-     *
-     * @param array $fields
      */
     public function toArray(?array $fields = []): array
     {

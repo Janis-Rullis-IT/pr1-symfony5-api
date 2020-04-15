@@ -59,7 +59,7 @@ class OrderShippingTest extends WebTestCase
         $this->client->request('PUT', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
         $this->assertEquals(Response::HTTP_BAD_REQUEST, $this->client->getResponse()->getStatusCode());
         $responseBody = json_decode($this->client->getResponse()->getContent(), true);
-        foreach (\App\Entity\Order::$requireds as $key => $val) {
+        foreach (\App\Entity\Order::REQUIRED_FIELDS as $key => $val) {
             $this->assertEquals(["'".$val."' field is missing."], $responseBody[$val]);
         }
     }
