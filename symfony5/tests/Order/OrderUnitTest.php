@@ -114,26 +114,39 @@ class OrderUnitTest extends KernelTestCase
 		$this->assertEquals($orderFound2->getId(), $this->orderRepo->insertIfNotExist($user->getId())->getId(), '#36 #38 A new draft order should not be created if there is already one.');
 	}
 
-	/**
-	 * #38 Test that the customer can add products to a cart (`order_product`).
-	 */
-	public function aatestAddProductsToCart()
+	public function testOrderTotals()
 	{
-		// #40 Can't set this before the domestic is set and throw an execption there if they doesn't match.
-		$draftOrder->setIsExpress('n');
+		$user = $this->userWithProductsGenerator->generate(1)[0];
+		$orderCreated = $this->orderRepo->insertIfNotExist($user->getId());
+
+		for ($i = 0; $i < 3; $i++) {
+			$this->orderProductCreator->handle($user->getId(), $user->getProducts()[0]->getId());
+		}
+
+		// #39 #33 #34 Mark additional products (ex., 2 pieces of the same t-shirt, 2nd is additional).
+		$this->assertTrue($this->orderProductRepo->makrCartsAdditionalProducts($orderCreated));
+		$orderCreated->setIsDomestic('n');
+		$orderCreated->setIsExpress('n');
 		$this->entityManager->flush();
-		$this->assertEquals(true, $this->orderProductRepo->markExpressShipping($draftOrder));
-		$this->assertEquals(true, $this->orderProductRepo->setShippingRates($draftOrder));
+		$this->assertEquals(true, $this->orderProductRepo->markDomesticShipping($orderCreated));
+		$this->assertEquals(true, $this->orderProductRepo->markExpressShipping($orderCreated));
+		$this->assertEquals(true, $this->orderProductRepo->setShippingRates($orderCreated));
 
-		// #39 #33 #34 #37 Sum together costs from cart products and store in the order's costs.
-		$this->assertEquals(true, $this->orderRepo->setOrderCostsFromCartItems($draftOrder));
+		// Sum together costs from cart products and store in the order's costs.
+		$this->assertEquals(true, $this->orderRepo->setOrderCostsFromCartItems($orderCreated));
 
-		$shippingCostTotal = $validProductUpdated->getShippingCost() + $validProductUpdated2->getShippingCost() + $validProductUpdated3->getShippingCost();
-		$productCostTotal = $validProductUpdated->getProductCost() + $validProductUpdated2->getProductCost() + $validProductUpdated3->getProductCost();
+		$orderFound = $this->orderRepo->find($orderCreated->getId());
+
+		$productCostTotal = $shippingCostTotal = 0;
+		foreach ($orderFound->getProducts() as $product) {
+			$shippingCostTotal += $product->getShippingCost();
+			$productCostTotal += $product->getProductCost();
+		}
 		$costTotal = $shippingCostTotal + $productCostTotal;
-		$this->assertEquals($draftOrder->getShippingCost(), $shippingCostTotal);
-		$this->assertEquals($draftOrder->getProductCost(), $productCostTotal);
-		$this->assertEquals($draftOrder->getTotalCost(), $costTotal);
+
+		$this->assertEquals($orderFound->getShippingCost(), $shippingCostTotal);
+		$this->assertEquals($orderFound->getProductCost(), $productCostTotal);
+		$this->assertEquals($orderFound->getTotalCost(), $costTotal);
 	}
 
 	public function testToArray()
