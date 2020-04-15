@@ -92,9 +92,7 @@ class OrderUnitTest extends KernelTestCase
 	public function testDrafAndCompletedtOrder()
 	{
 		$user = $this->userWithProductsGenerator->generate(1)[0];
-
 		$this->assertNull($this->orderRepo->getCurrentDraft($user->getId()), '#36 #38 New customer shouldnt have a draft order.');
-
 		$orderCreated = $this->orderRepo->insertIfNotExist($user->getId());
 		$this->assertNull($orderCreated->getIsExpress());
 		$this->assertNull($orderCreated->getShippingCost());
@@ -136,18 +134,25 @@ class OrderUnitTest extends KernelTestCase
 		$this->assertEquals($draftOrder->getShippingCost(), $shippingCostTotal);
 		$this->assertEquals($draftOrder->getProductCost(), $productCostTotal);
 		$this->assertEquals($draftOrder->getTotalCost(), $costTotal);
+	}
 
-		//#40 Collect order's products.
-		$orderWithProducts = $this->orderRepo->mustFindUsersOrder($draftOrder->getCustomerId(), $draftOrder->getId())->toArray([], [Order::PRODUCTS]);
+	public function testToArray()
+	{
+		$user = $this->userWithProductsGenerator->generate(1)[0];
+		$this->assertNull($this->orderRepo->getCurrentDraft($user->getId()), '#36 #38 New customer shouldnt have a draft order.');
+		$orderCreated = $this->orderRepo->insertIfNotExist($user->getId());
+		$this->orderProductCreator->handle($user->getId(), $user->getProducts()[0]->getId());
+		$this->entityManager->clear();
+		$orderFound = $this->orderRepo->getCurrentDraft($user->getId());
+
+		$orderWithProducts = $this->orderRepo->mustFindUsersOrder($orderFound->getCustomerId(), $orderFound->getId())->toArray([], [Order::PRODUCTS]);
 		$firstProduct = $orderWithProducts[Order::PRODUCTS][0];
-		$this->assertEquals($draftOrder->getId(), $firstProduct[OrderProduct::ORDER_ID]);
-		$this->assertEquals($draftOrder->getCustomerId(), $firstProduct[OrderProduct::CUSTOMER_ID]);
+		$this->assertEquals($orderFound->getId(), $firstProduct[OrderProduct::ORDER_ID]);
+		$this->assertEquals($orderFound->getCustomerId(), $firstProduct[OrderProduct::CUSTOMER_ID]);
 
-		$products = $draftOrder->getProducts()->toArray()[0];
+		$products = $orderFound->getProducts()->toArray()[0];
 		foreach ($products as $product) {
-			$this->assertEquals($draftOrder->getId(), $product->getOrderId());
+			$this->assertEquals($orderFound->getId(), $product->getOrderId());
 		}
-		// #44 TODO: Import huge datasets using fixtures and check how current queries will react on that.
-		// #39 #33 #34 #37 TODO: Add `shipping_id` to `shipping_rates`.`id`.
 	}
 }
