@@ -110,7 +110,7 @@ class OrderShippingValidator
      */
     public function isDomestic(array $data): bool
     {
-        return 'domestic' === $this->shipmentType->getType($data);
+        return Order::DOMESTIC_ORDER === $this->shipmentType->getType($data);
     }
 
     /**

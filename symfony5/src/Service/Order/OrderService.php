@@ -32,10 +32,6 @@ class OrderService
 
     /**
      * #40 Complete the order.
-     *
-     * @param array $data
-     *
-     * @return array
      */
     public function complete(int $customerId): Order
     {

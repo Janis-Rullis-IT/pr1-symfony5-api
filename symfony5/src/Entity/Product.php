@@ -29,6 +29,9 @@ class Product
     const INVALID_TITLE = 'Invalid title. It can only consist of letters, digits, dash(-) and space';
     const INVALID_SKU = 'Invalid SKU. It must be unique and cannot be empty';
     const INVALID_COST = 'Invalid cost. It must be an integer describing price with smallest money unit';
+    const MUG = 'mug';
+    const T_SHIRT = 't-shirt';
+    const PRODUCT_TYPES = [self::T_SHIRT, self::MUG];
 
     /**
      * @ORM\Id()

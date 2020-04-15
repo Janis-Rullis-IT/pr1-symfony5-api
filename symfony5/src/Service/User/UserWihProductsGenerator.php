@@ -8,6 +8,7 @@ namespace App\Service\User;
 use App\Interfaces\IProductRepo;
 use App\Interfaces\IUserRepo;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Entity\Product;
 
 class UserWihProductsGenerator
 {
@@ -38,8 +39,7 @@ class UserWihProductsGenerator
             $userIds[] = $user->getId();
 
             // #38 Create 1 mug and 1 shirt for each user.
-            $productTypes = ['t-shirt', 'mug'];
-            foreach ($productTypes as $productType) {
+            foreach (Product::PRODUCT_TYPES as $productType) {
                 $this->productRepo->generateDummyUserProduct($user, $productType);
             }
         }
