@@ -5,8 +5,6 @@ namespace App\Tests\Order;
 use App\Entity\Order;
 use App\Entity\OrderProduct;
 use App\Exception\OrderShippingValidatorException;
-use App\Exception\ProductIdValidatorException;
-use App\Exception\UidValidatorException;
 use App\Interfaces\IOrderProductRepo;
 use App\Interfaces\IOrderRepo;
 use App\Interfaces\IProductRepo;
@@ -32,7 +30,6 @@ class OrderUnitTest extends KernelTestCase
     private $orderRepo;
     private $userRepo;
     private $orderProductRepo;
-    private $impossibleInt = 3147483648;
 
     protected function setUp(): void
     {
@@ -66,69 +63,6 @@ class OrderUnitTest extends KernelTestCase
         $this->entityManager = null;
     }
 
-    /**
-     *  #40.
-     */
-    public function testOrderShippingExceptions()
-    {
-        $order = new Order();
-        $this->expectException(OrderShippingValidatorException::class);
-        $this->expectExceptionCode(1);
-        $this->orderShippingService->set(1, []);
-    }
-
-    /**
-     *  #40.
-     */
-    public function testOrderShippingExceptions2()
-    {
-        $order = new Order();
-        $this->expectException(UidValidatorException::class);
-        $this->expectExceptionCode(1);
-        $this->orderShippingService->set(0, Order::VALID_SHIPPING_EXAMPLE);
-    }
-
-    /**
-     * #40.
-     */
-    public function testOrderAddressValidatorExceptions()
-    {
-        $this->expectException(OrderShippingValidatorException::class);
-        $this->expectExceptionCode(2);
-        $this->orderShippingValidator->validateAddress([]);
-    }
-
-    /**
-     * #40.
-     */
-    public function testOrderValidatorExceptions()
-    {
-        $this->expectException(OrderShippingValidatorException::class);
-        $this->expectExceptionCode(1);
-        $this->orderShippingValidator->validate([]);
-    }
-
-    /**
-     * #40.
-     */
-    public function testOrderValidation()
-    {
-        $ship_to_address = Order::VALID_SHIPPING_EXAMPLE;
-        unset($ship_to_address[Order::IS_EXPRESS]);
-        $this->assertFalse($this->orderShippingValidator->hasRequiredKeys($ship_to_address));
-        $this->assertEquals([Order::IS_EXPRESS => Order::IS_EXPRESS], $this->orderShippingValidator->getMissingKeys($ship_to_address));
-        $ship_to_address[Order::IS_EXPRESS] = true;
-        $this->assertTrue($this->orderShippingValidator->hasRequiredKeys($ship_to_address));
-
-        $this->assertTrue($this->orderShippingValidator->isAddressValid($ship_to_address));
-        $this->assertTrue($this->orderShippingValidator->isExpressShippingAllowed($ship_to_address));
-        $this->assertTrue($this->orderShippingValidator->isValid($ship_to_address));
-        $ship_to_address[Order::COUNTRY] = 'Latvia';
-        $this->assertTrue($this->orderShippingValidator->isAddressValid($ship_to_address));
-        $this->assertFalse($this->orderShippingValidator->isExpressShippingAllowed($ship_to_address));
-        $this->assertFalse($this->orderShippingValidator->isValid($ship_to_address));
-    }
-
     public function testOrderEnumExceptions()
     {
         $order = new Order();
@@ -153,51 +87,6 @@ class OrderUnitTest extends KernelTestCase
         $this->expectExceptionCode(2, '#40 Express must match the region.');
         $order->setIsDomestic('n');
         $order->setIsExpress('y');
-    }
-
-    /**
-     * #40.
-     */
-    public function testOrderProductExceptions()
-    {
-        $orderProduct = new OrderProduct();
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage("'aaa' ".\App\Helper\EnumType::INVALID_ENUM_VALUE);
-        $orderProduct->setIsExpress('aaa');
-    }
-
-    /**
-     * #40 Invalid params.
-     */
-    public function testOrderProductCreatorExceptions()
-    {
-        $orderProduct = new OrderProduct();
-        $this->expectException(UidValidatorException::class);
-        $this->expectExceptionCode(1);
-        $this->orderProductCreator->handle($this->impossibleInt, $this->impossibleInt);
-    }
-
-    /**
-     * #40 Invalid user, valid product.
-     */
-    public function testOrderProductCreatorExceptions1()
-    {
-        $user = $this->userRepo->getUserWithProducts();
-
-        $this->expectException(UidValidatorException::class);
-        $this->expectExceptionCode(1);
-        $this->orderProductCreator->handle($this->impossibleInt, $user->getProducts()[0]->getId());
-    }
-
-    /**
-     * #40 Invalid product, valid user.
-     */
-    public function testOrderProductCreatorExceptions2()
-    {
-        $user = $this->userRepo->getUserWithProducts();
-        $this->expectException(ProductIdValidatorException::class);
-        $this->expectExceptionCode(1);
-        $this->orderProductCreator->handle($user->getId(), $this->impossibleInt);
     }
 
     /**

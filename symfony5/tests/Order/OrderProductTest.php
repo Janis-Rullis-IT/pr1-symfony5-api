@@ -2,7 +2,11 @@
 
 namespace App\Tests\Order;
 
+use App\Entity\OrderProduct;
+use App\Exception\ProductIdValidatorException;
+use App\Exception\UidValidatorException;
 use App\Interfaces\IUserRepo;
+use App\Service\Order\OrderProductCreator;
 use App\Service\User\UserWihProductsGenerator;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,6 +21,7 @@ class OrderProductTest extends WebTestCase
     private $client;
     private $userWithProductsGenerator;
     private $userRepo;
+    private $orderProductCreator;
 
     protected function setUp(): void
     {
@@ -25,6 +30,61 @@ class OrderProductTest extends WebTestCase
         $this->entityManager = $this->c->get('doctrine')->getManager();
         $this->userWithProductsGenerator = $this->c->get('test.'.UserWihProductsGenerator::class);
         $this->userRepo = $this->c->get('test.'.IUserRepo::class);
+        $this->orderProductCreator = $this->c->get('test.'.OrderProductCreator::class);
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        // doing this is recommended to avoid memory leaks
+        $this->entityManager->close();
+        $this->entityManager = null;
+    }
+
+    /**
+     * #40.
+     */
+    public function testOrderProductExceptions()
+    {
+        $orderProduct = new OrderProduct();
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("'aaa' ".\App\Helper\EnumType::INVALID_ENUM_VALUE);
+        $orderProduct->setIsExpress('aaa');
+    }
+
+    /**
+     * #40 Invalid params.
+     */
+    public function testOrderProductCreatorExceptions()
+    {
+        $orderProduct = new OrderProduct();
+        $this->expectException(UidValidatorException::class);
+        $this->expectExceptionCode(1);
+        $this->orderProductCreator->handle($this->impossibleInt, $this->impossibleInt);
+    }
+
+    /**
+     * #40 Invalid user, valid product.
+     */
+    public function testOrderProductCreatorExceptions1()
+    {
+        $user = $this->userRepo->getUserWithProducts();
+
+        $this->expectException(UidValidatorException::class);
+        $this->expectExceptionCode(1);
+        $this->orderProductCreator->handle($this->impossibleInt, $user->getProducts()[0]->getId());
+    }
+
+    /**
+     * #40 Invalid product, valid user.
+     */
+    public function testOrderProductCreatorExceptions2()
+    {
+        $user = $this->userRepo->getUserWithProducts();
+        $this->expectException(ProductIdValidatorException::class);
+        $this->expectExceptionCode(1);
+        $this->orderProductCreator->handle($user->getId(), $this->impossibleInt);
     }
 
     /**

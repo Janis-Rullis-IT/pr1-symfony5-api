@@ -29,6 +29,15 @@ class OrderCompleteTest extends WebTestCase
         $this->userRepo = $this->c->get('test.'.IUserRepo::class);
     }
 
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        // doing this is recommended to avoid memory leaks
+        $this->entityManager->close();
+        $this->entityManager = null;
+    }
+
     /**
      * #40 Invalid customer.
      */

@@ -5,10 +5,10 @@ namespace App\Service\User;
 /*
  *  #53 Generate dummy users with products. Used in fixtures and tests.
  */
+use App\Entity\Product;
 use App\Interfaces\IProductRepo;
 use App\Interfaces\IUserRepo;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Entity\Product;
 
 class UserWihProductsGenerator
 {
