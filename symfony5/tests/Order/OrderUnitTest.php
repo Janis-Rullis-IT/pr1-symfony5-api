@@ -196,11 +196,6 @@ class OrderUnitTest extends KernelTestCase
 		$validProductUpdated2 = $this->orderProductRepo->find($validProductUpdated2->getId());
 		$validProductUpdated3 = $this->orderProductRepo->find($validProductUpdated3->getId());
 
-		$this->assertEquals('y', $draftOrder->getIsExpress());
-		$this->assertEquals($validProductUpdated->getIsExpress(), 'y');
-		$this->assertEquals($validProductUpdated2->getIsExpress(), 'y');
-		$this->assertEquals($validProductUpdated3->getIsExpress(), 'y');
-
 		$this->assertEquals(true, $this->orderProductRepo->setShippingRates($draftOrder));
 
 		// #39 #33 #34 #37 Sum together costs from cart products and store in the order's costs.
@@ -226,27 +221,6 @@ class OrderUnitTest extends KernelTestCase
 		$this->assertEquals($draftOrder->getShippingCost(), $shippingCostTotal);
 		$this->assertEquals($draftOrder->getProductCost(), $productCostTotal);
 		$this->assertEquals($draftOrder->getTotalCost(), $costTotal);
-
-		// #40 Validate that the shipping is set correctly.
-		$this->assertEmpty($draftOrder->getName());
-		$this->assertEmpty($draftOrder->getSurname());
-		$this->assertEmpty($draftOrder->getStreet());
-		$this->assertEmpty($draftOrder->getState());
-		$this->assertEmpty($draftOrder->getZip());
-		$this->assertEmpty($draftOrder->getCountry());
-		$this->assertEmpty($draftOrder->getPhone());
-
-		$ship_to_address = Order::VALID_SHIPPING_EXAMPLE;
-		$draftOrder = $this->orderShippingService->set($draftOrder->getCustomerId(), $ship_to_address);
-		$this->assertEquals($ship_to_address[Order::OWNER_NAME], $draftOrder->getName());
-		$this->assertEquals($ship_to_address[Order::OWNER_SURNAME], $draftOrder->getSurname());
-		$this->assertEquals($ship_to_address[Order::STREET], $draftOrder->getStreet());
-		$this->assertEquals($ship_to_address[Order::STATE], $draftOrder->getState());
-		$this->assertEquals($ship_to_address[Order::ZIP], $draftOrder->getZip());
-		$this->assertEquals($ship_to_address[Order::COUNTRY], $draftOrder->getCountry());
-		$this->assertEquals($ship_to_address[Order::PHONE], $draftOrder->getPhone());
-		$this->assertEquals('y', $draftOrder->getIsDomestic());
-		$this->assertEquals('y', $draftOrder->getIsExpress());
 
 		//#40 Collect order's products.
 		$orderWithProducts = $this->orderRepo->mustFindUsersOrder($draftOrder->getCustomerId(), $draftOrder->getId())->toArray([], [Order::PRODUCTS]);
