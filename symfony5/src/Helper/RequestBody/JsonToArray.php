@@ -1,6 +1,6 @@
 <?php
 
-namespace App\RequestBody;
+namespace App\Helper\RequestBody;
 
 use App\Exception\JsonToArrayException;
 use Symfony\Component\HttpFoundation\RequestStack;

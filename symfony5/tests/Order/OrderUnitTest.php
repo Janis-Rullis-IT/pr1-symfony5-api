@@ -11,10 +11,10 @@ use App\Interfaces\IOrderProductRepo;
 use App\Interfaces\IOrderRepo;
 use App\Interfaces\IProductRepo;
 use App\Interfaces\IUserRepo;
-use App\Order\OrderProductCreator;
-use App\Order\OrderShippingService;
-use App\Order\OrderShippingValidator;
-use App\User\UserWihProductsGenerator;
+use App\Service\Order\OrderProductCreator;
+use App\Service\Order\OrderShippingService;
+use App\Service\Order\OrderShippingValidator;
+use App\Service\User\UserWihProductsGenerator;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 /**

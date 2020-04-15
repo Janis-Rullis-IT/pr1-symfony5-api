@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Order;
+namespace App\Service\Order;
 
 /*
  * #40 #38 Add a product to customer's cart (draft order).

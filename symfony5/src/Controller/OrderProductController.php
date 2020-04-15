@@ -8,7 +8,7 @@ namespace App\Controller;
 use App\Entity\OrderProduct;
 use App\Exception\ProductIdValidatorException;
 use App\Exception\UidValidatorException;
-use App\Order\OrderProductCreator;
+use App\Service\Order\OrderProductCreator;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

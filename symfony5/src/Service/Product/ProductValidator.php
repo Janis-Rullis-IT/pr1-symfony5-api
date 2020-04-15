@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Product;
+namespace App\Service\Product;
 
 use App\Entity\Product;
 use App\ErrorsLoader;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\User;
+namespace App\Service\User;
 
 /*
  *  #53 Generate dummy users with products. Used in fixtures and tests.

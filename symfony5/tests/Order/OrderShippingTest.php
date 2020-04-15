@@ -2,7 +2,7 @@
 
 namespace App\Tests\Order;
 
-use App\User\UserWihProductsGenerator;
+use App\Service\User\UserWihProductsGenerator;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 

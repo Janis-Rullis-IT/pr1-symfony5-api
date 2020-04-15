@@ -7,7 +7,7 @@ use App\Exception\DuplicateException;
 use App\Exception\ProductCreatorException;
 use App\Exception\UidValidatorException;
 use App\Interfaces\IProductRepo;
-use App\Product\ProductCreator;
+use App\Service\Product\ProductCreator;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

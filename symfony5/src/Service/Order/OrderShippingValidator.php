@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Order;
+namespace App\Service\Order;
 
 /*
  * #40 Validate order's shipping and store errors.

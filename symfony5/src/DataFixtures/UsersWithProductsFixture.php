@@ -5,7 +5,7 @@ namespace App\DataFixtures;
 /*
  * #43 Fill test tables, before executing tests, using `./test.sh`.`. See `UserWihProductsGenerator`.
  */
-use App\User\UserWihProductsGenerator;
+use App\Service\User\UserWihProductsGenerator;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\Persistence\ObjectManager;

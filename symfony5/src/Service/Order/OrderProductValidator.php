@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Order;
+namespace App\Service\Order;
 
 use App\Entity\OrderProduct;
 use Symfony\Component\Validator\Constraints\Length;

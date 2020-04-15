@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Order;
+namespace App\Service\Order;
 
 /*
  * Complete or re-calculate the order.

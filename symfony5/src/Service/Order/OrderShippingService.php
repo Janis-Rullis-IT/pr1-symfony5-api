@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Order;
+namespace App\Service\Order;
 
 /*
  * #38 Validate and set order's shipping.

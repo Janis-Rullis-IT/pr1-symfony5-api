@@ -1,13 +1,13 @@
 <?php
 
-namespace App\User;
+namespace App\Service\User;
 
 use App\Entity\User;
 use App\Exception\JsonToArrayException;
 use App\Exception\UserCreatorException;
 use App\Exception\UserValidatorException;
 use App\Interfaces\IUserRepo;
-use App\RequestBody\JsonToArray;
+use App\Helper\RequestBody\JsonToArray;
 
 class UserCreator
 {

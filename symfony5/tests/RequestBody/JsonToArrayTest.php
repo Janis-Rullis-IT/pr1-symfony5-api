@@ -3,8 +3,8 @@
 namespace App\Tests\RequestBody;
 
 use App\Exception\JsonToArrayException;
-use App\RequestBody\JsonToArray;
-use App\RequestBody\RequestBodyStandardizer;
+use App\Helper\RequestBody\JsonToArray;
+use App\Helper\RequestBody\RequestBodyStandardizer;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;

@@ -6,7 +6,7 @@ use App\Entity\Order;
 use App\Entity\OrderProduct;
 use App\Entity\User;
 use App\Interfaces\IUserRepo;
-use App\User\UserWihProductsGenerator;
+use App\Service\User\UserWihProductsGenerator;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 

@@ -5,7 +5,7 @@ namespace App\Tests\User;
 use App\Entity\User;
 use App\ErrorsLoader;
 use App\Exception\UserValidatorException;
-use App\User\UserValidator;
+use App\Service\User\UserValidator;
 use App\Validators\UserValidators\NameSurnameValidator;
 use PHPUnit\Framework\TestCase;
 

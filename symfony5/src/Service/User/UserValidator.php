@@ -1,6 +1,6 @@
 <?php
 
-namespace App\User;
+namespace App\Service\User;
 
 use App\Entity\User;
 use App\ErrorsLoader;

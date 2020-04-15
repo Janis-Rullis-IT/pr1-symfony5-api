@@ -5,7 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Exception\UserCreatorException;
 use App\Interfaces\IUserRepo;
-use App\User\UserCreator;
+use App\Service\User\UserCreator;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

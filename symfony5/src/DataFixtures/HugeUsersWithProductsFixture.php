@@ -7,7 +7,7 @@ namespace App\DataFixtures;
  */
 
 use App\Interfaces\IUserRepo;
-use App\User\UserWihProductsGenerator;
+use App\Service\User\UserWihProductsGenerator;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\Persistence\ObjectManager;

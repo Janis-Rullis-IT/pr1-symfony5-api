@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Product;
+namespace App\Service\Product;
 
 use App\Entity\Product;
 use App\Entity\User;
@@ -10,7 +10,7 @@ use App\Exception\ProductCreatorException;
 use App\Exception\ProductValidatorException;
 use App\Exception\UidValidatorException;
 use App\Interfaces\IProductRepo;
-use App\RequestBody\JsonToArray;
+use App\Helper\RequestBody\JsonToArray;
 use App\Validators\UserValidators\UidValidator;
 
 class ProductCreator

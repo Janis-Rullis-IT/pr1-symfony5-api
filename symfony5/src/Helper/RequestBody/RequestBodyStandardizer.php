@@ -1,6 +1,6 @@
 <?php
 
-namespace App\RequestBody;
+namespace App\Helper\RequestBody;
 
 use App\Entity\Product;
 use App\Entity\User;
