@@ -90,21 +90,17 @@ class OrderProductTest extends WebTestCase
         $this->assertNull($orderCreated->getProducts());
 
         for ($i = 0; $i < 3; ++$i) {
-            $validProduct = $this->orderProductCreator->handle($user->getId(), $user->getProducts()[0]->getId());
+            $validProductArr = $this->orderProductCreator->handle($user->getId(), $user->getProducts()[0]->getId())->toArray();
+            $expected = [
+                OrderProduct::CUSTOMER_ID => $user->getId(), OrderProduct::SELLER_ID => $user->getId(),
+                OrderProduct::PRODUCT_ID => $user->getProducts()[0]->getId(), OrderProduct::ORDER_ID => $orderCreated->getId(),
+                OrderProduct::SELLER_TITLE => $user->getName().' '.$user->getSurname(), OrderProduct::PRODUCT_TITLE => $user->getProducts()[0]->getTitle(),
+                OrderProduct::PRODUCT_COST => $user->getProducts()[0]->getCost(), OrderProduct::PRODUCT_TYPE => $user->getProducts()[0]->getType(),
+                OrderProduct::IS_ADDITIONAL => null, OrderProduct::IS_DOMESTIC => null,	OrderProduct::IS_EXPRESS => null, OrderProduct::SHIPPING_COST => null, ];
 
-            $this->assertEquals($validProduct->getCustomerId(), $user->getId());
-            $this->assertEquals($validProduct->getSellerId(), $user->getId());
-            $this->assertEquals($validProduct->getSellerTitle(), $user->getName().' '.$user->getSurname());
-            $this->assertEquals($validProduct->getProductId(), $user->getProducts()[0]->getId());
-            $this->assertEquals($validProduct->getProductTitle(), $user->getProducts()[0]->getTitle());
-            $this->assertEquals($validProduct->getProductCost(), $user->getProducts()[0]->getCost());
-            $this->assertEquals($validProduct->getProductType(), $user->getProducts()[0]->getType());
-            $this->assertTrue($validProduct->getId() > 0);
-            $this->assertEquals($validProduct->getOrderId(), $orderCreated->getId());
-            $this->assertNull($validProduct->getIsAdditional());
-            $this->assertNull($validProduct->getIsDomestic());
-            $this->assertNull($validProduct->getIsExpress());
-            $this->assertNull($validProduct->getShippingCost());
+            foreach ($expected  as $field => $val) {
+                $this->assertEquals($val, $validProductArr[$field]);
+            }
         }
     }
 
