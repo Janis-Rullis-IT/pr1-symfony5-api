@@ -33,11 +33,10 @@ class OrderShippingService
     /**
      * #38 Validate and set order's shipping.
      */
-    public function set(int $customerId, array $data): Order
+    public function set(int $customerId, array $shippingData): Order
     {
-        // #38 Validate and prepare the item.
-        $order = $this->prepare($customerId, $data);
-        $order = $this->orderRepo->write($order);
+        $order = $this->prepare($customerId, $shippingData);
+        $this->orderRepo->save();
         $this->orderService->recalculateOrder($order);
 
         return $this->orderRepo->findOneBy(['id' => $order->getId()]);
@@ -46,14 +45,14 @@ class OrderShippingService
     /**
      * #40 Validate and prepare the item.
      */
-    public function prepare(int $customerId, array $data): Order
+    public function prepare(int $customerId, array $shippingData): Order
     {
-        $this->orderShippingValidator->validate($data);
-        $data['is_domestic'] = $this->orderShippingValidator->isDomestic($data);
+        $this->orderShippingValidator->validate($shippingData);
+        $shippingData['is_domestic'] = $this->orderShippingValidator->isDomestic($shippingData);
         $customer = $this->userRepo->mustFind($customerId);
         // #38 #36 Collect customer's current 'draft' or create a new one.
         $draftOrder = $this->orderRepo->insertIfNotExist($customer->getId());
 
-        return $this->orderRepo->prepare($draftOrder, $data);
+        return $this->orderRepo->fillShipping($draftOrder, $shippingData);
     }
 }

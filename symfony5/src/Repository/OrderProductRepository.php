@@ -9,35 +9,25 @@ use App\Entity\User;
 use App\Interfaces\IOrderProductRepo;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\EntityManagerInterface;
 
-/**
- * @method OrderProduct|null find($id, $lockMode = null, $lockVersion = null)
- * @method OrderProduct|null findOneBy(array $criteria, array $orderBy = null)
- * @method OrderProduct[]    findAll()
- * @method OrderProduct[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
- */
 class OrderProductRepository extends ServiceEntityRepository implements IOrderProductRepo
 {
-    // #40 TODO: Try to implement this with ORM annotations.
-    // #40 TODO: Replace with array and then convert to CSV.
-    const SEL_COLUMNS = 'r.id AS order_product_id, r.order_id, r.customer_id, r.product_id, r.product_cost AS order_product_cost, r.shipping_cost AS order_product_shipping_cost, r.is_express, r.is_additional';
-    private $em;
 
-    public function __construct(ManagerRegistry $registry, EntityManagerInterface $em)
+    public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, OrderProduct::class);
-        $this->em = $em;
     }
 
     /**
+     * #68 Remove this.
+     *
      * #38 #36 Add a product to cart into the database.
      * Use OrderProductCreator as a helper to prepare the required data.
      */
     public function create(OrderProduct $item): OrderProduct
     {
-        $this->em->persist($item);
-        $this->em->flush();
+        $this->_em->persist($item);
+        $this->_em->flush();
 
         return $item;
     }
@@ -64,8 +54,8 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
             ->getQuery()->execute();
 
         // #39 #33 #34 Raw because this is more complex.
-        $tableName = $this->em->getClassMetadata(OrderProduct::class)->getTableName();
-        $conn = $this->em->getConnection();
+        $tableName = $this->_em->getClassMetadata(OrderProduct::class)->getTableName();
+        $conn = $this->_em->getConnection();
         $sql = '
 			UPDATE `'.$tableName.'` n1, `'.$tableName.'` n2
 			SET n1.`is_additional` = \'y\'
@@ -82,8 +72,8 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
         // https://www.doctrine-project.org/projects/doctrine-orm/en/2.7/reference/working-with-objects.html#detaching-entities
         // https://www.doctrine-project.org/api/orm/latest/Doctrine/ORM/EntityManager.html#method_clear
         // https://www.doctrine-project.org/projects/doctrine-orm/en/2.7/reference/batch-processing.html#iterating-results
-        $this->em->flush();
-        $this->em->clear();
+        $this->_em->flush();
+        $this->_em->clear();
 
         return $return;
     }
@@ -102,8 +92,8 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
                 ->setParameter('isDomestic', $draftOrder->getIsDomestic())
                 ->getQuery()->execute() >= 0;
 
-        $this->em->flush();
-        $this->em->clear();
+        $this->_em->flush();
+        $this->_em->clear();
 
         return $return;
     }
@@ -122,8 +112,8 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
                 ->setParameter('isExpress', $draftOrder->getIsExpress())
                 ->getQuery()->execute() >= 0;
 
-        $this->em->flush();
-        $this->em->clear();
+        $this->_em->flush();
+        $this->_em->clear();
 
         return $return;
     }
@@ -136,8 +126,8 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
     public function setShippingRates(Order $draftOrder): bool
     {
         // #39 #33 #34 #37 TODO: Rewrite in a query builder format.
-        $tableName = $this->em->getClassMetadata(OrderProduct::class)->getTableName();
-        $conn = $this->em->getConnection();
+        $tableName = $this->_em->getClassMetadata(OrderProduct::class)->getTableName();
+        $conn = $this->_em->getConnection();
         $sql = '
 			UPDATE `'.$tableName.'` a
 			JOIN shipping_rate b
@@ -151,8 +141,8 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
         $stmt = $conn->prepare($sql);
         $return = $stmt->execute(['order_id' => $draftOrder->getId()]);
 
-        $this->em->flush();
-        $this->em->clear();
+        $this->_em->flush();
+        $this->_em->clear();
 
         return $return;
     }
@@ -188,19 +178,5 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
         $this->markDomesticShipping($order);
         $this->markExpressShipping($order);
         $this->setShippingRates($order);
-    }
-
-    /**
-     * #40 Get order's products.
-     */
-    public function findOrderProducts(int $orderId): array
-    {
-        return $this->createQueryBuilder('r')
-                // #40 TODO: Replace these keys with cosnt.
-                ->select(self::SEL_COLUMNS)
-                ->where('r.order_id	= :orderId')
-                ->setParameter('orderId', $orderId)
-                ->getQuery()->execute();
-        // #40 TODO: Find a way how this can be converted to Entity.
     }
 }

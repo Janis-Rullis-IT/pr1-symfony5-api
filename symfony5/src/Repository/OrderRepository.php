@@ -8,38 +8,32 @@ use App\Exception\OrderValidatorException;
 use App\Interfaces\IOrderRepo;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Query;
+
+/**
+ * #68 Repo best practices https://www.thinktocode.com/2018/03/05/repository-pattern-symfony/
+ */
 
 class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 {
-    // #40 TODO: Try to implement this with ORM annotations.
-    // #40 TODO: Replace with array and then convert to CSV.
-    const SEL_COLUMNS = 'p.id, p.status, p.is_domestic, p.is_express, p.shipping_cost, p.product_cost, p.total_cost, p.name, p.surname, p.street, p.country, p.phone, p.state, p.zip';
-
-    private $orderProductRepo;
-
-    public function __construct(ManagerRegistry $registry, EntityManagerInterface $em, OrderProductRepository $orderProductRepo)
+    public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Order::class);
-        $this->em = $em;
-        $this->orderProductRepo = $orderProductRepo;
     }
 
     /**
-     * #38 #36 Collect customer's current 'draft' or create a new one.
+     * #38 Collect customer's current 'draft' or create a new one.
      */
     public function insertIfNotExist(int $customerId): Order
     {
         $item = $this->getCurrentDraft($customerId);
 
-        //  #38 #36 Create if it doesn't exist yet.
+        / #38 Create if it doesn't exist yet.
         if (empty($item)) {
             $item = new Order();
             $item->setCustomerId($customerId);
             $item->setStatus(Order::DRAFT);
-            $this->em->persist($item);
-            $this->em->flush();
+            $this->_em->persist($item);
+            $this->_em->flush();
         }
 
         if (empty($item)) {
@@ -50,9 +44,7 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
     }
 
     /**
-     * #38 #36 Collect customer's current 'draft' order where all the cart's items should be stored.
-     *
-     * @return Order
+     * #38 Collect customer's current 'draft' order where all the cart's items should be stored.
      */
     public function getCurrentDraft(int $customerId): ?Order
     {
@@ -60,16 +52,14 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
     }
 
     /**
-     * #39 #33 #34 #37 Sum together costs from cart products and store in the order's costs.
-     * https://github.com/janis-rullis/pr1/issues/33#issuecomment-595102860.
+     * #37 Sum together costs from cart products and store in the order's costs https://github.com/janis-rullis/pr1/issues/33#issuecomment-595102860.
      */
     public function setOrderCostsFromCartItems(Order $order): bool
     {
-        // #39 #33 #34 #37 TODO: Rewrite in a query builder format.
-        $orderProductTableName = $this->em->getClassMetadata(OrderProduct::class)->getTableName();
-        $orderTableName = $this->em->getClassMetadata(Order::class)->getTableName();
+        $orderProductTableName = $this->_em->getClassMetadata(OrderProduct::class)->getTableName();
+        $orderTableName = $this->_em->getClassMetadata(Order::class)->getTableName();
 
-        $conn = $this->em->getConnection();
+        $conn = $this->_em->getConnection();
         $sql = '
 			UPDATE `'.$orderTableName.'` a
 			JOIN (
@@ -83,66 +73,57 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
         $stmt = $conn->prepare($sql);
         $return = $stmt->execute(['order_id' => $order->getId()]);
 
-        $this->em->flush();
-        $this->em->clear();
+        $this->_em->flush();
+        $this->_em->clear();
 
         return $return;
     }
 
-    // #40
-    public function prepare(Order $order, array $data): Order
+	/**
+	 * #40 Fill the shipping data into the order.
+	 */
+    public function fillShipping(Order $order, array $shippingData): Order
     {
-        $order->setIsDomestic($data['is_domestic']);
-
-        // #39 #33 #34 Mark order's shipping as express or standard.
-        // The purpose of this field `is_express` is to be used for matching a row in the `shipping_rates` table.
-        $order->setIsExpress($data['is_express']);
-
-        $order->setName($data[Order::OWNER_NAME]);
-        $order->setSurname($data[Order::OWNER_SURNAME]);
-        $order->setStreet($data[Order::STREET]);
-
-        $order->setState(array_key_exists(Order::STATE, $data) ? $data[Order::STATE] : null);
-        $order->setZip(array_key_exists(Order::ZIP, $data) ? $data[Order::ZIP] : null);
-
-        $order->setCountry($data[Order::COUNTRY]);
-        $order->setPhone($data[Order::PHONE]);
+        // #39 Mark order's shipping values to be used for matching a row in the `shipping_rates` table.
+		$order->setIsDomestic($shippingData['is_domestic']);
+        $order->setIsExpress($shippingData['is_express']);
+		
+        $order->setName($shippingData[Order::OWNER_NAME]);
+        $order->setSurname($shippingData[Order::OWNER_SURNAME]);
+        $order->setStreet($shippingData[Order::STREET]);
+        $order->setState(array_key_exists(Order::STATE, $shippingData) ? $shippingData[Order::STATE] : null);
+        $order->setZip(array_key_exists(Order::ZIP, $shippingData) ? $shippingData[Order::ZIP] : null);
+        $order->setCountry($shippingData[Order::COUNTRY]);
+        $order->setPhone($shippingData[Order::PHONE]);
 
         return $order;
     }
 
     /**
-     * #40 Write to database.
-     * Shorthand helper so wouldn't need to init the em when there's a repo.
+     * #40 Shorthand to write to the database.
      */
-    public function write(Order $order): Order
+    public function save()
     {
-        $this->em->flush();
-        $this->em->clear();
-
-        return $order;
+        $this->_em->flush();
+        $this->_em->clear();
     }
 
     /**
-     * #40 Mark the order as completed.
-     * New products added to the cart won't be attached to this one anymore.
+     * #40 Mark the order as completed. New products added to the cart won't be attached to this one anymore.
      */
     public function markAsCompleted(Order $order): Order
     {
-        // #40 A refresh-entity workaround for the field not being updated.
-        // https://www.doctrine-project.org/projects/doctrine-orm/en/2.7/reference/unitofwork.html https://www.doctrine-project.org/api/orm/latest/Doctrine/ORM/EntityManager.html
-        // If `persist()` is being used then a naw record is inserted.
+        // #40 A refresh-entity workaround for the field not being updated. https://www.doctrine-project.org/projects/doctrine-orm/en/2.7/reference/unitofwork.html https://www.doctrine-project.org/api/orm/latest/Doctrine/ORM/EntityManager.html
         // TODO: Ask someone about this behaviour.
-        $order = $this->em->getReference(Order::class, $order->getId());
+        $order = $this->_em->getReference(Order::class, $order->getId());
         $order->setStatus(Order::COMPLETED);
-
-        return $this->write($order);
+        $this->save($order);
+		
+		return $order;
     }
 
     /**
      * #40 Find order by id. Throw an exception if not found.
-     *
-     * @throws OrderValidatorException
      */
     public function mustFindUsersOrder(int $userId, int $orderId): Order
     {
@@ -160,32 +141,5 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
     public function mustFindUsersOrders(int $userId): array
     {
         return $this->findBy(['customer_id' => $userId]);
-    }
-
-    /**
-     * #40 Collect user's orders with products using the query builder.
-     * Keep this! Left here to work as an example.
-     */
-    public function mustFindUsersOrdersWithProductsQB(int $userId): array
-    {
-        $return = [];
-        $list = $this->createQueryBuilder('p')
-                ->select(self::SEL_COLUMNS.','.OrderProductRepository::SEL_COLUMNS)
-                ->where('p.customer_id = :userId')->setParameter('userId', $userId)
-                ->innerJoin(OrderProduct::class, 'r', 'WITH', 'p.id = r.order_id')
-                ->getQuery()->getResult(Query::HYDRATE_OBJECT);
-        // #40 TODO: Try to implement this with relations so it would result in `[{order1:products[]},{order2:[products]}]`.
-        // #40 TODO: Find a way how this can be converted to Entity.
-        // #40 https://www.doctrine-project.org/projects/doctrine-orm/en/2.7/reference/dql-doctrine-query-language.html#fetching-multiple-from-entities
-        if (empty($list)) {
-            throw new OrderValidatorException([Order::ID => Order::INVALID], 1);
-        }
-
-        // #40 This should be replaced with a relation or in worst case a built-in filtering/grouping tool.
-        foreach ($list as $item) {
-            $return[$item['order_id']][$item['order_product_id']] = $item;
-        }
-
-        return $return;
     }
 }
