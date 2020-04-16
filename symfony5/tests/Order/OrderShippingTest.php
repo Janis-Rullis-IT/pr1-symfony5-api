@@ -82,8 +82,8 @@ class OrderShippingTest extends WebTestCase
         $this->assertFalse($this->orderShippingValidator->hasRequiredKeys($ship_to_address));
         $this->assertEquals([Order::IS_EXPRESS => Order::IS_EXPRESS], $this->orderShippingValidator->getMissingKeys($ship_to_address));
         $ship_to_address[Order::IS_EXPRESS] = true;
-        $this->assertTrue($this->orderShippingValidator->hasRequiredKeys($ship_to_address));
 
+        $this->assertTrue($this->orderShippingValidator->hasRequiredKeys($ship_to_address));
         $this->assertTrue($this->orderShippingValidator->isAddressValid($ship_to_address));
         $this->assertTrue($this->orderShippingValidator->isExpressShippingAllowed($ship_to_address));
         $this->assertTrue($this->orderShippingValidator->isValid($ship_to_address));
@@ -120,75 +120,53 @@ class OrderShippingTest extends WebTestCase
         $this->assertEquals('y', $draftOrder->getIsExpress());
     }
 
-    /**
-     * #40 Invalid customer.
-     */
     public function testInvalidCustomer()
     {
-        $customerId = $this->impossibleInt;
-        $uri = '/users/'.$customerId.'/order/shipping';
-        $data = $this->ship_to_address;
-        $this->client->request('PUT', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
+        $this->client->request('PUT', '/users/'.$this->impossibleInt.'/order/shipping', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode(Order::VALID_SHIPPING_EXAMPLE));
         $this->assertEquals(Response::HTTP_NOT_FOUND, $this->client->getResponse()->getStatusCode());
         $responseBody = json_decode($this->client->getResponse()->getContent(), true);
-        $this->assertEquals(['id' => 'invalid user'], $responseBody);
+
+        $this->assertEquals([Order::ID => 'invalid user'], $responseBody);
     }
 
-    /**
-     * #40 Invalid missing data.
-     */
     public function testMissingData()
     {
-        $customerId = $this->impossibleInt;
-        $uri = '/users/'.$customerId.'/order/shipping';
-        $data = [];
-        $this->client->request('PUT', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
+        $this->client->request('PUT', '/users/'.$this->impossibleInt.'/order/shipping', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([]));
         $this->assertEquals(Response::HTTP_BAD_REQUEST, $this->client->getResponse()->getStatusCode());
         $responseBody = json_decode($this->client->getResponse()->getContent(), true);
+
         foreach (\App\Entity\Order::REQUIRED_FIELDS as $key => $val) {
             $this->assertEquals(["'".$val."' field is missing."], $responseBody[$val]);
         }
     }
 
-    /**
-     * #40 Invalid missing field.
-     */
     public function testMissingField()
     {
-        $customerId = $this->impossibleInt;
-        $uri = '/users/'.$customerId.'/order/shipping';
-        $data = $this->ship_to_address;
-        unset($data['is_express']);
-        $this->client->request('PUT', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
+        $data = Order::VALID_SHIPPING_EXAMPLE;
+        unset($data[Order::IS_EXPRESS]);
+        $this->client->request('PUT', '/users/'.$this->impossibleInt.'/order/shipping', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
         $this->assertEquals(Response::HTTP_BAD_REQUEST, $this->client->getResponse()->getStatusCode());
         $responseBody = json_decode($this->client->getResponse()->getContent(), true);
-        $this->assertEquals(['is_express' => ["'is_express' field is missing."]], $responseBody);
+
+        $this->assertEquals([Order::IS_EXPRESS => ["'is_express' field is missing."]], $responseBody);
     }
 
-    /**
-     * #40 Valid request.
-     */
     public function testValidRequest()
     {
         $user = $this->userWithProductsGenerator->generate(1)[0];
-
-        $customerId = $user->getId();
-        $productId = $user->getProducts()[0]->getId();
-        $this->client->request('POST', '/users/'.$customerId.'/cart/'.$productId);
-
-        $uri = '/users/'.$customerId.'/order/shipping';
-        $data = $this->ship_to_address;
-        $this->client->request('PUT', $uri, [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
+        $this->client->request('POST', '/users/'.$user->getId().'/cart/'.$user->getProducts()[0]->getId());
+        $data = Order::VALID_SHIPPING_EXAMPLE;
+        $this->client->request('PUT', '/users/'.$user->getId().'/order/shipping', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
         $this->assertEquals(Response::HTTP_OK, $this->client->getResponse()->getStatusCode());
         $responseBody = json_decode($this->client->getResponse()->getContent(), true);
 
-        $this->assertEquals('y', $responseBody['is_domestic']);
-        $this->assertEquals('y', $responseBody['is_express']);
-        $this->assertEquals(1000, $responseBody['shipping_cost'], '#40 Express costs 10$.');
-        $this->assertEquals($user->getProducts()[0]->getCost(), $responseBody['product_cost']);
-        $this->assertEquals(1000 + $user->getProducts()[0]->getCost(), $responseBody['total_cost']);
+        $this->assertEquals('y', $responseBody[Order::IS_DOMESTIC]);
+        $this->assertEquals('y', $responseBody[Order::IS_EXPRESS]);
+        $this->assertEquals(1000, $responseBody[Order::SHIPPING_COST], '#40 Express costs 10$.');
+        $this->assertEquals($user->getProducts()[0]->getCost(), $responseBody[Order::PRODUCT_COST]);
+        $this->assertEquals(1000 + $user->getProducts()[0]->getCost(), $responseBody[Order::TOTAL_COST]);
 
-        unset($data['is_express']);
+        unset($data[Order::IS_EXPRESS]);
         foreach ($data as $key => $val) {
             $this->assertEquals($val, $responseBody[$key]);
         }
