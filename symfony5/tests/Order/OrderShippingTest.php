@@ -107,28 +107,17 @@ class OrderShippingTest extends WebTestCase
     {
         $user = $this->userWithProductsGenerator->generate(1)[0];
         $draftOrder = $this->orderRepo->insertIfNotExist($user->getId());
+        $draftOrderArr = $draftOrder->toArray();
 
-        // #40 Validate that the shipping is set correctly.
-        $this->assertEmpty($draftOrder->getName());
-        $this->assertEmpty($draftOrder->getSurname());
-        $this->assertEmpty($draftOrder->getStreet());
-        $this->assertEmpty($draftOrder->getState());
-        $this->assertEmpty($draftOrder->getZip());
-        $this->assertEmpty($draftOrder->getCountry());
-        $this->assertEmpty($draftOrder->getPhone());
+        foreach ([Order::OWNER_NAME, Order::OWNER_SURNAME, Order::STREET, Order::STATE, Order::ZIP, Order::COUNTRY, Order::PHONE] as $field) {
+            $this->assertEmpty($draftOrderArr[$field]);
+        }
 
-        $ship_to_address = Order::VALID_SHIPPING_EXAMPLE;
-        $draftOrder = $this->orderShippingService->set($draftOrder->getCustomerId(), $ship_to_address);
+        $draftOrderArr = $this->orderShippingService->set($draftOrder->getCustomerId(), Order::VALID_SHIPPING_EXAMPLE)->toArray();
 
-        $this->assertEquals($ship_to_address[Order::OWNER_NAME], $draftOrder->getName());
-        $this->assertEquals($ship_to_address[Order::OWNER_SURNAME], $draftOrder->getSurname());
-        $this->assertEquals($ship_to_address[Order::STREET], $draftOrder->getStreet());
-        $this->assertEquals($ship_to_address[Order::STATE], $draftOrder->getState());
-        $this->assertEquals($ship_to_address[Order::ZIP], $draftOrder->getZip());
-        $this->assertEquals($ship_to_address[Order::COUNTRY], $draftOrder->getCountry());
-        $this->assertEquals($ship_to_address[Order::PHONE], $draftOrder->getPhone());
-        $this->assertEquals('y', $draftOrder->getIsDomestic());
-        $this->assertEquals('y', $draftOrder->getIsExpress());
+        foreach ([Order::OWNER_NAME, Order::OWNER_SURNAME, Order::STREET, Order::STATE, Order::ZIP, Order::COUNTRY, Order::PHONE] as $field) {
+            $this->assertEquals(Order::VALID_SHIPPING_EXAMPLE[$field], $draftOrderArr[$field]);
+        }
     }
 
     public function testInvalidCustomer()
@@ -171,11 +160,11 @@ class OrderShippingTest extends WebTestCase
 
         $this->assertEquals(Response::HTTP_OK, $this->client->getResponse()->getStatusCode());
         $responseBody = json_decode($this->client->getResponse()->getContent(), true);
-        $this->assertEquals('y', $responseBody[Order::IS_DOMESTIC]);
-        $this->assertEquals('y', $responseBody[Order::IS_EXPRESS]);
-        $this->assertEquals(1000, $responseBody[Order::SHIPPING_COST], '#40 Express costs 10$.');
-        $this->assertEquals($user->getProducts()[0]->getCost(), $responseBody[Order::PRODUCT_COST]);
-        $this->assertEquals(1000 + $user->getProducts()[0]->getCost(), $responseBody[Order::TOTAL_COST]);
+
+        $expected = [Order::IS_DOMESTIC => 'y', Order::IS_EXPRESS => 'y', Order::SHIPPING_COST => 1000, Order::PRODUCT_COST => $user->getProducts()[0]->getCost(), Order::TOTAL_COST => 1000 + $user->getProducts()[0]->getCost()];
+        foreach ($expected as $field => $val) {
+            $this->assertEquals($val, $responseBody[$field]);
+        }
 
         unset($data[Order::IS_EXPRESS]);
         foreach ($data as $key => $val) {

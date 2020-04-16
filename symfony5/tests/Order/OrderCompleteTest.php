@@ -57,8 +57,7 @@ class OrderCompleteTest extends WebTestCase
     public function testNoProducts()
     {
         $user = $this->userWithProductsGenerator->generate(1)[0];
-        $data = Order::VALID_SHIPPING_EXAMPLE;
-        $this->client->request('PUT', '/users/'.$user->getId().'/order/shipping', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
+        $this->client->request('PUT', '/users/'.$user->getId().'/order/shipping', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode(Order::VALID_SHIPPING_EXAMPLE));
         $this->client->request('PUT', '/users/'.$user->getId().'/order/complete');
 
         $this->assertEquals(Response::HTTP_BAD_REQUEST, $this->client->getResponse()->getStatusCode());
@@ -69,10 +68,7 @@ class OrderCompleteTest extends WebTestCase
     {
         $balance = 0;
         $user = $this->userWithProductsGenerator->generate(1, $balance)[0];
-        $this->client->request('POST', '/users/'.$user->getId().'/cart/'.$user->getProducts()[0]->getId());
-        $data = Order::VALID_SHIPPING_EXAMPLE;
-        $this->client->request('PUT', '/users/'.$user->getId().'/order/shipping', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
-        $this->client->request('PUT', '/users/'.$user->getId().'/order/complete');
+        $this->createAndCompleteOrder($user->getId(), $user->getProducts()[0]->getId());
 
         $this->assertEquals(Response::HTTP_BAD_REQUEST, $this->client->getResponse()->getStatusCode());
         $this->assertEquals([User::BALANCE => [User::INSUFFICIENT_FUNDS]], json_decode($this->client->getResponse()->getContent(), true));
@@ -82,10 +78,7 @@ class OrderCompleteTest extends WebTestCase
     {
         $balance = 1000;
         $user = $this->userWithProductsGenerator->generate(1, $balance)[0];
-        $this->client->request('POST', '/users/'.$user->getId().'/cart/'.$user->getProducts()[0]->getId());
-        $data = Order::VALID_SHIPPING_EXAMPLE;
-        $this->client->request('PUT', '/users/'.$user->getId().'/order/shipping', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
-        $this->client->request('PUT', $uri = '/users/'.$user->getId().'/order/complete');
+        $this->createAndCompleteOrder($user->getId(), $user->getProducts()[0]->getId());
 
         $this->assertEquals(Response::HTTP_BAD_REQUEST, $this->client->getResponse()->getStatusCode());
         $this->assertEquals([User::BALANCE => [User::INSUFFICIENT_FUNDS]], json_decode($this->client->getResponse()->getContent(), true));
@@ -96,9 +89,7 @@ class OrderCompleteTest extends WebTestCase
         $user = $this->userWithProductsGenerator->generate(1)[0];
         $product = $user->getProducts()[0];
         $productId = $product->getId();
-        $this->client->request('POST', '/users/'.$user->getId().'/cart/'.$productId);
-        $this->client->request('PUT', '/users/'.$user->getId().'/order/shipping', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode(Order::VALID_SHIPPING_EXAMPLE));
-        $this->client->request('PUT', '/users/'.$user->getId().'/order/complete');
+        $this->createAndCompleteOrder($user->getId(), $user->getProducts()[0]->getId());
 
         $this->assertEquals(Response::HTTP_OK, $this->client->getResponse()->getStatusCode());
         $responseBody = json_decode($this->client->getResponse()->getContent(), true);
@@ -141,5 +132,12 @@ class OrderCompleteTest extends WebTestCase
         $this->assertEquals(Response::HTTP_OK, $this->client->getResponse()->getStatusCode());
         $responseOrder = json_decode($this->client->getResponse()->getContent(), true)[0];
         $this->assertEquals($responseOrder[Order::PRODUCTS][0][OrderProduct::PRODUCT_ID], $productId);
+    }
+
+    private function createAndCompleteOrder($userId, $productId)
+    {
+        $this->client->request('POST', '/users/'.$userId.'/cart/'.$productId);
+        $this->client->request('PUT', '/users/'.$userId.'/order/shipping', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode(Order::VALID_SHIPPING_EXAMPLE));
+        $this->client->request('PUT', '/users/'.$userId.'/order/complete');
     }
 }
