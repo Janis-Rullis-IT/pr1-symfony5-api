@@ -1,6 +1,6 @@
 #### Let customers order Your custom shirts and mugs!
 
-Create a product and set it's cost and title. After that customers from all the world can order them (*currently from US-based companies*).
+Create a product and set it's cost and title. After that customers from all the world can order them <sup>*</sup>.
 
 ## FIRST TIME? HOW TO SET THIS UP?
 
@@ -60,4 +60,5 @@ Please, submit an issue [here](https://github.com/janis-rullis/pr1/issues).
 
 ## Notes
 
-- <sup>*</sup> `shell.sh` is just a helper that saves You from executing few commands Yourself. In case, if You can't execute it (*on Windows*) or there is some trouble, then You can set it up manually as every other Docker + Symfony project.
+- <sup>*</sup> currently from US-based companies.
+- <sup>**</sup> `shell.sh` is just a helper that saves You from executing few commands Yourself. In case, if You can't execute it (*on Windows*) or there is some trouble, then You can set it up manually as every other Docker + Symfony project.
