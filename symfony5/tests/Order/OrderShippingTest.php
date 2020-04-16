@@ -13,7 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * #40 PUT /users/{customerId}/order/shipping .
+ * #40 /users/{customerId}/order/shipping.
  */
 class OrderShippingTest extends WebTestCase
 {
@@ -24,16 +24,6 @@ class OrderShippingTest extends WebTestCase
     private $orderShippingService;
     private $orderShippingValidator;
     private $orderRepo;
-    private $ship_to_address = [
-        'name' => 'John',
-        'surname' => 'Doe',
-        'street' => 'Palm street 25-7',
-        'state' => 'California',
-        'zip' => '60744',
-        'country' => 'US',
-        'phone' => '+1 123 123 123',
-        'is_express' => true,
-    ];
 
     protected function setUp(): void
     {
@@ -55,9 +45,6 @@ class OrderShippingTest extends WebTestCase
         $this->entityManager = null;
     }
 
-    /**
-     *  #40.
-     */
     public function testOrderShippingExceptions()
     {
         $order = new Order();
@@ -66,9 +53,6 @@ class OrderShippingTest extends WebTestCase
         $this->orderShippingService->set(1, []);
     }
 
-    /**
-     *  #40.
-     */
     public function testOrderShippingExceptions2()
     {
         $order = new Order();
@@ -77,9 +61,6 @@ class OrderShippingTest extends WebTestCase
         $this->orderShippingService->set(0, Order::VALID_SHIPPING_EXAMPLE);
     }
 
-    /**
-     * #40.
-     */
     public function testOrderAddressValidatorExceptions()
     {
         $this->expectException(OrderShippingValidatorException::class);
@@ -87,9 +68,6 @@ class OrderShippingTest extends WebTestCase
         $this->orderShippingValidator->validateAddress([]);
     }
 
-    /**
-     * #40.
-     */
     public function testOrderValidatorExceptions()
     {
         $this->expectException(OrderShippingValidatorException::class);
@@ -97,10 +75,7 @@ class OrderShippingTest extends WebTestCase
         $this->orderShippingValidator->validate([]);
     }
 
-    /**
-     * #40.
-     */
-    public function testOrderValidation()
+    public function testOrderShippingValidator()
     {
         $ship_to_address = Order::VALID_SHIPPING_EXAMPLE;
         unset($ship_to_address[Order::IS_EXPRESS]);
