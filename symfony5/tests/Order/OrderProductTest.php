@@ -7,7 +7,6 @@ use App\Exception\ProductIdValidatorException;
 use App\Exception\UidValidatorException;
 use App\Interfaces\IOrderProductRepo;
 use App\Interfaces\IOrderRepo;
-use App\Interfaces\IProductRepo;
 use App\Interfaces\IUserRepo;
 use App\Service\Order\OrderProductCreator;
 use App\Service\User\UserWihProductsGenerator;
@@ -15,7 +14,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * #40 POST ​/users​/{customerId}​/cart​/{productId}.
+ * #40 ​/users​/{customerId}​/cart​/{productId}.
  */
 class OrderProductTest extends WebTestCase
 {
@@ -37,7 +36,6 @@ class OrderProductTest extends WebTestCase
         $this->orderRepo = $this->c->get('test.'.IOrderRepo::class);
         $this->userRepo = $this->c->get('test.'.IUserRepo::class);
         $this->orderProductCreator = $this->c->get('test.'.OrderProductCreator::class);
-        $this->productrRepo = $this->c->get('test.'.IProductRepo::class);
         $this->orderProductRepo = $this->c->get('test.'.IOrderProductRepo::class);
     }
 
@@ -53,8 +51,10 @@ class OrderProductTest extends WebTestCase
     public function testOrderProductExceptions()
     {
         $orderProduct = new OrderProduct();
+
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage("'aaa' ".\App\Helper\EnumType::INVALID_ENUM_VALUE);
+
         $orderProduct->setIsExpress('aaa');
     }
 
@@ -62,34 +62,36 @@ class OrderProductTest extends WebTestCase
     {
         $this->expectException(UidValidatorException::class);
         $this->expectExceptionCode(1);
+
         $this->orderProductCreator->handle($this->impossibleInt, $this->impossibleInt);
     }
 
     public function testOrderProductCreatorExceptions1()
     {
-        $user = $this->userRepo->getUserWithProducts();
-
         $this->expectException(UidValidatorException::class);
         $this->expectExceptionCode(1);
-        $this->orderProductCreator->handle($this->impossibleInt, $user->getProducts()[0]->getId());
+
+        $this->orderProductCreator->handle($this->impossibleInt, $this->userRepo->getUserWithProducts()->getProducts()[0]->getId());
     }
 
     public function testOrderProductCreatorExceptions2()
     {
-        $user = $this->userRepo->getUserWithProducts();
         $this->expectException(ProductIdValidatorException::class);
         $this->expectExceptionCode(1);
-        $this->orderProductCreator->handle($user->getId(), $this->impossibleInt);
+
+        $this->orderProductCreator->handle($this->userRepo->getUserWithProducts()->getId(), $this->impossibleInt);
     }
 
     public function testCreatedOrderProduct()
     {
         $user = $this->userWithProductsGenerator->generate(1)[0];
         $orderCreated = $this->orderRepo->insertIfNotExist($user->getId());
+
         $this->assertNull($orderCreated->getProducts());
 
         for ($i = 0; $i < 3; ++$i) {
             $validProduct = $this->orderProductCreator->handle($user->getId(), $user->getProducts()[0]->getId());
+
             $this->assertEquals($validProduct->getCustomerId(), $user->getId());
             $this->assertEquals($validProduct->getSellerId(), $user->getId());
             $this->assertEquals($validProduct->getSellerTitle(), $user->getName().' '.$user->getSurname());
@@ -109,16 +111,12 @@ class OrderProductTest extends WebTestCase
     public function testMakrCartsAdditionalProducts()
     {
         $user = $this->userWithProductsGenerator->generate(1)[0];
-        $orderCreated = $this->orderRepo->insertIfNotExist($user->getId());
+        $orderCreated = $this->createOrderWithProducts($user);
 
-        for ($i = 0; $i < 3; ++$i) {
-            $this->orderProductCreator->handle($user->getId(), $user->getProducts()[0]->getId());
-        }
-
-        // #39 #33 #34 Mark additional products (ex., 2 pieces of the same t-shirt, 2nd is additional).
         $this->assertTrue($this->orderProductRepo->makrCartsAdditionalProducts($orderCreated));
 
         $orderCreated = $this->orderRepo->find($orderCreated->getId());
+
         $this->assertEquals('n', $orderCreated->getProducts()[0]->getIsAdditional());
         $this->assertEquals('y', $orderCreated->getProducts()[1]->getIsAdditional());
         $this->assertEquals('y', $orderCreated->getProducts()[2]->getIsAdditional());
@@ -127,20 +125,19 @@ class OrderProductTest extends WebTestCase
     public function testMarkDomesticShipping()
     {
         $user = $this->userWithProductsGenerator->generate(1)[0];
-        $orderCreated = $this->orderRepo->insertIfNotExist($user->getId());
+        $orderCreated = $this->createOrderWithProducts($user);
+
         $this->assertEquals(null, $orderCreated->getIsDomestic());
 
         for ($i = 0; $i < 3; ++$i) {
             $this->orderProductCreator->handle($user->getId(), $user->getProducts()[0]->getId());
         }
 
-        $values = ['y', 'n'];
-        foreach ($values as $value) {
+        foreach (['y', 'n'] as $value) {
             $orderCreated->setIsDomestic($value);
             $this->entityManager->flush();
 
             $this->assertEquals(true, $this->orderProductRepo->markDomesticShipping($orderCreated));
-
             $orderFound = $this->orderRepo->getCurrentDraft($user->getId());
             $this->assertEquals($orderFound->getId(), $orderCreated->getId());
 
@@ -153,20 +150,15 @@ class OrderProductTest extends WebTestCase
     public function markExpressShipping()
     {
         $user = $this->userWithProductsGenerator->generate(1)[0];
-        $orderCreated = $this->orderRepo->insertIfNotExist($user->getId());
+        $orderCreated = $this->createOrderWithProducts($user);
+
         $this->assertEquals(null, $orderCreated->getIsDomestic());
 
-        for ($i = 0; $i < 3; ++$i) {
-            $this->orderProductCreator->handle($user->getId(), $user->getProducts()[0]->getId());
-        }
-
-        $values = ['y', 'n'];
-        foreach ($values as $value) {
+        foreach (['y', 'n'] as $value) {
             $orderCreated->setIsExpress($value);
             $this->entityManager->flush();
 
             $this->assertEquals(true, $this->orderProductRepo->markExpressShipping($orderCreated));
-
             $orderFound = $this->orderRepo->getCurrentDraft($user->getId());
             $this->assertEquals($orderFound->getId(), $orderCreated->getId());
 
@@ -179,147 +171,100 @@ class OrderProductTest extends WebTestCase
     public function testSetOrderCostsFromCartItemsInternational()
     {
         $user = $this->userWithProductsGenerator->generate(1)[0];
-        $orderCreated = $this->orderRepo->insertIfNotExist($user->getId());
+        $orderCreated = $this->createAndCompleteOrderWithProducts($user, 'n', 'n');
 
-        for ($i = 0; $i < 3; ++$i) {
-            $this->orderProductCreator->handle($user->getId(), $user->getProducts()[0]->getId());
-        }
-
-        // #39 #33 #34 Mark additional products (ex., 2 pieces of the same t-shirt, 2nd is additional).
-        $this->assertTrue($this->orderProductRepo->makrCartsAdditionalProducts($orderCreated));
-        $orderCreated->setIsDomestic('n');
-        $orderCreated->setIsExpress('n');
-        $this->entityManager->flush();
-        $this->assertEquals(true, $this->orderProductRepo->markDomesticShipping($orderCreated));
-        $this->assertEquals(true, $this->orderProductRepo->markExpressShipping($orderCreated));
-        $this->assertEquals(true, $this->orderProductRepo->setShippingRates($orderCreated));
-
-        // Sum together costs from cart products and store in the order's costs.
-        $this->assertEquals(true, $this->orderRepo->setOrderCostsFromCartItems($orderCreated));
-
-        $orderCreated = $this->orderRepo->find($orderCreated->getId());
-        // T-shirt / International / Standard / First = 3$.
-        $this->assertEquals(300, $orderCreated->getProducts()[0]->getShippingCost());
-        // T-shirt / International / Standard / Additional = 1.5$.
-        $this->assertEquals(150, $orderCreated->getProducts()[1]->getShippingCost());
-        // T-shirt / International / Standard / Additional = 1.5$.
-        $this->assertEquals(150, $orderCreated->getProducts()[2]->getShippingCost());
+        $this->assertEquals(300, $orderCreated->getProducts()[0]->getShippingCost(), 'T-shirt / International / Standard / First = 3$.');
+        $this->assertEquals(150, $orderCreated->getProducts()[1]->getShippingCost(), 'T-shirt / International / Standard / Additional = 1.5$.');
+        $this->assertEquals(150, $orderCreated->getProducts()[2]->getShippingCost(), 'T-shirt / International / Standard / Additional = 1.5$.');
     }
 
     public function testSetOrderCostsFromCartItemsDomestic()
     {
         $user = $this->userWithProductsGenerator->generate(1)[0];
-        $orderCreated = $this->orderRepo->insertIfNotExist($user->getId());
+        $orderCreated = $this->createAndCompleteOrderWithProducts($user, 'y', 'n');
 
-        for ($i = 0; $i < 3; ++$i) {
-            $this->orderProductCreator->handle($user->getId(), $user->getProducts()[0]->getId());
-        }
-
-        // #39 #33 #34 Mark additional products (ex., 2 pieces of the same t-shirt, 2nd is additional).
-        $this->assertTrue($this->orderProductRepo->makrCartsAdditionalProducts($orderCreated));
-        $orderCreated->setIsDomestic('y');
-        $orderCreated->setIsExpress('n');
-        $this->entityManager->flush();
-        $this->assertEquals(true, $this->orderProductRepo->markDomesticShipping($orderCreated));
-        $this->assertEquals(true, $this->orderProductRepo->markExpressShipping($orderCreated));
-        $this->assertEquals(true, $this->orderProductRepo->setShippingRates($orderCreated));
-
-        // Sum together costs from cart products and store in the order's costs.
-        $this->assertEquals(true, $this->orderRepo->setOrderCostsFromCartItems($orderCreated));
-
-        $orderCreated = $this->orderRepo->find($orderCreated->getId());
-        // T-shirt / International / Standard / First = 3$.
-        $this->assertEquals(100, $orderCreated->getProducts()[0]->getShippingCost());
-        // T-shirt / International / Standard / Additional = 1.5$.
-        $this->assertEquals(50, $orderCreated->getProducts()[1]->getShippingCost());
-        // T-shirt / International / Standard / Additional = 1.5$.
-        $this->assertEquals(50, $orderCreated->getProducts()[2]->getShippingCost());
+        $this->assertEquals(100, $orderCreated->getProducts()[0]->getShippingCost(), 'T-shirt / Domestic / Standard / First = 1$.');
+        $this->assertEquals(50, $orderCreated->getProducts()[1]->getShippingCost(), 'T-shirt / Domestic / Standard / Additional = 0.5$.');
+        $this->assertEquals(50, $orderCreated->getProducts()[2]->getShippingCost(), 'T-shirt / Domestic / Standard / Additional = 0.5$.');
     }
 
     public function testSetOrderCostsFromCartItemsExpress()
     {
         $user = $this->userWithProductsGenerator->generate(1)[0];
-        $orderCreated = $this->orderRepo->insertIfNotExist($user->getId());
+        $orderCreated = $this->createAndCompleteOrderWithProducts($user, 'y', 'y');
 
-        for ($i = 0; $i < 3; ++$i) {
-            $this->orderProductCreator->handle($user->getId(), $user->getProducts()[0]->getId());
-        }
-
-        // #39 #33 #34 Mark additional products (ex., 2 pieces of the same t-shirt, 2nd is additional).
-        $this->assertTrue($this->orderProductRepo->makrCartsAdditionalProducts($orderCreated));
-        $orderCreated->setIsDomestic('y');
-        $orderCreated->setIsExpress('y');
-        $this->entityManager->flush();
-        $this->assertEquals(true, $this->orderProductRepo->markDomesticShipping($orderCreated));
-        $this->assertEquals(true, $this->orderProductRepo->markExpressShipping($orderCreated));
-        $this->assertEquals(true, $this->orderProductRepo->setShippingRates($orderCreated));
-
-        // Sum together costs from cart products and store in the order's costs.
-        $this->assertEquals(true, $this->orderRepo->setOrderCostsFromCartItems($orderCreated));
-
-        $orderCreated = $this->orderRepo->find($orderCreated->getId());
-        // T-shirt / International / Standard / First = 3$.
-        $this->assertEquals(1000, $orderCreated->getProducts()[0]->getShippingCost());
-        // T-shirt / International / Standard / Additional = 1.5$.
-        $this->assertEquals(1000, $orderCreated->getProducts()[1]->getShippingCost());
-        // T-shirt / International / Standard / Additional = 1.5$.
-        $this->assertEquals(1000, $orderCreated->getProducts()[2]->getShippingCost());
+        $this->assertEquals(1000, $orderCreated->getProducts()[0]->getShippingCost(), 'T-shirt / Domestic / Express / First = 10$.');
+        $this->assertEquals(1000, $orderCreated->getProducts()[1]->getShippingCost(), 'T-shirt / Domestic / Express / Additional = 10$.');
+        $this->assertEquals(1000, $orderCreated->getProducts()[2]->getShippingCost(), 'T-shirt / Domestic / Express / Additional = 10$.');
     }
 
     public function testInvalidequest()
     {
-        $customerId = $this->impossibleInt;
-        $productId = $this->impossibleInt;
-        $uri = '/users/'.$customerId.'/cart/'.$productId;
+        $this->client->request('POST', '/users/'.$this->impossibleInt.'/cart/'.$this->impossibleInt);
 
-        $this->client->request('POST', $uri);
         $this->assertEquals(Response::HTTP_NOT_FOUND, $this->client->getResponse()->getStatusCode());
-        $responseBody = json_decode($this->client->getResponse()->getContent(), true);
-        $this->assertEquals(['id' => 'invalid user'], $responseBody);
+        $this->assertEquals([OrderProduct::ID => 'invalid user'], json_decode($this->client->getResponse()->getContent(), true));
     }
 
     public function testInvalidUser()
     {
-        $user = $this->userRepo->getUserWithProducts();
+        $this->client->request('POST', '/users/'.$this->impossibleInt.'/cart/'.$this->userRepo->getUserWithProducts()->getProducts()[0]->getId());
 
-        $customerId = $this->impossibleInt;
-        $productId = $user->getProducts()[0]->getId();
-        $uri = '/users/'.$customerId.'/cart/'.$productId;
-
-        $this->client->request('POST', $uri);
         $this->assertEquals(Response::HTTP_NOT_FOUND, $this->client->getResponse()->getStatusCode());
-        $responseBody = json_decode($this->client->getResponse()->getContent(), true);
-        $this->assertEquals(['id' => 'invalid user'], $responseBody);
+        $this->assertEquals([OrderProduct::ID => 'invalid user'], json_decode($this->client->getResponse()->getContent(), true));
     }
 
     public function testInvalidProduct()
     {
-        $user = $this->userRepo->getUserWithProducts();
+        $this->client->request('POST', '/users/'.$this->userRepo->getUserWithProducts()->getId().'/cart/'.$this->impossibleInt);
 
-        $customerId = $user->getId();
-        $productId = $this->impossibleInt;
-        $uri = '/users/'.$customerId.'/cart/'.$productId;
-
-        $this->client->request('POST', $uri);
         $this->assertEquals(Response::HTTP_NOT_FOUND, $this->client->getResponse()->getStatusCode());
-        $responseBody = json_decode($this->client->getResponse()->getContent(), true);
-        $this->assertEquals(['id' => 'Invalid product.'], $responseBody);
+        $this->assertEquals([OrderProduct::ID => 'Invalid product.'], json_decode($this->client->getResponse()->getContent(), true));
     }
 
     public function testValidRequest()
     {
         $user = $this->userRepo->getUserWithProducts();
+        $this->client->request('POST', '/users/'.$user->getId().'/cart/'.$user->getProducts()[0]->getId());
 
-        $customerId = $user->getId();
-        $productId = $user->getProducts()[0]->getId();
-        $uri = '/users/'.$customerId.'/cart/'.$productId;
-
-        $this->client->request('POST', $uri);
         $this->assertEquals(Response::HTTP_CREATED, $this->client->getResponse()->getStatusCode());
-
         $responseBody = json_decode($this->client->getResponse()->getContent(), true);
-        $this->assertNotEmpty($responseBody['id']);
-        $this->assertEquals($productId, $responseBody['product_id']);
-        $this->assertEquals($customerId, $responseBody['customer_id']);
+        $this->assertNotEmpty($responseBody[OrderProduct::ID]);
+        $this->assertEquals($user->getProducts()[0]->getId(), $responseBody[OrderProduct::PRODUCT_ID]);
+        $this->assertEquals($user->getId(), $responseBody[OrderProduct::CUSTOMER_ID]);
+    }
+
+    private function createAndCompleteOrderWithProducts($user, $isDomestic = 'n', $isExpress = 'n')
+    {
+        $orderCreated = $this->createOrderWithProducts($user);
+
+        $this->assertTrue($this->orderProductRepo->makrCartsAdditionalProducts($orderCreated));
+
+        $orderCreated->setIsDomestic($isDomestic);
+        $orderCreated->setIsExpress($isExpress);
+        $this->entityManager->flush();
+
+        $this->assertEquals(true, $this->orderProductRepo->markDomesticShipping($orderCreated));
+        $this->assertEquals(true, $this->orderProductRepo->markExpressShipping($orderCreated));
+        $this->assertEquals(true, $this->orderProductRepo->setShippingRates($orderCreated));
+        // Sum together costs from cart products and store in the order's costs.
+        $this->assertEquals(true, $this->orderRepo->setOrderCostsFromCartItems($orderCreated));
+
+        return $this->orderRepo->find($orderCreated->getId());
+    }
+
+    private function createOrderWithProducts($user)
+    {
+        $orderCreated = $this->orderRepo->insertIfNotExist($user->getId());
+        $this->addToCart($user->getId(), $user->getProducts()[0]->getId());
+
+        return $orderCreated;
+    }
+
+    private function addToCart($userId, $productId, $times = 3)
+    {
+        for ($i = 0; $i < $times; ++$i) {
+            $this->orderProductCreator->handle($userId, $productId);
+        }
     }
 }
