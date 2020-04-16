@@ -39,8 +39,8 @@ class OrderCompleteTest extends WebTestCase
     {
         $uri = '/users/'.$this->impossibleInt.'/order/complete';
         $this->client->request('PUT', $uri);
-        $this->assertEquals(Response::HTTP_NOT_FOUND, $this->client->getResponse()->getStatusCode());
 
+        $this->assertEquals(Response::HTTP_NOT_FOUND, $this->client->getResponse()->getStatusCode());
         $this->assertEquals([Order::ID => 'invalid user'], json_decode($this->client->getResponse()->getContent(), true));
     }
 

@@ -50,9 +50,6 @@ class OrderProductTest extends WebTestCase
         $this->entityManager = null;
     }
 
-    /**
-     * #40.
-     */
     public function testOrderProductExceptions()
     {
         $orderProduct = new OrderProduct();
@@ -61,9 +58,6 @@ class OrderProductTest extends WebTestCase
         $orderProduct->setIsExpress('aaa');
     }
 
-    /**
-     * #40 Invalid params.
-     */
     public function testOrderProductCreatorExceptions()
     {
         $this->expectException(UidValidatorException::class);
@@ -71,9 +65,6 @@ class OrderProductTest extends WebTestCase
         $this->orderProductCreator->handle($this->impossibleInt, $this->impossibleInt);
     }
 
-    /**
-     * #40 Invalid user, valid product.
-     */
     public function testOrderProductCreatorExceptions1()
     {
         $user = $this->userRepo->getUserWithProducts();
@@ -83,9 +74,6 @@ class OrderProductTest extends WebTestCase
         $this->orderProductCreator->handle($this->impossibleInt, $user->getProducts()[0]->getId());
     }
 
-    /**
-     * #40 Invalid product, valid user.
-     */
     public function testOrderProductCreatorExceptions2()
     {
         $user = $this->userRepo->getUserWithProducts();
@@ -278,9 +266,6 @@ class OrderProductTest extends WebTestCase
         $this->assertEquals(1000, $orderCreated->getProducts()[2]->getShippingCost());
     }
 
-    /**
-     * #40 Invalid parameters.
-     */
     public function testInvalidequest()
     {
         $customerId = $this->impossibleInt;
@@ -293,9 +278,6 @@ class OrderProductTest extends WebTestCase
         $this->assertEquals(['id' => 'invalid user'], $responseBody);
     }
 
-    /**
-     * #40 Invalid user, valid product.
-     */
     public function testInvalidUser()
     {
         $user = $this->userRepo->getUserWithProducts();
@@ -310,9 +292,6 @@ class OrderProductTest extends WebTestCase
         $this->assertEquals(['id' => 'invalid user'], $responseBody);
     }
 
-    /**
-     * #40 Invalid product, valid user.
-     */
     public function testInvalidProduct()
     {
         $user = $this->userRepo->getUserWithProducts();
@@ -327,9 +306,6 @@ class OrderProductTest extends WebTestCase
         $this->assertEquals(['id' => 'Invalid product.'], $responseBody);
     }
 
-    /**
-     * #40 Valid request.
-     */
     public function testValidRequest()
     {
         $user = $this->userRepo->getUserWithProducts();
@@ -345,7 +321,5 @@ class OrderProductTest extends WebTestCase
         $this->assertNotEmpty($responseBody['id']);
         $this->assertEquals($productId, $responseBody['product_id']);
         $this->assertEquals($customerId, $responseBody['customer_id']);
-
-        // #40 More thorough tests regarding this are located in OrderProductUnitTest.
     }
 }

@@ -43,25 +43,31 @@ class OrderUnitTest extends KernelTestCase
     public function testOrderEnumExceptions()
     {
         $order = new Order();
+
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage("'aaa' ".\App\Helper\EnumType::INVALID_ENUM_VALUE);
         $this->expectExceptionCode(1);
+
         $order->setIsDomestic('aaa');
     }
 
     public function testOrderIsExpressExceptions()
     {
         $order = new Order();
+
         $this->expectException(OrderShippingValidatorException::class);
         $this->expectExceptionCode(1, '#40 Require the `is_domestic` to be set first');
+
         $order->setIsExpress('y');
     }
 
     public function testOrderIsExpressExceptions2()
     {
         $order = new Order();
+
         $this->expectException(OrderShippingValidatorException::class);
         $this->expectExceptionCode(2, '#40 Express must match the region.');
+
         $order->setIsDomestic('n');
         $order->setIsExpress('y');
     }
@@ -71,6 +77,7 @@ class OrderUnitTest extends KernelTestCase
         $user = $this->userWithProductsGenerator->generate(1)[0];
         $this->assertNull($this->orderRepo->getCurrentDraft($user->getId()), '#36 #38 New customer shouldnt have a draft order.');
         $orderCreated = $this->orderRepo->insertIfNotExist($user->getId());
+
         $this->assertNull($orderCreated->getIsExpress());
         $this->assertNull($orderCreated->getShippingCost());
         $this->assertNull($orderCreated->getProductCost());
@@ -78,15 +85,16 @@ class OrderUnitTest extends KernelTestCase
         $this->assertEquals(Order::DRAFT, $orderCreated->getStatus(), 'A created order should be a draft.');
 
         $this->orderRepo->markAsCompleted($orderCreated);
-
         $orderFound = $this->orderRepo->find($orderCreated->getId());
 
         $this->assertEquals(Order::COMPLETED, $orderFound->getStatus(), 'markAsCompleted() should change status to completed.');
 
         $orderCreated2 = $this->orderRepo->insertIfNotExist($user->getId());
+
         $this->assertNotEquals($orderCreated->getId(), $orderCreated2->getId(), '#40 A new order should be created after the previous is completed.');
 
         $orderFound2 = $this->orderRepo->getCurrentDraft($user->getId());
+
         $this->assertEquals($orderFound2->getId(), $orderCreated2->getId(), '#36 #38 Should find an existing one.');
         $this->assertEquals($orderFound2->getId(), $this->orderRepo->insertIfNotExist($user->getId())->getId(), '#36 #38 A new draft order should not be created if there is already one.');
     }
@@ -102,18 +110,17 @@ class OrderUnitTest extends KernelTestCase
 
         // #39 #33 #34 Mark additional products (ex., 2 pieces of the same t-shirt, 2nd is additional).
         $this->assertTrue($this->orderProductRepo->makrCartsAdditionalProducts($orderCreated));
+
         $orderCreated->setIsDomestic('n');
         $orderCreated->setIsExpress('n');
         $this->entityManager->flush();
+
         $this->assertEquals(true, $this->orderProductRepo->markDomesticShipping($orderCreated));
         $this->assertEquals(true, $this->orderProductRepo->markExpressShipping($orderCreated));
         $this->assertEquals(true, $this->orderProductRepo->setShippingRates($orderCreated));
-
-        // Sum together costs from cart products and store in the order's costs.
         $this->assertEquals(true, $this->orderRepo->setOrderCostsFromCartItems($orderCreated));
 
         $orderFound = $this->orderRepo->find($orderCreated->getId());
-
         $productCostTotal = $shippingCostTotal = 0;
         foreach ($orderFound->getProducts() as $product) {
             $shippingCostTotal += $product->getShippingCost();
@@ -129,18 +136,21 @@ class OrderUnitTest extends KernelTestCase
     public function testToArray()
     {
         $user = $this->userWithProductsGenerator->generate(1)[0];
+
         $this->assertNull($this->orderRepo->getCurrentDraft($user->getId()), '#36 #38 New customer shouldnt have a draft order.');
+
         $this->orderRepo->insertIfNotExist($user->getId());
         $this->orderProductCreator->handle($user->getId(), $user->getProducts()[0]->getId());
         $this->entityManager->clear();
         $orderFound = $this->orderRepo->getCurrentDraft($user->getId());
-
         $orderWithProducts = $this->orderRepo->mustFindUsersOrder($orderFound->getCustomerId(), $orderFound->getId())->toArray([], [Order::PRODUCTS]);
         $firstProduct = $orderWithProducts[Order::PRODUCTS][0];
+
         $this->assertEquals($orderFound->getId(), $firstProduct[OrderProduct::ORDER_ID]);
         $this->assertEquals($orderFound->getCustomerId(), $firstProduct[OrderProduct::CUSTOMER_ID]);
 
         $products = $orderFound->getProducts()->toArray()[0];
+
         foreach ($products as $product) {
             $this->assertEquals($orderFound->getId(), $product->getOrderId());
         }

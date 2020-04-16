@@ -48,16 +48,20 @@ class OrderShippingTest extends WebTestCase
     public function testOrderShippingExceptions()
     {
         $order = new Order();
+
         $this->expectException(OrderShippingValidatorException::class);
         $this->expectExceptionCode(1);
+
         $this->orderShippingService->set(1, []);
     }
 
     public function testOrderShippingExceptions2()
     {
         $order = new Order();
+
         $this->expectException(UidValidatorException::class);
         $this->expectExceptionCode(1);
+
         $this->orderShippingService->set(0, Order::VALID_SHIPPING_EXAMPLE);
     }
 
@@ -65,6 +69,7 @@ class OrderShippingTest extends WebTestCase
     {
         $this->expectException(OrderShippingValidatorException::class);
         $this->expectExceptionCode(2);
+
         $this->orderShippingValidator->validateAddress([]);
     }
 
@@ -72,6 +77,7 @@ class OrderShippingTest extends WebTestCase
     {
         $this->expectException(OrderShippingValidatorException::class);
         $this->expectExceptionCode(1);
+
         $this->orderShippingValidator->validate([]);
     }
 
@@ -79,15 +85,19 @@ class OrderShippingTest extends WebTestCase
     {
         $ship_to_address = Order::VALID_SHIPPING_EXAMPLE;
         unset($ship_to_address[Order::IS_EXPRESS]);
+
         $this->assertFalse($this->orderShippingValidator->hasRequiredKeys($ship_to_address));
         $this->assertEquals([Order::IS_EXPRESS => Order::IS_EXPRESS], $this->orderShippingValidator->getMissingKeys($ship_to_address));
+
         $ship_to_address[Order::IS_EXPRESS] = true;
 
         $this->assertTrue($this->orderShippingValidator->hasRequiredKeys($ship_to_address));
         $this->assertTrue($this->orderShippingValidator->isAddressValid($ship_to_address));
         $this->assertTrue($this->orderShippingValidator->isExpressShippingAllowed($ship_to_address));
         $this->assertTrue($this->orderShippingValidator->isValid($ship_to_address));
+
         $ship_to_address[Order::COUNTRY] = 'Latvia';
+
         $this->assertTrue($this->orderShippingValidator->isAddressValid($ship_to_address));
         $this->assertFalse($this->orderShippingValidator->isExpressShippingAllowed($ship_to_address));
         $this->assertFalse($this->orderShippingValidator->isValid($ship_to_address));
@@ -109,6 +119,7 @@ class OrderShippingTest extends WebTestCase
 
         $ship_to_address = Order::VALID_SHIPPING_EXAMPLE;
         $draftOrder = $this->orderShippingService->set($draftOrder->getCustomerId(), $ship_to_address);
+
         $this->assertEquals($ship_to_address[Order::OWNER_NAME], $draftOrder->getName());
         $this->assertEquals($ship_to_address[Order::OWNER_SURNAME], $draftOrder->getSurname());
         $this->assertEquals($ship_to_address[Order::STREET], $draftOrder->getStreet());
@@ -123,16 +134,17 @@ class OrderShippingTest extends WebTestCase
     public function testInvalidCustomer()
     {
         $this->client->request('PUT', '/users/'.$this->impossibleInt.'/order/shipping', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode(Order::VALID_SHIPPING_EXAMPLE));
-        $this->assertEquals(Response::HTTP_NOT_FOUND, $this->client->getResponse()->getStatusCode());
-        $responseBody = json_decode($this->client->getResponse()->getContent(), true);
 
-        $this->assertEquals([Order::ID => 'invalid user'], $responseBody);
+        $this->assertEquals(Response::HTTP_NOT_FOUND, $this->client->getResponse()->getStatusCode());
+        $this->assertEquals([Order::ID => 'invalid user'], json_decode($this->client->getResponse()->getContent(), true));
     }
 
     public function testMissingData()
     {
         $this->client->request('PUT', '/users/'.$this->impossibleInt.'/order/shipping', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([]));
+
         $this->assertEquals(Response::HTTP_BAD_REQUEST, $this->client->getResponse()->getStatusCode());
+
         $responseBody = json_decode($this->client->getResponse()->getContent(), true);
 
         foreach (\App\Entity\Order::REQUIRED_FIELDS as $key => $val) {
@@ -145,10 +157,9 @@ class OrderShippingTest extends WebTestCase
         $data = Order::VALID_SHIPPING_EXAMPLE;
         unset($data[Order::IS_EXPRESS]);
         $this->client->request('PUT', '/users/'.$this->impossibleInt.'/order/shipping', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
-        $this->assertEquals(Response::HTTP_BAD_REQUEST, $this->client->getResponse()->getStatusCode());
-        $responseBody = json_decode($this->client->getResponse()->getContent(), true);
 
-        $this->assertEquals([Order::IS_EXPRESS => ["'is_express' field is missing."]], $responseBody);
+        $this->assertEquals(Response::HTTP_BAD_REQUEST, $this->client->getResponse()->getStatusCode());
+        $this->assertEquals([Order::IS_EXPRESS => ["'is_express' field is missing."]], json_decode($this->client->getResponse()->getContent(), true));
     }
 
     public function testValidRequest()
@@ -157,9 +168,9 @@ class OrderShippingTest extends WebTestCase
         $this->client->request('POST', '/users/'.$user->getId().'/cart/'.$user->getProducts()[0]->getId());
         $data = Order::VALID_SHIPPING_EXAMPLE;
         $this->client->request('PUT', '/users/'.$user->getId().'/order/shipping', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
+
         $this->assertEquals(Response::HTTP_OK, $this->client->getResponse()->getStatusCode());
         $responseBody = json_decode($this->client->getResponse()->getContent(), true);
-
         $this->assertEquals('y', $responseBody[Order::IS_DOMESTIC]);
         $this->assertEquals('y', $responseBody[Order::IS_EXPRESS]);
         $this->assertEquals(1000, $responseBody[Order::SHIPPING_COST], '#40 Express costs 10$.');
