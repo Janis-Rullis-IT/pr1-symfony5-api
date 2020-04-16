@@ -1,7 +1,6 @@
-### Let customers order Your custom shirts and mugs!
+#### Let customers order Your custom shirts and mugs!
 
-This API allows to define how much the shirt or mug will cost and what will it tell. 
-After that customers from all the world can order them (*currently from US-based companies*).
+Create a product and set it's cost and title. After that customers from all the world can order them (*currently from US-based companies*).
 
 ## FIRST TIME? HOW TO SET THIS UP?
 
@@ -32,10 +31,10 @@ This transletes the machines address to the domain-name.
 
 ## ALREADY SET-UP?
 
-* `start.sh` - Start containers once the setup has been done.
-* `connect.sh` - Connect to the main container.
-* `test.sh` - Execute PHPUnit tests.
-* `lint.sh` - Check and format the code.
+* `./start.sh` - Start containers once the setup has been done.
+* `./connect.sh` - Connect to the main container.
+* `./test.sh` - Execute PHPUnit tests.
+* `./lint.sh` - Check and format the code.
 
 ## Documentation
 
