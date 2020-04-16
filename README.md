@@ -1,21 +1,19 @@
-# PR1
-
-## Let customers order Your custom shirts and mugs!
+### Let customers order Your custom shirts and mugs!
 
 This API allows to define how much the shirt or mug will cost and what will it tell. 
 After that customers from all the world can order them (*currently from US-based companies*).
 
 ## FIRST TIME? HOW TO SET THIS UP?
 
-### [Install docker]((https://github.com/janis-rullis/dev/blob/master/Docker/README.md#install))
+#### [Install docker]((https://github.com/janis-rullis/dev/blob/master/Docker/README.md#install))
 
 Docker is a virtual environment with all the required software included. See [all other benefits](Why-use-docker.md).
 
-### Provide Your environment values
+#### Provide Your environment values
 
 - Copy the `.env.example` to `.env` and fill `FILL_THIS` values in it.
 
-### Execute the `setup.sh` script <sup>*</sup>
+#### Execute the `setup.sh` script <sup>*</sup>
 
 It will download, install and prepare all the required software.
 
@@ -23,7 +21,7 @@ It will download, install and prepare all the required software.
 ./setup.sh
 ```
 
-### Add these to Your `hosts` file
+#### Add these to Your `hosts` file
 
 This transletes the machines address to the domain-name.
 
