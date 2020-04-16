@@ -354,7 +354,6 @@ class OrderProduct
 
     /**
      * #40 Convert the Entity to array in unified manner.
-     * Will give same result in different endpoints.
      */
     public function toArray(?array $fields = []): array
     {

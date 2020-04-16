@@ -35,27 +35,32 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
      */
     public function makrCartsAdditionalProducts(Order $draftOrder): bool
     {
-        // #39 #33 #34 Reset all cart's products as first. DQL because this is simple.
-        $this->createQueryBuilder('p')->update()->where('p.order_id = :orderId')->set('p.is_additional', ':isAdditional')
-            ->setParameter('orderId', $draftOrder->getId())->setParameter('isAdditional', 'n')
-            ->getQuery()->execute();
-
-        // #39 #33 #34 Raw because this is more complex.
+        $this->resetCartsAdditionalFlags($draftOrder);
         $tableName = $this->_em->getClassMetadata(OrderProduct::class)->getTableName();
         $conn = $this->_em->getConnection();
         $sql = '
 			UPDATE `'.$tableName.'` n1, `'.$tableName.'` n2
-			SET n1.`is_additional` = \'y\'
+			SET n1.`is_additional` = :isAdditional
 			WHERE n1.id > n2.id 
 			AND n1.`product_id` = n2.`product_id`
 			AND n1.`order_id` = n2.`order_id`
 			AND n1.`order_id` = :order_id;';
         $stmt = $conn->prepare($sql);
-        $return = $stmt->execute(['order_id' => $draftOrder->getId()]);
+        $return = $stmt->execute(['isAdditional' => 'y', 'order_id' => $draftOrder->getId()]);
         $this->_em->flush();
         $this->_em->clear();
 
         return $return;
+    }
+
+    /**
+     * #39 Reset `is_additional` field for all cart's products to 'n' (means first).
+     */
+    public function resetCartsAdditionalFlags(Order $draftOrder): bool
+    {
+        return $this->createQueryBuilder('p')->update()->where('p.order_id = :orderId')->set('p.is_additional', ':isAdditional')
+            ->setParameter('orderId', $draftOrder->getId())->setParameter('isAdditional', 'n')
+            ->getQuery()->execute() >= 0;
     }
 
     /**
@@ -65,7 +70,7 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
     public function markDomesticShipping(Order $draftOrder): bool
     {
         $return = $this->createQueryBuilder('p')->update()->where('p.order_id = :orderId')->set('p.is_domestic', ':isDomestic')
-			->setParameter('orderId', $draftOrder->getId())->setParameter('isDomestic', $draftOrder->getIsDomestic())
+            ->setParameter('orderId', $draftOrder->getId())->setParameter('isDomestic', $draftOrder->getIsDomestic())
                 ->getQuery()->execute() >= 0;
         $this->_em->flush();
         $this->_em->clear();
@@ -89,12 +94,10 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
     }
 
     /**
-     * #39 Set order's product shipping costs based on the matching rates in the `shipping_rate` table.
-     * https://github.com/janis-rullis/pr1/issues/34#issuecomment-595221093.
+     * #39 Set order's product shipping costs based on the matching rates in the `shipping_rate` table https://github.com/janis-rullis/pr1/issues/34#issuecomment-595221093.
      */
     public function setShippingRates(Order $draftOrder): bool
     {
-        // #39 TODO: Rewrite in a query builder format.
         $tableName = $this->_em->getClassMetadata(OrderProduct::class)->getTableName();
         $conn = $this->_em->getConnection();
         $sql = '

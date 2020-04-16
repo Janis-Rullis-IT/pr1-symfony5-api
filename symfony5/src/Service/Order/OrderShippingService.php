@@ -50,7 +50,7 @@ class OrderShippingService
         $this->orderShippingValidator->validate($shippingData);
         $shippingData['is_domestic'] = $this->orderShippingValidator->isDomestic($shippingData);
         $customer = $this->userRepo->mustFind($customerId);
-        // #38 #36 Collect customer's current 'draft' or create a new one.
+        // #38 Collect customer's current 'draft' or create a new one.
         $draftOrder = $this->orderRepo->insertIfNotExist($customer->getId());
 
         return $this->orderRepo->fillShipping($draftOrder, $shippingData);
