@@ -10,9 +10,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
 /**
- * #68 Repo best practices https://www.thinktocode.com/2018/03/05/repository-pattern-symfony/
+ * #68 Repo best practices https://www.thinktocode.com/2018/03/05/repository-pattern-symfony/.
  */
-
 class OrderRepository extends ServiceEntityRepository implements IOrderRepo
 {
     public function __construct(ManagerRegistry $registry)
@@ -27,7 +26,7 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
     {
         $item = $this->getCurrentDraft($customerId);
 
-        / #38 Create if it doesn't exist yet.
+        // #38 Create if it doesn't exist yet.
         if (empty($item)) {
             $item = new Order();
             $item->setCustomerId($customerId);
@@ -79,15 +78,15 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
         return $return;
     }
 
-	/**
-	 * #40 Fill the shipping data into the order.
-	 */
+    /**
+     * #40 Fill the shipping data into the order.
+     */
     public function fillShipping(Order $order, array $shippingData): Order
     {
         // #39 Mark order's shipping values to be used for matching a row in the `shipping_rates` table.
-		$order->setIsDomestic($shippingData['is_domestic']);
+        $order->setIsDomestic($shippingData['is_domestic']);
         $order->setIsExpress($shippingData['is_express']);
-		
+
         $order->setName($shippingData[Order::OWNER_NAME]);
         $order->setSurname($shippingData[Order::OWNER_SURNAME]);
         $order->setStreet($shippingData[Order::STREET]);
@@ -118,8 +117,8 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
         $order = $this->_em->getReference(Order::class, $order->getId());
         $order->setStatus(Order::COMPLETED);
         $this->save($order);
-		
-		return $order;
+
+        return $order;
     }
 
     /**

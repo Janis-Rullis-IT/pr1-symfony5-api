@@ -12,17 +12,13 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 
 class OrderProductRepository extends ServiceEntityRepository implements IOrderProductRepo
 {
-
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, OrderProduct::class);
     }
 
     /**
-     * #68 Remove this.
-     *
-     * #38 #36 Add a product to cart into the database.
-     * Use OrderProductCreator as a helper to prepare the required data.
+     * #38 Add a product to cart into the database.
      */
     public function create(OrderProduct $item): OrderProduct
     {
@@ -33,24 +29,15 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
     }
 
     /**
-     * #39 #33 #34 Mark additional products (ex., 2 pieces of the same t-shirt, 2nd is additional).
+     * #39 Mark additional products (ex., 2 pieces of the same t-shirt, 2nd is additional).
      * Done with a SQL query that is faster than checking if is there another product like that before inserting.
      * The purpose of this field `is_additional` is to be used for matching a row in the `shipping_rates` table.
-     * https://symfony.com/doc/current/doctrine.html#querying-for-objects-the-repository
-     * https://www.doctrine-project.org/projects/doctrine-orm/en/current/reference/dql-doctrine-query-language.html
-     * https://symfony.com/doc/current/doctrine.html#querying-with-sql
-     * https://ourcodeworld.com/articles/read/2/5-simple-tips-for-boost-the-database-handling-with-symfony2-and-doctrine
-     * https://www.doctrine-project.org/projects/doctrine-orm/en/current/reference/query-builder.html.
      */
     public function makrCartsAdditionalProducts(Order $draftOrder): bool
     {
         // #39 #33 #34 Reset all cart's products as first. DQL because this is simple.
-        $this->createQueryBuilder('p')
-            ->update()
-            ->where('p.order_id = :orderId')
-            ->set('p.is_additional', ':isAdditional')
-            ->setParameter('orderId', $draftOrder->getId())
-            ->setParameter('isAdditional', 'n')
+        $this->createQueryBuilder('p')->update()->where('p.order_id = :orderId')->set('p.is_additional', ':isAdditional')
+            ->setParameter('orderId', $draftOrder->getId())->setParameter('isAdditional', 'n')
             ->getQuery()->execute();
 
         // #39 #33 #34 Raw because this is more complex.
@@ -65,13 +52,6 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
 			AND n1.`order_id` = :order_id;';
         $stmt = $conn->prepare($sql);
         $return = $stmt->execute(['order_id' => $draftOrder->getId()]);
-
-        // #39 #33 #34 Fix Results are not refreshed when collected later
-        // with `find()` because they are collected by def. from the memory first.
-        // https://github.com/doctrine/orm/issues/6320#issuecomment-581832185
-        // https://www.doctrine-project.org/projects/doctrine-orm/en/2.7/reference/working-with-objects.html#detaching-entities
-        // https://www.doctrine-project.org/api/orm/latest/Doctrine/ORM/EntityManager.html#method_clear
-        // https://www.doctrine-project.org/projects/doctrine-orm/en/2.7/reference/batch-processing.html#iterating-results
         $this->_em->flush();
         $this->_em->clear();
 
@@ -79,19 +59,14 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
     }
 
     /**
-     * #39 #33 #34 Mark cart's products as domestic or international (from the order).
+     * #39 Mark cart's products as domestic or international (from the order).
      * The purpose of this field `is_domestic` is to be used for matching a row in the `shipping_rates` table.
      */
     public function markDomesticShipping(Order $draftOrder): bool
     {
-        $return = $this->createQueryBuilder('p')
-                ->update()
-                ->where('p.order_id = :orderId')
-                ->set('p.is_domestic', ':isDomestic')
-                ->setParameter('orderId', $draftOrder->getId())
-                ->setParameter('isDomestic', $draftOrder->getIsDomestic())
+        $return = $this->createQueryBuilder('p')->update()->where('p.order_id = :orderId')->set('p.is_domestic', ':isDomestic')
+			->setParameter('orderId', $draftOrder->getId())->setParameter('isDomestic', $draftOrder->getIsDomestic())
                 ->getQuery()->execute() >= 0;
-
         $this->_em->flush();
         $this->_em->clear();
 
@@ -99,19 +74,14 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
     }
 
     /**
-     * #39 #33 #34 Mark cart's product shipping as express or standard.
+     * #39 Mark cart's product shipping as express or standard.
      * The purpose of this field `is_express` is to be used for matching a row in the `shipping_rate` table.
      */
     public function markExpressShipping(Order $draftOrder): bool
     {
-        $return = $this->createQueryBuilder('p')
-                ->update()
-                ->where('p.order_id = :orderId')
-                ->set('p.is_express', ':isExpress')
-                ->setParameter('orderId', $draftOrder->getId())
-                ->setParameter('isExpress', $draftOrder->getIsExpress())
+        $return = $this->createQueryBuilder('p')->update()->where('p.order_id = :orderId')->set('p.is_express', ':isExpress')
+                ->setParameter('orderId', $draftOrder->getId())->setParameter('isExpress', $draftOrder->getIsExpress())
                 ->getQuery()->execute() >= 0;
-
         $this->_em->flush();
         $this->_em->clear();
 
@@ -119,13 +89,12 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
     }
 
     /**
-     * #39 #33 #34 #37 Set order's product shipping costs based on the
-     * matching rates in the `shipping_rate` table.
+     * #39 Set order's product shipping costs based on the matching rates in the `shipping_rate` table.
      * https://github.com/janis-rullis/pr1/issues/34#issuecomment-595221093.
      */
     public function setShippingRates(Order $draftOrder): bool
     {
-        // #39 #33 #34 #37 TODO: Rewrite in a query builder format.
+        // #39 TODO: Rewrite in a query builder format.
         $tableName = $this->_em->getClassMetadata(OrderProduct::class)->getTableName();
         $conn = $this->_em->getConnection();
         $sql = '
@@ -140,7 +109,6 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
 			AND a.deleted_at IS NULL;';
         $stmt = $conn->prepare($sql);
         $return = $stmt->execute(['order_id' => $draftOrder->getId()]);
-
         $this->_em->flush();
         $this->_em->clear();
 
@@ -148,8 +116,7 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
     }
 
     /**
-     * #38 #36 Prepare product to add to cart into the database.
-     * Use OrderProductCreator as a helper to prepare the required data.
+     * #38 Prepare product to add to cart into the database.
      */
     public function prepare(User $customer, Product $product, User $seller, Order $draftOrder): OrderProduct
     {
