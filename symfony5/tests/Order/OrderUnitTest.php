@@ -109,7 +109,7 @@ class OrderUnitTest extends KernelTestCase
         }
 
         // #39 #33 #34 Mark additional products (ex., 2 pieces of the same t-shirt, 2nd is additional).
-        $this->assertTrue($this->orderProductRepo->makrCartsAdditionalProducts($orderCreated));
+        $this->assertTrue($this->orderProductRepo->markCartsAdditionalProducts($orderCreated));
 
         $orderCreated->setIsDomestic('n');
         $orderCreated->setIsExpress('n');

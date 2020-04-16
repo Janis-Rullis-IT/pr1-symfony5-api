@@ -30,12 +30,11 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
 
     /**
      * #39 Mark additional products (ex., 2 pieces of the same t-shirt, 2nd is additional).
-     * Done with a SQL query that is faster than checking if is there another product like that before inserting.
-     * The purpose of this field `is_additional` is to be used for matching a row in the `shipping_rates` table.
+     * The purpose of this field `is_additional` is to be used for matching a row in the `shipping_rates` table.1.
      */
-    public function makrCartsAdditionalProducts(Order $draftOrder): bool
+    public function markCartsAdditionalProducts(Order $draftOrder): bool
     {
-        $this->resetCartsAdditionalFlags($draftOrder);
+        $this->markCartsProductsAsFirst($draftOrder);
         $tableName = $this->_em->getClassMetadata(OrderProduct::class)->getTableName();
         $conn = $this->_em->getConnection();
         $sql = '
@@ -56,7 +55,7 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
     /**
      * #39 Reset `is_additional` field for all cart's products to 'n' (means first).
      */
-    public function resetCartsAdditionalFlags(Order $draftOrder): bool
+    public function markCartsProductsAsFirst(Order $draftOrder): bool
     {
         return $this->createQueryBuilder('p')->update()->where('p.order_id = :orderId')->set('p.is_additional', ':isAdditional')
             ->setParameter('orderId', $draftOrder->getId())->setParameter('isAdditional', 'n')
@@ -123,10 +122,9 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
      */
     public function prepare(User $customer, Product $product, User $seller, Order $draftOrder): OrderProduct
     {
+        // #68 JOIN with seller and product would be faster but less control when update did not happen (was it because of productId or sellerId?).
         $item = new OrderProduct();
         $item->setOrderId($draftOrder->getId());
-
-        // #38 TODO: Should this be done better with SQL JOIN UPDATE?
         $item->setCustomerId($customer->getId());
         $item->setSellerId($seller->getId());
         $item->setProductId($product->getId());
@@ -144,7 +142,7 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
      */
     public function setShippingValues(Order $order): void
     {
-        $this->makrCartsAdditionalProducts($order);
+        $this->markCartsAdditionalProducts($order);
         $this->markDomesticShipping($order);
         $this->markExpressShipping($order);
         $this->setShippingRates($order);

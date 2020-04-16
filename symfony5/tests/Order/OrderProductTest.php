@@ -109,7 +109,7 @@ class OrderProductTest extends WebTestCase
         $user = $this->userWithProductsGenerator->generate(1)[0];
         $orderCreated = $this->createOrderWithProducts($user);
 
-        $this->assertTrue($this->orderProductRepo->makrCartsAdditionalProducts($orderCreated));
+        $this->assertTrue($this->orderProductRepo->markCartsAdditionalProducts($orderCreated));
 
         $orderCreated = $this->orderRepo->find($orderCreated->getId());
 
@@ -234,7 +234,7 @@ class OrderProductTest extends WebTestCase
     {
         $orderCreated = $this->createOrderWithProducts($user);
 
-        $this->assertTrue($this->orderProductRepo->makrCartsAdditionalProducts($orderCreated));
+        $this->assertTrue($this->orderProductRepo->markCartsAdditionalProducts($orderCreated));
 
         $orderCreated->setIsDomestic($isDomestic);
         $orderCreated->setIsExpress($isExpress);

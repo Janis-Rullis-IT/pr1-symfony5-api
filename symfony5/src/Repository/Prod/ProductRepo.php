@@ -9,23 +9,14 @@ use App\Interfaces\IProductRepo;
 use App\Validators\UserValidators\UidValidator;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\EntityManagerInterface;
 
-/**
- * @method Product|null find($id, $lockMode = null, $lockVersion = null)
- * @method Product|null findOneBy(array $criteria, array $orderBy = null)
- * @method Product[]    findAll()
- * @method Product[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
- */
 class ProductRepo extends ServiceEntityRepository implements IProductRepo
 {
-    private $em;
     private $userIdValidator;
 
-    public function __construct(ManagerRegistry $registry, EntityManagerInterface $em, UidValidator $userIdValidator)
+    public function __construct(ManagerRegistry $registry, UidValidator $userIdValidator)
     {
         parent::__construct($registry, Product::class);
-        $this->em = $em;
         $this->userIdValidator = $userIdValidator;
     }
 
@@ -37,8 +28,8 @@ class ProductRepo extends ServiceEntityRepository implements IProductRepo
         $product->setTitle($requestBody[Product::TITLE]);
         $product->setSku($requestBody[Product::SKU]);
         $product->setCost($requestBody[Product::COST]);
-        $this->em->persist($product);
-        $this->em->flush();
+        $this->_em->persist($product);
+        $this->_em->flush();
 
         return $product;
     }
@@ -46,10 +37,7 @@ class ProductRepo extends ServiceEntityRepository implements IProductRepo
     public function getById(int $id_user, int $id)
     {
         if ($this->userIdValidator->validate($id_user)) {
-            return $this->findOneBy([
-                'id' => $id,
-                'ownerId' => $id_user,
-            ]);
+            return $this->findOneBy(['id' => $id, 'ownerId' => $id_user]);
         }
 
         return null;
@@ -58,9 +46,7 @@ class ProductRepo extends ServiceEntityRepository implements IProductRepo
     public function getAll(int $id_user)
     {
         if ($this->userIdValidator->validate($id_user)) {
-            return $this->findBy([
-                'ownerId' => $id_user,
-            ]);
+            return $this->findBy(['ownerId' => $id_user]);
         }
 
         return null;
