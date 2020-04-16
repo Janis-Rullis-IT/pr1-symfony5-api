@@ -4,15 +4,15 @@ Create a product and set it's cost and title. After that customers from all the 
 
 ## FIRST TIME? HOW TO SET THIS UP?
 
-#### [Install docker]((https://github.com/janis-rullis/dev/blob/master/Docker/README.md#install))
+#### [1. Install docker]((https://github.com/janis-rullis/dev/blob/master/Docker/README.md#install))
 
 Docker is a virtual environment with all the required software included. See [all other benefits](Why-use-docker.md).
 
-#### Provide Your environment values
+#### 2. Provide Your environment values
 
 - Copy the `.env.example` to `.env` and fill `FILL_THIS` values in it.
 
-#### Execute the `setup.sh` script <sup>*</sup>
+#### 3. Execute the `setup.sh` script <sup>*</sup>
 
 It will download, install and prepare all the required software.
 
@@ -20,7 +20,7 @@ It will download, install and prepare all the required software.
 ./setup.sh
 ```
 
-#### Add these to Your `hosts` file
+#### 4. Add these to Your `hosts` file
 
 This transletes the machines address to the domain-name.
 
