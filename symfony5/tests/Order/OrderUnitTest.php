@@ -76,7 +76,7 @@ class OrderUnitTest extends KernelTestCase
     {
         $user = $this->userWithProductsGenerator->generate(1)[0];
         $this->assertNull($this->orderRepo->getCurrentDraft($user->getId()), '#36 #38 New customer shouldnt have a draft order.');
-        $orderCreated = $this->orderRepo->insertIfNotExist($user->getId());
+        $orderCreated = $this->orderRepo->insertDraftIfNotExist($user->getId());
 
         $this->assertNull($orderCreated->getIsExpress());
         $this->assertNull($orderCreated->getShippingCost());
@@ -89,20 +89,20 @@ class OrderUnitTest extends KernelTestCase
 
         $this->assertEquals(Order::COMPLETED, $orderFound->getStatus(), 'markAsCompleted() should change status to completed.');
 
-        $orderCreated2 = $this->orderRepo->insertIfNotExist($user->getId());
+        $orderCreated2 = $this->orderRepo->insertDraftIfNotExist($user->getId());
 
         $this->assertNotEquals($orderCreated->getId(), $orderCreated2->getId(), '#40 A new order should be created after the previous is completed.');
 
         $orderFound2 = $this->orderRepo->getCurrentDraft($user->getId());
 
         $this->assertEquals($orderFound2->getId(), $orderCreated2->getId(), '#36 #38 Should find an existing one.');
-        $this->assertEquals($orderFound2->getId(), $this->orderRepo->insertIfNotExist($user->getId())->getId(), '#36 #38 A new draft order should not be created if there is already one.');
+        $this->assertEquals($orderFound2->getId(), $this->orderRepo->insertDraftIfNotExist($user->getId())->getId(), '#36 #38 A new draft order should not be created if there is already one.');
     }
 
     public function testOrderTotals()
     {
         $user = $this->userWithProductsGenerator->generate(1)[0];
-        $orderCreated = $this->orderRepo->insertIfNotExist($user->getId());
+        $orderCreated = $this->orderRepo->insertDraftIfNotExist($user->getId());
 
         for ($i = 0; $i < 3; ++$i) {
             $this->orderProductCreator->handle($user->getId(), $user->getProducts()[0]->getId());
@@ -115,8 +115,8 @@ class OrderUnitTest extends KernelTestCase
         $orderCreated->setIsExpress('n');
         $this->entityManager->flush();
 
-        $this->assertEquals(true, $this->orderProductRepo->markDomesticShipping($orderCreated));
-        $this->assertEquals(true, $this->orderProductRepo->markExpressShipping($orderCreated));
+        $this->assertEquals(true, $this->orderProductRepo->markAsDomesticShipping($orderCreated));
+        $this->assertEquals(true, $this->orderProductRepo->markAsExpressShipping($orderCreated));
         $this->assertEquals(true, $this->orderProductRepo->setShippingRates($orderCreated));
         $this->assertEquals(true, $this->orderRepo->setOrderCostsFromCartItems($orderCreated));
 
@@ -139,7 +139,7 @@ class OrderUnitTest extends KernelTestCase
 
         $this->assertNull($this->orderRepo->getCurrentDraft($user->getId()), '#36 #38 New customer shouldnt have a draft order.');
 
-        $this->orderRepo->insertIfNotExist($user->getId());
+        $this->orderRepo->insertDraftIfNotExist($user->getId());
         $this->orderProductCreator->handle($user->getId(), $user->getProducts()[0]->getId());
         $this->entityManager->clear();
         $orderFound = $this->orderRepo->getCurrentDraft($user->getId());

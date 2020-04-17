@@ -36,7 +36,7 @@ class OrderService
     public function complete(int $customerId): Order
     {
         $customer = $this->userRepo->mustFind($customerId);
-        $order = $this->orderRepo->insertIfNotExist($customer->getId());
+        $order = $this->orderRepo->insertDraftIfNotExist($customer->getId());
         $this->recalculateOrder($order);
         $this->orderValidator->mustHaveProducts($order);
         $this->orderValidator->mustHaveMoney($order, $customer);

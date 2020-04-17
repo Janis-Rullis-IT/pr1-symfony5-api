@@ -66,7 +66,7 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
      * #39 Mark cart's products as domestic or international (from the order).
      * The purpose of this field `is_domestic` is to be used for matching a row in the `shipping_rates` table.
      */
-    public function markDomesticShipping(Order $draftOrder): bool
+    public function markAsDomesticShipping(Order $draftOrder): bool
     {
         $return = $this->createQueryBuilder('p')->update()->where('p.order_id = :orderId')->set('p.is_domestic', ':isDomestic')
             ->setParameter('orderId', $draftOrder->getId())->setParameter('isDomestic', $draftOrder->getIsDomestic())
@@ -81,7 +81,7 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
      * #39 Mark cart's product shipping as express or standard.
      * The purpose of this field `is_express` is to be used for matching a row in the `shipping_rate` table.
      */
-    public function markExpressShipping(Order $draftOrder): bool
+    public function markAsExpressShipping(Order $draftOrder): bool
     {
         $return = $this->createQueryBuilder('p')->update()->where('p.order_id = :orderId')->set('p.is_express', ':isExpress')
                 ->setParameter('orderId', $draftOrder->getId())->setParameter('isExpress', $draftOrder->getIsExpress())
@@ -143,8 +143,8 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
     public function setShippingValues(Order $order): void
     {
         $this->markCartsAdditionalProducts($order);
-        $this->markDomesticShipping($order);
-        $this->markExpressShipping($order);
+        $this->markAsDomesticShipping($order);
+        $this->markAsExpressShipping($order);
         $this->setShippingRates($order);
     }
 }

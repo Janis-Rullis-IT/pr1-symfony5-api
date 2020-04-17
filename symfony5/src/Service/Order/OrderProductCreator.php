@@ -46,7 +46,7 @@ class OrderProductCreator
         $product = $this->productRepo->mustFind($productId);
         $seller = $this->userRepo->mustFind($product->getOwnerId());
         // #38 #36 Collect customer's current 'draft' or create a new one.
-        $draftOrder = $this->orderRepo->insertIfNotExist($customer->getId());
+        $draftOrder = $this->orderRepo->insertDraftIfNotExist($customer->getId());
 
         return $this->orderProductRepo->prepare($customer, $product, $seller, $draftOrder);
     }

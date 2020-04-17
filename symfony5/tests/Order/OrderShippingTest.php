@@ -106,7 +106,7 @@ class OrderShippingTest extends WebTestCase
     public function testShippingSet()
     {
         $user = $this->userWithProductsGenerator->generate(1)[0];
-        $draftOrder = $this->orderRepo->insertIfNotExist($user->getId());
+        $draftOrder = $this->orderRepo->insertDraftIfNotExist($user->getId());
         $draftOrderArr = $draftOrder->toArray();
 
         foreach ([Order::OWNER_NAME, Order::OWNER_SURNAME, Order::STREET, Order::STATE, Order::ZIP, Order::COUNTRY, Order::PHONE] as $field) {

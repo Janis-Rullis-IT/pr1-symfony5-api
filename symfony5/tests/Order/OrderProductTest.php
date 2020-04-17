@@ -85,7 +85,7 @@ class OrderProductTest extends WebTestCase
     public function testCreatedOrderProduct()
     {
         $user = $this->userWithProductsGenerator->generate(1)[0];
-        $orderCreated = $this->orderRepo->insertIfNotExist($user->getId());
+        $orderCreated = $this->orderRepo->insertDraftIfNotExist($user->getId());
 
         $this->assertNull($orderCreated->getProducts());
 
@@ -118,7 +118,7 @@ class OrderProductTest extends WebTestCase
         $this->assertEquals('y', $orderCreated->getProducts()[2]->getIsAdditional());
     }
 
-    public function testMarkDomesticShipping()
+    public function testmarkAsDomesticShipping()
     {
         $user = $this->userWithProductsGenerator->generate(1)[0];
         $orderCreated = $this->createOrderWithProducts($user);
@@ -133,7 +133,7 @@ class OrderProductTest extends WebTestCase
             $orderCreated->setIsDomestic($value);
             $this->entityManager->flush();
 
-            $this->assertEquals(true, $this->orderProductRepo->markDomesticShipping($orderCreated));
+            $this->assertEquals(true, $this->orderProductRepo->markAsDomesticShipping($orderCreated));
             $orderFound = $this->orderRepo->getCurrentDraft($user->getId());
             $this->assertEquals($orderFound->getId(), $orderCreated->getId());
 
@@ -143,7 +143,7 @@ class OrderProductTest extends WebTestCase
         }
     }
 
-    public function markExpressShipping()
+    public function markAsExpressShipping()
     {
         $user = $this->userWithProductsGenerator->generate(1)[0];
         $orderCreated = $this->createOrderWithProducts($user);
@@ -154,7 +154,7 @@ class OrderProductTest extends WebTestCase
             $orderCreated->setIsExpress($value);
             $this->entityManager->flush();
 
-            $this->assertEquals(true, $this->orderProductRepo->markExpressShipping($orderCreated));
+            $this->assertEquals(true, $this->orderProductRepo->markAsExpressShipping($orderCreated));
             $orderFound = $this->orderRepo->getCurrentDraft($user->getId());
             $this->assertEquals($orderFound->getId(), $orderCreated->getId());
 
@@ -240,8 +240,8 @@ class OrderProductTest extends WebTestCase
         $orderCreated->setIsExpress($isExpress);
         $this->entityManager->flush();
 
-        $this->assertEquals(true, $this->orderProductRepo->markDomesticShipping($orderCreated));
-        $this->assertEquals(true, $this->orderProductRepo->markExpressShipping($orderCreated));
+        $this->assertEquals(true, $this->orderProductRepo->markAsDomesticShipping($orderCreated));
+        $this->assertEquals(true, $this->orderProductRepo->markAsExpressShipping($orderCreated));
         $this->assertEquals(true, $this->orderProductRepo->setShippingRates($orderCreated));
         // Sum together costs from cart products and store in the order's costs.
         $this->assertEquals(true, $this->orderRepo->setOrderCostsFromCartItems($orderCreated));
@@ -251,7 +251,7 @@ class OrderProductTest extends WebTestCase
 
     private function createOrderWithProducts($user)
     {
-        $orderCreated = $this->orderRepo->insertIfNotExist($user->getId());
+        $orderCreated = $this->orderRepo->insertDraftIfNotExist($user->getId());
         $this->addToCart($user->getId(), $user->getProducts()[0]->getId());
 
         return $orderCreated;

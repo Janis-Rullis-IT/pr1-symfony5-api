@@ -22,7 +22,7 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
     /**
      * #38 Collect customer's current 'draft' or create a new one.
      */
-    public function insertIfNotExist(int $customerId): Order
+    public function insertDraftIfNotExist(int $customerId): Order
     {
         $item = $this->getCurrentDraft($customerId);
 
