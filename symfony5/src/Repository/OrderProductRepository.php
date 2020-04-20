@@ -9,7 +9,7 @@ use App\Entity\User;
 use App\Interfaces\IOrderProductRepo;
 use Doctrine\ORM\EntityManagerInterface;
 
-class OrderProductRepository extends BaseRepository implements IOrderProductRepo
+final class OrderProductRepository extends BaseRepository implements IOrderProductRepo
 {
  
 	 public function __construct(EntityManagerInterface $em)
