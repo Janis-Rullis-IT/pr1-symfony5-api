@@ -7,14 +7,14 @@ use App\Entity\OrderProduct;
 use App\Entity\Product;
 use App\Entity\User;
 use App\Interfaces\IOrderProductRepo;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\EntityManagerInterface;
 
-class OrderProductRepository extends ServiceEntityRepository implements IOrderProductRepo
+class OrderProductRepository extends BaseRepository implements IOrderProductRepo
 {
-    public function __construct(ManagerRegistry $registry)
+ 
+	 public function __construct(EntityManagerInterface $em)
     {
-        parent::__construct($registry, OrderProduct::class);
+        parent::__construct($em, OrderProduct::class);
     }
 
     /**
@@ -22,8 +22,8 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
      */
     public function create(OrderProduct $item): OrderProduct
     {
-        $this->_em->persist($item);
-        $this->_em->flush();
+        $this->em->persist($item);
+        $this->em->flush();
 
         return $item;
     }
@@ -35,8 +35,8 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
     public function markCartsAdditionalProducts(Order $draftOrder): bool
     {
         $this->markCartsProductsAsFirst($draftOrder);
-        $tableName = $this->_em->getClassMetadata(OrderProduct::class)->getTableName();
-        $conn = $this->_em->getConnection();
+        $tableName = $this->em->getClassMetadata(OrderProduct::class)->getTableName();
+        $conn = $this->em->getConnection();
         $sql = '
 			UPDATE `'.$tableName.'` n1, `'.$tableName.'` n2
 			SET n1.`is_additional` = :isAdditional
@@ -46,8 +46,8 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
 			AND n1.`order_id` = :order_id;';
         $stmt = $conn->prepare($sql);
         $return = $stmt->execute(['isAdditional' => 'y', 'order_id' => $draftOrder->getId()]);
-        $this->_em->flush();
-        $this->_em->clear();
+        $this->em->flush();
+        $this->em->clear();
 
         return $return;
     }
@@ -57,7 +57,7 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
      */
     public function markCartsProductsAsFirst(Order $draftOrder): bool
     {
-        return $this->createQueryBuilder('p')->update()->where('p.order_id = :orderId')->set('p.is_additional', ':isAdditional')
+        return $this->em->createQueryBuilder()->update(OrderProduct::class, 'p')->where('p.order_id = :orderId')->set('p.is_additional', ':isAdditional')
             ->setParameter('orderId', $draftOrder->getId())->setParameter('isAdditional', 'n')
             ->getQuery()->execute() >= 0;
     }
@@ -68,11 +68,11 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
      */
     public function markAsDomesticShipping(Order $draftOrder): bool
     {
-        $return = $this->createQueryBuilder('p')->update()->where('p.order_id = :orderId')->set('p.is_domestic', ':isDomestic')
+        $return = $this->em->createQueryBuilder()->update(OrderProduct::class, 'p')->where('p.order_id = :orderId')->set('p.is_domestic', ':isDomestic')
             ->setParameter('orderId', $draftOrder->getId())->setParameter('isDomestic', $draftOrder->getIsDomestic())
                 ->getQuery()->execute() >= 0;
-        $this->_em->flush();
-        $this->_em->clear();
+        $this->em->flush();
+        $this->em->clear();
 
         return $return;
     }
@@ -83,11 +83,11 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
      */
     public function markAsExpressShipping(Order $draftOrder): bool
     {
-        $return = $this->createQueryBuilder('p')->update()->where('p.order_id = :orderId')->set('p.is_express', ':isExpress')
+        $return = $this->em->createQueryBuilder()->update(OrderProduct::class, 'p')->where('p.order_id = :orderId')->set('p.is_express', ':isExpress')
                 ->setParameter('orderId', $draftOrder->getId())->setParameter('isExpress', $draftOrder->getIsExpress())
                 ->getQuery()->execute() >= 0;
-        $this->_em->flush();
-        $this->_em->clear();
+        $this->em->flush();
+        $this->em->clear();
 
         return $return;
     }
@@ -97,8 +97,8 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
      */
     public function setShippingRates(Order $draftOrder): bool
     {
-        $tableName = $this->_em->getClassMetadata(OrderProduct::class)->getTableName();
-        $conn = $this->_em->getConnection();
+        $tableName = $this->em->getClassMetadata(OrderProduct::class)->getTableName();
+        $conn = $this->em->getConnection();
         $sql = '
 			UPDATE `'.$tableName.'` a
 			JOIN shipping_rate b
@@ -111,8 +111,8 @@ class OrderProductRepository extends ServiceEntityRepository implements IOrderPr
 			AND a.deleted_at IS NULL;';
         $stmt = $conn->prepare($sql);
         $return = $stmt->execute(['order_id' => $draftOrder->getId()]);
-        $this->_em->flush();
-        $this->_em->clear();
+        $this->em->flush();
+        $this->em->clear();
 
         return $return;
     }
