@@ -63,7 +63,11 @@ class OrderController extends AbstractController
 
             return $this->json($resp, Response::HTTP_OK);
         } catch (UidValidatorException $e) {
-            return $this->json($e->getErrors(), Response::HTTP_NOT_FOUND);
+            if (method_exists($e, 'getErrors')) {
+                return $this->json($e->getErrors(), Response::HTTP_NOT_FOUND);
+            }
+
+            return $this->json($e->getMessage(), Response::HTTP_NOT_FOUND);
         } catch (\Exception $e) {
             if (method_exists($e, 'getErrors')) {
                 return $this->json($e->getErrors(), Response::HTTP_BAD_REQUEST);
@@ -119,9 +123,17 @@ class OrderController extends AbstractController
 
             return $this->json($resp, Response::HTTP_OK);
         } catch (OrderValidatorException $e) {
-            return $this->json($e->getErrors(), Response::HTTP_NOT_FOUND);
+            if (method_exists($e, 'getErrors')) {
+                return $this->json($e->getErrors(), Response::HTTP_NOT_FOUND);
+            }
+
+            return $this->json($e->getMessage(), Response::HTTP_NOT_FOUND);
         } catch (\Exception $e) {
-            return $this->json($e->getErrors(), Response::HTTP_BAD_REQUEST);
+            if (method_exists($e, 'getErrors')) {
+                return $this->json($e->getErrors(), Response::HTTP_BAD_REQUEST);
+            }
+
+            return $this->json($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
 }
