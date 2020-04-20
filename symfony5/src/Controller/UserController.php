@@ -21,10 +21,7 @@ class UserController extends AbstractController
      * @Route("/users", name="createUser", methods={"POST"})
      * @SWG\Tag(name="1. user")
      *
-     * @SWG\Parameter(name="body", in="body", required=true,
-     *   @SWG\Schema(required={"name", "surname"}, @Model(type=User::class, groups={"CREATE"}))
-     * )
-     *
+     * @SWG\Parameter(name="body", in="body", required=true, @Model(type=User::class, groups={"CREATE"}))
      * @SWG\Response(response=200, description="", @Model(type=User::class))
      */
     public function createUser(UserCreator $createUserService): JsonResponse

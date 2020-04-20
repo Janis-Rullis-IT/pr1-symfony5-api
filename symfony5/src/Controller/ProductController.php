@@ -23,10 +23,7 @@ class ProductController extends AbstractController
      * @Route("/users/{id_user}/products", name="createProduct", methods={"POST"})
      * @SWG\Tag(name="2. product")
      *
-     * @SWG\Parameter(name="body", in="body", required=true,
-     *   @SWG\Schema(required={"name", "surname"}, @Model(type=Product::class, groups={"CREATE"}))
-     * )
-     *
+     * @SWG\Parameter(name="body", in="body", required=true, @Model(type=Product::class, groups={"CREATE"}))     *
      * @SWG\Response(response=200, description="", @Model(type=Product::class))
      *
      * @return JsonResponse|Response
