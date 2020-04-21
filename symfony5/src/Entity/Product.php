@@ -39,12 +39,14 @@ class Product
      * @ORM\Column(type="integer")
      * #45 Schema annotations implemented.
      * @SWG\Property(property="id", type="integer", example="1")
+     * @Groups({"PUB", "ID_ERROR"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="integer")
      * @SWG\Property(property="ownerId", type="integer", example="1")
+     * @Groups({"PUB"})
      */
     private $ownerId;
 

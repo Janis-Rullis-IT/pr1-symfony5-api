@@ -27,17 +27,14 @@ class OrderController extends AbstractController
      * @Route("/users/{customerId}/order/shipping", methods={"PUT"})
      * @SWG\Tag(name="4. shipping")
      *
-     * @SWG\Parameter(name="body", in="body", required=true,
-     *   @SWG\Schema(required={"name", "surname", "street", "country", "phone", "is_express"}, @Model(type=Order::class, groups={"CREATE"}))
-     * )
-     *
-     * @SWG\Response(response=200, description="Saved.", @Model(type=Order::class, groups={"PUB"}))
-     * @SWG\Response(response=404, description="Not found.", @Model(type=Order::class, groups={"ID_ERROR"}))
+     * @SWG\Parameter(name="body", in="body", required=true, @SWG\Schema(required={"name", "surname", "street", "country", "phone", "is_express"}, type="object", ref=@Model(type=Order::class, groups={"CREATE"})))
+     * @SWG\Response(response=200, description="Created.", @SWG\Schema(type="object", ref=@Model(type=Order::class, groups={"PUB"})))
+     * @SWG\Response(response=404, description="Not found.", @SWG\Schema(type="object", ref=@Model(type=Order::class, groups={"ID_ERROR"})))
      */
     public function setShipping(Request $request, OrderShippingService $orderShippingService, int $customerId): JsonResponse
     {
         try {
-            $resp = $orderShippingService->set($customerId, json_decode($request->getContent(), true))->toArray();
+            $resp = $orderShippingService->set($customerId, json_decode($request->getContent(), true))->toArray([], [Order::PRODUCTS]);
 
             return $this->json($resp, Response::HTTP_OK);
         } catch (UidValidatorException $e) {
@@ -53,17 +50,21 @@ class OrderController extends AbstractController
      * @Route("/users/{customerId}/order/complete", methods={"PUT"})
      * @SWG\Tag(name="5. complete order")
      *
-     * @SWG\Response(response=200, description="Saved.", @Model(type=Order::class, groups={"PUB"}))
-     * @SWG\Response(response=404, description="Not found.", @Model(type=Order::class, groups={"ID_ERROR"}))
+     * @SWG\Response(response=200, description="Saved.", @SWG\Schema(type="object", ref=@Model(type=Order::class, groups={"PUB"})))
+     * @SWG\Response(response=404, description="Not found.", @SWG\Schema(type="object", ref=@Model(type=Order::class, groups={"ID_ERROR"})))
      */
     public function complete(Request $request, OrderService $orderService, int $customerId): JsonResponse
     {
         try {
-            $resp = $orderService->complete($customerId)->toArray();
+            $resp = $orderService->complete($customerId)->toArray([], [Order::PRODUCTS]);
 
             return $this->json($resp, Response::HTTP_OK);
         } catch (UidValidatorException $e) {
-            return $this->json($e->getErrors(), Response::HTTP_NOT_FOUND);
+            if (method_exists($e, 'getErrors')) {
+                return $this->json($e->getErrors(), Response::HTTP_NOT_FOUND);
+            }
+
+            return $this->json($e->getMessage(), Response::HTTP_NOT_FOUND);
         } catch (\Exception $e) {
             if (method_exists($e, 'getErrors')) {
                 return $this->json($e->getErrors(), Response::HTTP_BAD_REQUEST);
@@ -79,8 +80,8 @@ class OrderController extends AbstractController
      * @Route("/users/{id_user}/orders/{id}", methods={"GET"})
      * @SWG\Tag(name="6. order")
      *
-     * @SWG\Response(response=200, description="", @Model(type=Order::class, groups={"PUB"}))
-     * @SWG\Response(response=404, description="Not found.", @Model(type=Order::class, groups={"ID_ERROR"}))
+     * @SWG\Response(response=200, description="", @SWG\Schema(type="object", ref=@Model(type=Order::class, groups={"PUB"})))
+     * @SWG\Response(response=404, description="Not found.", @SWG\Schema(type="object", ref=@Model(type=Order::class, groups={"ID_ERROR"})))
      */
     public function getUsersOrderById(OrderRepository $repo, int $id_user, int $id): JsonResponse
     {
@@ -105,8 +106,8 @@ class OrderController extends AbstractController
      * @Route("/users/{id_user}/orders", methods={"GET"})
      * @SWG\Tag(name="6. order")
      *
-     * @SWG\Response(response=200, description="", @SWG\Schema(type="array", @SWG\Items(@Model(type=Order::class, groups={"PUB"}))))
-     * @SWG\Response(response=404, description="Not found.", @Model(type=Order::class, groups={"ID_ERROR"}))
+     * @SWG\Response(response=200, description="", @SWG\Schema(type="object", ref=@Model(type=Order::class, groups={"PUB"})))
+     * @SWG\Response(response=404, description="Not found.", @SWG\Schema(type="object", ref=@Model(type=Order::class, groups={"ID_ERROR"})))
      */
     public function getUsersOrders(OrderRepository $repo, int $id_user): JsonResponse
     {
@@ -119,9 +120,17 @@ class OrderController extends AbstractController
 
             return $this->json($resp, Response::HTTP_OK);
         } catch (OrderValidatorException $e) {
-            return $this->json($e->getErrors(), Response::HTTP_NOT_FOUND);
+            if (method_exists($e, 'getErrors')) {
+                return $this->json($e->getErrors(), Response::HTTP_NOT_FOUND);
+            }
+
+            return $this->json($e->getMessage(), Response::HTTP_NOT_FOUND);
         } catch (\Exception $e) {
-            return $this->json($e->getErrors(), Response::HTTP_BAD_REQUEST);
+            if (method_exists($e, 'getErrors')) {
+                return $this->json($e->getErrors(), Response::HTTP_BAD_REQUEST);
+            }
+
+            return $this->json($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
 }

@@ -193,14 +193,14 @@ class Order
     /**
      * @ORM\Column(type="string", length=30, nullable=true)
      * @SWG\Property(property="state", type="string", example="California")
-     * @Groups({"PUB"})
+     * @Groups({"CREATE", "PUB"})
      */
     private $state;
 
     /**
      * @ORM\Column(type="string", length=20, nullable=true)
      * @SWG\Property(property="zip", type="string", example="60744")
-     * @Groups({"PUB"})
+     * @Groups({"CREATE", "PUB"})
      */
     private $zip;
 

@@ -6,17 +6,18 @@ use App\Entity\Order;
 use App\Entity\OrderProduct;
 use App\Exception\OrderValidatorException;
 use App\Interfaces\IOrderRepo;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * #68 Repo best practices https://www.thinktocode.com/2018/03/05/repository-pattern-symfony/.
+ * #68 Repo best practices:
+ * - https://www.thinktocode.com/2018/03/05/repository-pattern-symfony/.
+ * - https://www.thinktocode.com/2019/01/24/doctrine-repositories-should-be-collections-without-flush/.
  */
-class OrderRepository extends ServiceEntityRepository implements IOrderRepo
+final class OrderRepository extends BaseRepository implements IOrderRepo
 {
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(EntityManagerInterface $em)
     {
-        parent::__construct($registry, Order::class);
+        parent::__construct($em, Order::class);
     }
 
     /**
@@ -31,8 +32,8 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
             $item = new Order();
             $item->setCustomerId($customerId);
             $item->setStatus(Order::DRAFT);
-            $this->_em->persist($item);
-            $this->_em->flush();
+            $this->em->persist($item);
+            $this->em->flush();
         }
 
         if (empty($item)) {
@@ -55,10 +56,10 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
      */
     public function setOrderCostsFromCartItems(Order $order): bool
     {
-        $orderProductTableName = $this->_em->getClassMetadata(OrderProduct::class)->getTableName();
-        $orderTableName = $this->_em->getClassMetadata(Order::class)->getTableName();
+        $orderProductTableName = $this->em->getClassMetadata(OrderProduct::class)->getTableName();
+        $orderTableName = $this->em->getClassMetadata(Order::class)->getTableName();
 
-        $conn = $this->_em->getConnection();
+        $conn = $this->em->getConnection();
         $sql = '
 			UPDATE `'.$orderTableName.'` a
 			JOIN (
@@ -72,8 +73,8 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
         $stmt = $conn->prepare($sql);
         $return = $stmt->execute(['order_id' => $order->getId()]);
 
-        $this->_em->flush();
-        $this->_em->clear();
+        $this->em->flush();
+        $this->em->clear();
 
         return $return;
     }
@@ -103,8 +104,8 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
      */
     public function save()
     {
-        $this->_em->flush();
-        $this->_em->clear();
+        $this->em->flush();
+        $this->em->clear();
     }
 
     /**
@@ -114,7 +115,7 @@ class OrderRepository extends ServiceEntityRepository implements IOrderRepo
     {
         // #40 A refresh-entity workaround for the field not being updated. https://www.doctrine-project.org/projects/doctrine-orm/en/2.7/reference/unitofwork.html https://www.doctrine-project.org/api/orm/latest/Doctrine/ORM/EntityManager.html
         // TODO: Ask someone about this behaviour.
-        $order = $this->_em->getReference(Order::class, $order->getId());
+        $order = $this->em->getReference(Order::class, $order->getId());
         $order->setStatus(Order::COMPLETED);
         $this->save($order);
 

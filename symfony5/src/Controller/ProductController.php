@@ -11,7 +11,6 @@ use App\Service\Product\ProductCreator;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -23,13 +22,8 @@ class ProductController extends AbstractController
      * @Route("/users/{id_user}/products", name="createProduct", methods={"POST"})
      * @SWG\Tag(name="2. product")
      *
-     * @SWG\Parameter(name="body", in="body", required=true,
-     *   @SWG\Schema(required={"name", "surname"}, @Model(type=Product::class, groups={"CREATE"}))
-     * )
-     *
-     * @SWG\Response(response=200, description="", @Model(type=Product::class))
-     *
-     * @return JsonResponse|Response
+     * @SWG\Parameter(name="body", in="body", required=true, @SWG\Schema(required={"type", "title", "sku", "cost"}, type="object", ref=@Model(type=Product::class, groups={"CREATE"})))
+     * @SWG\Response(response=200, description="Created.", @SWG\Schema(type="object", ref=@Model(type=Product::class, groups={"PUB"})))
      */
     public function createProduct(ProductCreator $createProductService, int $id_user)
     {
@@ -52,9 +46,7 @@ class ProductController extends AbstractController
      * @Route("/users/{id_user}/products/{id}", name="getProduct", methods={"GET"})
      * @SWG\Tag(name="2. product")
      *
-     * @SWG\Response(response=200, description="", @Model(type=Product::class))
-     *
-     * @return JsonResponse|Response
+     * @SWG\Response(response=200, description="", @SWG\Schema(type="object", ref=@Model(type=Product::class, groups={"PUB"})))
      */
     public function getProductById(IProductRepo $repo, int $id_user, int $id)
     {
@@ -72,9 +64,7 @@ class ProductController extends AbstractController
      * @Route("/users/{id_user}/products", name="getProducts", methods={"GET"})
      * @SWG\Tag(name="2. product")
      *
-     * @SWG\Response(response=200, description="", @SWG\Schema(type="array", @SWG\Items(@Model(type=Product::class))))
-     *
-     * @return JsonResponse|Response
+     * @SWG\Response(response=200, description="", @SWG\Schema(type="array", @SWG\Items(ref=@Model(type=Product::class, groups={"PUB"}))))
      */
     public function getProducts(IProductRepo $repo, int $id_user)
     {

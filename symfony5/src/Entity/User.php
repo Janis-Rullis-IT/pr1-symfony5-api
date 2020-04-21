@@ -29,7 +29,7 @@ class User
      * @ORM\Column(type="integer")
      * #45 Schema annotations implemented.
      * @SWG\Property(property="id", type="integer", example="1"),
-     * @Groups({ "PUB"})
+     * @Groups({"PUB", "ID_ERROR"})
      */
     private $id;
 
