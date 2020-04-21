@@ -11,8 +11,7 @@ use Doctrine\ORM\EntityManagerInterface;
 
 final class OrderProductRepository extends BaseRepository implements IOrderProductRepo
 {
- 
-	 public function __construct(EntityManagerInterface $em)
+    public function __construct(EntityManagerInterface $em)
     {
         parent::__construct($em, OrderProduct::class);
     }
