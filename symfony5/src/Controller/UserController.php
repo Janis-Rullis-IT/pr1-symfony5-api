@@ -21,8 +21,8 @@ class UserController extends AbstractController
      * @Route("/users", name="createUser", methods={"POST"})
      * @SWG\Tag(name="1. user")
      *
-     * @SWG\Parameter(name="body", in="body", required=true, @Model(type=User::class, groups={"CREATE"}))
-     * @SWG\Response(response=200, description="", @Model(type=User::class))
+     * @SWG\Parameter(name="body", in="body", required=true, @SWG\Schema(required={"name", "surname"}, type="object", ref=@Model(type=User::class, groups={"CREATE"})))
+     * @SWG\Response(response=200, description="Created.", @SWG\Schema(type="object", ref=@Model(type=User::class, groups={"PUB"})))
      */
     public function createUser(UserCreator $createUserService): JsonResponse
     {
@@ -41,9 +41,7 @@ class UserController extends AbstractController
      * @Route("/users/{id}", name="getUserById", methods={"GET"})
      * @SWG\Tag(name="1. user")
      *
-     * @SWG\Response(response=200, description="", @Model(type=User::class))
-     *
-     * @return JsonResponse|Response
+     * @SWG\Response(response=200, description="", @SWG\Schema(type="object", ref=@Model(type=User::class, groups={"PUB"})))
      */
     public function getUserById(IUserRepo $repo, int $id)
     {
@@ -61,7 +59,7 @@ class UserController extends AbstractController
      * @Route("/users", name="getUsers", methods={"GET"})
      * @SWG\Tag(name="1. user")
      *
-     * @SWG\Response(response=200, description="",@SWG\Schema(type="array", @SWG\Items(@Model(type=User::class))))
+     * @SWG\Response(response=200, description="", @SWG\Schema(type="array", @SWG\Items(ref=@Model(type=User::class, groups={"PUB"}))))
      */
     public function getUsers(IUserRepo $repo): JsonResponse
     {
