@@ -47,14 +47,14 @@ class OrderProduct
      * @SWG\Property(property="id", type="integer", example="1")
      * @Groups({"CREATE", "PUB", "ID_ERROR"})
      */
-    private $id;
+    private int $id;
 
     /**
      * @ORM\Column(type="integer")
      * @SWG\Property(property="order_id", type="integer", example=1)
      * @Groups({"CREATE", "PUB"})
      */
-    private $order_id;
+    private int $order_id;
 
     /**
      * @ORM\Column(type="integer")
@@ -63,7 +63,7 @@ class OrderProduct
      * @SWG\Property(property="customer_id", type="integer", example=1)
      * @Groups({"CREATE", "PUB"})
      */
-    private $customer_id;
+    private int $customer_id;
 
     /**
      * @ORM\Column(type="integer")
@@ -72,7 +72,7 @@ class OrderProduct
      * @SWG\Property(property="seller_id", type="integer", example=1)
      * @Groups({"CREATE", "PUB"})
      */
-    private $seller_id;
+    private int $seller_id;
 
     /**
      * @ORM\Column(type="string", length=250)
@@ -86,7 +86,7 @@ class OrderProduct
      * @SWG\Property(property="product_id", type="integer", example=1)
      * @Groups({"CREATE", "PUB"})
      */
-    private $product_id;
+    private int $product_id;
 
     /**
      * @ORM\Column(type="string", length=250)
@@ -98,43 +98,44 @@ class OrderProduct
      * @SWG\Property(property="product_cost", type="integer", example=1000)
      * @Groups({"CREATE", "PUB"})
      */
-    private $product_cost;
+    private int $product_cost;
 
     /**
      * @ORM\Column(type="string", length=20)
      * @SWG\Property(property="product_type", type="string", example="t-shirt")
      * @Groups({"CREATE", "PUB"})
      */
-    private $product_type;
+    private string $product_type;
 
     /**
      * @ORM\Column(type="string", length=1, nullable=true)
      * @SWG\Property(property="is_domestic", type="string", example="null")
      * @Groups({"CREATE", "PUB"})
      */
-    private $is_domestic;
+    private ?string $is_domestic = null;
 
     /**
      * @ORM\Column(type="string", length=1, nullable=true)
      * @SWG\Property(property="is_additional", type="string", example="null")
      * @Groups({"CREATE", "PUB"})
      */
-    private $is_additional;
+    private ?string $is_additional = null;
 
     /**
      * @ORM\Column(type="string", length=1, nullable=true)
      * @SWG\Property(property="is_express", type="string", example="null")
      * @Groups({"CREATE", "PUB"})
      */
-    private $is_express;
+    private ?string $is_express = null;
 
     /**
      * @ORM\Column(type="smallint", nullable=true)
      * @SWG\Property(property="shipping_cost", type="integer", example="null")
      * @Groups({"CREATE", "PUB"})
      */
-    private $shipping_cost;
+    private ?int $shipping_cost = null;
 
+    // #78 Date doesn't have an available prop type https://stitcher.io/blog/typed-properties-in-php-74#types-of-types
     /**
      * @ORM\Column(type="datetime", nullable=true)
      */
@@ -153,7 +154,7 @@ class OrderProduct
     /**
      * @ORM\Column(type="string", length=20, nullable=true)
      */
-    private $sys_info;
+    private ?string $sys_info = null;
 
     public function getId(): ?int
     {
