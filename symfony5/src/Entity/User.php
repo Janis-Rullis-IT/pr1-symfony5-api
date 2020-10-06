@@ -31,28 +31,28 @@ class User
      * @SWG\Property(property="id", type="integer", example="1"),
      * @Groups({"PUB", "ID_ERROR"})
      */
-    private $id;
+    private int $id;
 
     /**
      * @ORM\Column(type="string", length=30)
      * @SWG\Property(property="name", type="string", example="John", description="accepts upper and lowercase letters, spaces, dot (.) , comma (,) , apostrophe (') and dash (-)."),
      * @Groups({ "PUB", "CREATE" })
      */
-    private $name;
+    private string $name;
 
     /**
      * @ORM\Column(type="string", length=30)
      * @SWG\Property(property="surname", type="string", example="Doe", description="accepts upper and lowercase letters, spaces, dot (.) , comma (,) , apostrophe (') and dash (-).")
      * @Groups({ "PUB", "CREATE" })
      */
-    private $surname;
+    private string $surname;
 
     /**
      * @ORM\Column(type="integer")
      * @SWG\Property(property="balance", type="integer", example=10000, description="Each user is assigned 100$ or 10000 cents as a starting balance.")
      * @Groups({ "PUB" })
      */
-    private $balance;
+    private int $balance;
 
     /**
      * #54 Store user's products when called `getProducts()`.
