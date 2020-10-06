@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Exception\OrderShippingValidatorException;
 use App\Helper\EnumType;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
@@ -84,57 +85,60 @@ class Order
      * @SWG\Property(property="id", type="integer", example=1)
      * @Groups({"PUB"})
      */
-    private $id;
+    private int $id;
 
+    // #78 Handlle a nullable typed prop https://stackoverflow.com/a/61954740
+    // #78 Available prop types https://stitcher.io/blog/typed-properties-in-php-74#types-of-types
     /**
      * @ORM\Column(type="string", length=20, nullable=true)
      * @SWG\Property(property="status", type="string", example="draft")
      * @Groups({"PUB"})
      */
-    private $status;
+    private ?string $status = null;
 
     /**
      * @ORM\Column(type="integer")
      * @SWG\Property(property="status", type="customer_id", example=1)
      * @Groups({"PUB"})
      */
-    private $customer_id;
+    private int $customer_id;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer", nullable=true)
      * @SWG\Property(property="product_cost", type="integer", example=1000)
      * @Groups({"PUB"})
      */
-    private $product_cost;
+    private ?int $product_cost = null;
 
     /**
      * @ORM\Column(type="string", length=1, nullable=true)
      * @SWG\Property(property="is_domestic", type="boolean", example=true)
      * @Groups({"PUB"})
      */
-    private $is_domestic;
+    private ?string $is_domestic = null;
 
     /**
      * @ORM\Column(type="string", length=1, nullable=true)
      * @SWG\Property(property="is_express", type="boolean", example=true)
      * @Groups({"CREATE", "PUB"})
      */
-    private $is_express;
+    private ?string $is_express = null;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
      * @SWG\Property(property="shipping_cost", type="integer", example=1000)
      * @Groups({"PUB"})
      */
-    private $shipping_cost;
+    private ?int $shipping_cost = null;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
      * @SWG\Property(property="total_cost", type="integer", example=2000)
      * @Groups({"PUB"})
      */
-    private $total_cost;
+    private ?int $total_cost = null;
 
+    // #78 Date doesn't have an available prop type https://stitcher.io/blog/typed-properties-in-php-74#types-of-types
     /**
      * @ORM\Column(type="datetime", nullable=true)
      */
@@ -153,56 +157,56 @@ class Order
     /**
      * @ORM\Column(type="string", length=20, nullable=true)
      */
-    private $sys_info;
+    private ?string $sys_info = null;
 
     /**
-     * @ORM\Column(type="string", length=30)
+     * @ORM\Column(type="string", length=30, nullable=true)
      * @SWG\Property(property="name", type="string", example="John")
      * @Groups({"CREATE", "PUB"})
      */
-    private $name;
+    private ?string $name = null;
 
     /**
-     * @ORM\Column(type="string", length=30)
+     * @ORM\Column(type="string", length=30, nullable=true)
      * @SWG\Property(property="surname", type="string", example="Doe")
      * @Groups({"CREATE", "PUB"})
      */
-    private $surname;
+    private ?string $surname = null;
 
     /**
-     * @ORM\Column(type="string", length=50)
+     * @ORM\Column(type="string", length=50, nullable=true)
      * @SWG\Property(property="street", type="string", example="Palm street 25-7")
      * @Groups({"CREATE", "PUB"})
      */
-    private $street;
+    private ?string $street = null;
 
     /**
-     * @ORM\Column(type="string", length=40)
+     * @ORM\Column(type="string", length=40, nullable=true)
      * @SWG\Property(property="country", type="string", example="US")
      * @Groups({"CREATE", "PUB"})
      */
-    private $country;
+    private ?string $country = null;
 
     /**
-     * @ORM\Column(type="string", length=30)
+     * @ORM\Column(type="string", length=30, nullable=true)
      * @SWG\Property(property="phone", type="string", example="+1 123 123 123")
      * @Groups({"CREATE", "PUB"})
      */
-    private $phone;
+    private ?string $phone = null;
 
     /**
      * @ORM\Column(type="string", length=30, nullable=true)
      * @SWG\Property(property="state", type="string", example="California")
      * @Groups({"CREATE", "PUB"})
      */
-    private $state;
+    private ?string $state = null;
 
     /**
      * @ORM\Column(type="string", length=20, nullable=true)
      * @SWG\Property(property="zip", type="string", example="60744")
      * @Groups({"CREATE", "PUB"})
      */
-    private $zip;
+    private ?string $zip = null;
 
     /**
      * #40 Store order's products when called `getProducts()`.
@@ -212,6 +216,9 @@ class Order
      * https://www.doctrine-project.org/projects/doctrine-orm/en/2.6/reference/association-mapping.html#one-to-many-unidirectional-with-join-table
      * https://www.doctrine-project.org/api/collections/latest/Doctrine/Common/Collections/ArrayCollection.html.
      *
+     * #58 Handle the array-type property https://tomasvotruba.com/blog/2020/03/23/doctrine-entity-typed-properties-with-php74/#1-the-property
+     */
+    /**
      * @ORM\ManyToMany(targetEntity="OrderProduct")
      * @ORM\JoinTable(name="order_product",
      *      joinColumns={@ORM\JoinColumn(name="order_id", referencedColumnName="id")},
@@ -220,13 +227,11 @@ class Order
      * @SWG\Property(property="products", type="array", @SWG\Items(@Model(type=OrderProduct::class)))
      * @Groups({"PUB"})
      */
-    private $products;
+    private ?Collection $products = null;
 
     /**
      * #40 Collect order's products.
      * Collected using annotation JOIN. See `$products`.
-     *
-     * @return type
      */
     public function getProducts()
     {
